@@ -34,20 +34,38 @@ cp .env.example .env
 3. In `.env` ein langes Secret setzen:
 
 ```env
-ISH_CONTACT_PORT=8080
+WEBUI_PORT=8080
+TZ=Europe/Berlin
+DV2_ACCESS_LOG=false
 DV2_SHARED_SECRET=ein-langes-zufaelliges-secret
 ```
 
-4. Fertiges GHCR-Image ziehen und Container starten:
+4. Datenordner auf dem ZimaOS-Host anlegen:
+
+```bash
+mkdir -p /DATA/AppData/ish-contact/data
+chown -R 10001:10001 /DATA/AppData/ish-contact/data
+```
+
+5. Fertiges GHCR-Image ziehen und Container starten:
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-5. In ZimaOS/Reverse Proxy die App per HTTPS veroeffentlichen. HTTPS ist wichtig fuer Web Crypto, Service Worker, Wake Lock und Passkeys.
+6. In ZimaOS/Reverse Proxy die App per HTTPS veroeffentlichen. HTTPS ist wichtig fuer Web Crypto, Service Worker, Wake Lock und Passkeys.
 
-6. Beim ersten Setup in der App dasselbe `DV2_SHARED_SECRET` als Server-Secret eintragen. Danach wird der verschluesselte Token in `/data/data.json` im Docker-Volume gespeichert.
+7. Beim ersten Setup in der App dasselbe `DV2_SHARED_SECRET` als Server-Secret eintragen. Danach wird der verschluesselte Token auf dem Host unter `/DATA/AppData/ish-contact/data/data.json` gespeichert.
+
+## ZimaOS Compose-Hinweise
+
+- `docker-compose.yml` nutzt direkt `ghcr.io/maroishiku/ish-contact:latest`; ZimaOS muss nicht lokal bauen.
+- `WEBUI_PORT` steuert den veroeffentlichten WebUI-Port und ist auf `8080` voreingestellt.
+- Der Container laeuft read-only. Schreibbar sind nur `/data` und ein kleines `/tmp`-Tmpfs.
+- Persistente Daten liegen bewusst als Bind-Mount unter `/DATA/AppData/ish-contact/data`, passend zur ZimaOS-AppData-Struktur.
+- Der Datenordner muss fuer UID/GID `10001:10001` schreibbar sein, weil der Container nicht als root laeuft.
+- `DV2_SHARED_SECRET` ist Pflicht. Ohne diesen Wert startet Compose nicht.
 
 ## Endpunkte
 

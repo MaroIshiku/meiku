@@ -7,7 +7,9 @@ Stand: 2026-06-20
 - Python-Server liefert die PWA und speichert nur den verschluesselten Token.
 - Clientseitige Verschluesselung bleibt vollstaendig im Browser.
 - Dockerfile und `docker-compose.yml` fuer ZimaOS/Reverse-Proxy-Betrieb vorhanden.
-- Persistenz erfolgt ueber Docker-Volume `/data`.
+- ZimaOS-Compose nutzt GHCR-Image statt lokalem Build.
+- Persistenz erfolgt ueber Bind-Mount `/DATA/AppData/ish-contact/data:/data`.
+- `x-casaos`-Metadaten fuer ZimaOS/CasaOS-App-Import vorhanden.
 - App-Icon/Logo ist als SVG und PNG-Favicon eingebunden.
 
 ## Sicherheit
@@ -19,6 +21,10 @@ Stand: 2026-06-20
 - Server setzt grundlegende Security-Header.
 - Service Worker cached keine Token-/Save-Endpunkte.
 - Container laeuft als non-root User.
+- Container laeuft read-only mit `/data`-Bind-Mount und `/tmp`-Tmpfs.
+- Capabilities werden gedroppt und `no-new-privileges` ist gesetzt.
+- Ressourcenlimits fuer CPU, RAM und Prozesse sind gesetzt.
+- Log-Rotation ist gesetzt, damit ZimaOS-Speicher nicht durch Logs volllaeuft.
 
 ## Funktionen
 
@@ -36,7 +42,8 @@ Stand: 2026-06-20
 
 ## Deployment
 
-- `docker compose up -d --build` baut und startet den Container.
+- `docker compose pull && docker compose up -d` startet ohne lokalen Build.
 - Healthcheck prueft `GET /healthz`.
 - Reverse Proxy muss HTTPS terminieren.
-- `.env` enthaelt `DV2_SHARED_SECRET`; `.env` wird nicht versioniert.
+- `.env` enthaelt `WEBUI_PORT`, `TZ`, `DV2_ACCESS_LOG` und `DV2_SHARED_SECRET`; `.env` wird nicht versioniert.
+- Host-Datenordner muss fuer UID/GID `10001:10001` schreibbar sein.

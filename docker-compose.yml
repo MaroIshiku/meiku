@@ -1,16 +1,45 @@
+name: ish-contact
+
 services:
   ish-contact:
     image: ghcr.io/maroishiku/ish-contact:latest
+    pull_policy: always
     container_name: ish-contact
+    hostname: ish-contact
     restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    stop_signal: SIGTERM
+    stop_grace_period: 10s
+
     environment:
-      DV2_SHARED_SECRET: ${DV2_SHARED_SECRET:?set DV2_SHARED_SECRET in .env}
+      TZ: ${TZ:-Europe/Berlin}
+      DV2_PORT: "8080"
       DV2_DATA_FILE: /data/data.json
-      DV2_PORT: 8080
+      DV2_SHARED_SECRET: ${DV2_SHARED_SECRET:?Set DV2_SHARED_SECRET before starting Ish Contact}
+      DV2_ACCESS_LOG: ${DV2_ACCESS_LOG:-false}
+
     ports:
-      - "${ISH_CONTACT_PORT:-8080}:8080"
+      - target: 8080
+        published: ${WEBUI_PORT:-8080}
+        protocol: tcp
+
     volumes:
-      - ish_contact_data:/data
+      - type: bind
+        source: /DATA/AppData/ish-contact/data
+        target: /data
+
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 128m
+    cpus: "0.50"
+
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).read()"]
       interval: 30s
@@ -18,5 +47,58 @@ services:
       retries: 3
       start_period: 10s
 
-volumes:
-  ish_contact_data:
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+    networks:
+      - ish-contact
+
+    labels:
+      org.opencontainers.image.title: "Ish Contact"
+      org.opencontainers.image.description: "Private encrypted contact-card PWA with local QR generation."
+      org.opencontainers.image.source: "https://github.com/MaroIshiku/ish-contact"
+      org.opencontainers.image.url: "https://github.com/MaroIshiku/ish-contact"
+
+networks:
+  ish-contact:
+    name: ish-contact
+    driver: bridge
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: ish-contact
+  author: MaroIshiku
+  developer: MaroIshiku
+  category: Utilities
+  title:
+    en_us: Ish Contact
+    de_de: Ish Contact
+  tagline:
+    en_us: Private encrypted contact and payment QR vault.
+    de_de: Privater verschluesselter Kontakt- und Zahlungs-QR-Tresor.
+  description:
+    en_us: Mobile-first PWA for an encrypted digital contact card. The server stores only the encrypted token; QR codes and encryption run locally in the browser.
+    de_de: Mobile-first PWA fuer eine verschluesselte digitale Visitenkarte. Der Server speichert nur den verschluesselten Token; QR-Codes und Verschluesselung laufen lokal im Browser.
+  icon: https://raw.githubusercontent.com/MaroIshiku/ish-contact/main/assets/icon-512.png
+  thumbnail: https://raw.githubusercontent.com/MaroIshiku/ish-contact/main/assets/icon-512.png
+  index: /
+  port_map: ${WEBUI_PORT:-8080}
+  tips:
+    before_install:
+      en_us: |
+        Required: set DV2_SHARED_SECRET to a long random value before starting.
+
+        Persistent data is stored on the ZimaOS host at /DATA/AppData/ish-contact/data and mounted into the container at /data. The directory must be writable by UID/GID 10001.
+
+        Publish the WebUI through HTTPS if you want full PWA, Web Crypto, Service Worker and Passkey support.
+      de_de: |
+        Pflicht: Setze DV2_SHARED_SECRET vor dem Start auf einen langen zufaelligen Wert.
+
+        Persistente Daten liegen auf dem ZimaOS-Host unter /DATA/AppData/ish-contact/data und werden im Container nach /data gemountet. Das Verzeichnis muss fuer UID/GID 10001 schreibbar sein.
+
+        Veroeffentliche die WebUI ueber HTTPS, wenn PWA, Web Crypto, Service Worker und Passkeys vollstaendig funktionieren sollen.
