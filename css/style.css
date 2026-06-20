@@ -174,9 +174,9 @@ h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .progress-ring { width: 58px; height: 58px; border-radius: 22px; display: grid; place-items: center; background: var(--primary-container); color: var(--on-primary-container); font-weight: 850; box-shadow: inset 0 1px 0 rgb(255 255 255 / .35); }
 .progress-track { height: 8px; border-radius: 999px; overflow: hidden; background: var(--surface-container); }
 .progress-track span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width var(--dur-med) var(--ease-spring); }
-.stepper { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.stepper li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center; padding: 9px; border-radius: 18px; background: var(--surface-container); color: var(--on-surface-variant); }
-.stepper li > span { width: 36px; height: 36px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--outline) 14%, transparent); font-weight: 850; }
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.stepper li { display: grid; gap: 5px; align-content: start; min-width: 0; padding: 8px 6px; border-radius: 17px; background: var(--surface-container); color: var(--on-surface-variant); text-align: center; }
+.stepper li > span { width: 32px; height: 32px; border-radius: 13px; display: grid; place-items: center; justify-self: center; background: color-mix(in srgb, var(--outline) 14%, transparent); font-weight: 850; }
 .stepper li b { display: block; color: var(--on-surface); font-size: .9rem; line-height: 1.05; }
 .stepper li small { display: block; margin-top: 2px; font-size: .72rem; }
 .stepper li.active { background: color-mix(in srgb, var(--primary-container) 42%, var(--surface-container)); }
@@ -574,5 +574,48 @@ body {
   .bottom-nav {
     height: 54px;
     border-radius: 21px;
+  }
+
+  .sheet-panel {
+    max-height: 94svh;
+  }
+
+  .profile-progress {
+    gap: 9px;
+  }
+
+  .progress-summary {
+    grid-template-columns: minmax(0, 1fr) 52px;
+  }
+
+  .progress-ring {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    font-size: .86rem;
+  }
+
+  .stepper {
+    gap: 5px;
+  }
+
+  .stepper li {
+    padding: 7px 4px;
+    border-radius: 14px;
+  }
+
+  .stepper li > span {
+    width: 28px;
+    height: 28px;
+    border-radius: 11px;
+    font-size: .78rem;
+  }
+
+  .stepper li b {
+    font-size: .72rem;
+  }
+
+  .stepper li small {
+    display: none;
   }
 }

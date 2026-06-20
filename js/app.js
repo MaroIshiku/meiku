@@ -13,7 +13,7 @@ const FIELDS = [
 const SETUP_FIELDS = [['n', 'Vollständiger Name', 'text', true]];
 const FIELD_LABELS = Object.fromEntries(FIELDS.map(([key, label]) => [key, label]));
 const PROFILE_STEPS = [
-  { id: 'privat', title: 'Privat', hint: 'Private Kontaktdaten und private Adresse.', fields: ['m', 'e1', 's', 'z'] },
+  { id: 'privat', title: 'Privat', hint: 'Name, private Kontaktdaten und private Adresse.', fields: ['n', 'm', 'e1', 's', 'z'] },
   { id: 'firma', title: 'Geschäftlich', hint: 'Firma, berufliche Kontakte und separate Geschäftsadresse.', fields: ['c', 'j', 'cp', 'cm', 'ce', 'w', 'cs', 'cz'] },
   { id: 'paypal', title: 'PayPal', hint: 'paypal.me Nutzername für Zahlungslinks.', fields: ['pp'] },
   { id: 'bank', title: 'Bank', hint: 'SEPA-Daten für GiroCode / EPC-QR.', fields: ['ib', 'bic'] }
@@ -333,17 +333,18 @@ function openProfileProgress(stepIndex = 0, firstRun = false) {
 
   const render = () => {
     const step = PROFILE_STEPS[index];
-    const completed = PROFILE_STEPS.filter(item => stepCompletion(item, draft).done).length;
+    const allStepFields = [...new Set(PROFILE_STEPS.flatMap(item => item.fields))];
+    const filledFields = allStepFields.filter(field => String(draft[field] || '').trim()).length;
     const body = document.createElement('div');
     body.className = 'profile-progress';
     body.innerHTML = `
       <div class="progress-summary">
         <div>
           <p class="eyebrow">Fortschritt</p>
-          <h3>${esc(completed)} von ${PROFILE_STEPS.length} Bereichen</h3>
+          <h3>${esc(filledFields)} von ${allStepFields.length} Feldern</h3>
           <p class="muted">${firstRun ? 'Fülle dein Profil in getrennten Schritten aus. Alles bleibt optional und verschlüsselt.' : 'Bearbeite jeden Bereich getrennt. Änderungen werden verschlüsselt gespeichert.'}</p>
         </div>
-        <div class="progress-ring" aria-label="${esc(completed)} von ${PROFILE_STEPS.length} Bereichen vollständig">${esc(completed)}/${PROFILE_STEPS.length}</div>
+        <div class="progress-ring" aria-label="${esc(filledFields)} von ${allStepFields.length} Feldern ausgefüllt">${esc(filledFields)}/${allStepFields.length}</div>
       </div>
       <div class="progress-track" aria-hidden="true"><span style="width:${Math.round((index + 1) / PROFILE_STEPS.length * 100)}%"></span></div>
       <ol class="stepper" aria-label="Profilfortschritt">

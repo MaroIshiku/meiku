@@ -40,6 +40,7 @@ cp .env.example .env
 WEBUI_PORT=8080
 TZ=Europe/Berlin
 DV2_ACCESS_LOG=false
+ISH_CONTACT_DATA_PATH=/DATA/AppData/ish-contact/data
 DV2_SHARED_SECRET=ein-langes-zufaelliges-secret
 ```
 
@@ -67,6 +68,7 @@ docker compose up -d
 - `WEBUI_PORT` steuert den veroeffentlichten WebUI-Port und ist auf `8080` voreingestellt.
 - Der Container laeuft read-only. Schreibbar sind nur `/data` und ein kleines `/tmp`-Tmpfs.
 - Persistente Daten liegen bewusst als Bind-Mount unter `/DATA/AppData/ish-contact/data`, passend zur ZimaOS-AppData-Struktur.
+- Fuer lokale Windows-Docker-Desktop-Tests kann `ISH_CONTACT_DATA_PATH=./data` gesetzt werden.
 - Der Datenordner muss fuer UID/GID `10001:10001` schreibbar sein, weil der Container nicht als root laeuft.
 - `DV2_SHARED_SECRET` ist Pflicht. Ohne diesen Wert startet Compose nicht.
 

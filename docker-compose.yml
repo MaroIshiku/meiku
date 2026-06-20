@@ -26,7 +26,7 @@ services:
 
     volumes:
       - type: bind
-        source: /DATA/AppData/ish-contact/data
+        source: ${ISH_CONTACT_DATA_PATH:-/DATA/AppData/ish-contact/data}
         target: /data
 
     read_only: true
