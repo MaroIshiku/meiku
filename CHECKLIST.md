@@ -29,6 +29,9 @@ Stand: 2026-06-20
 ## Funktionen
 
 - Setup speichert verschluesselte Daten ueber die Python-API.
+- Ersteinrichtung fragt nur vollen Namen, Master-Passwort und Server-Secret ab.
+- Nach Ersteinrichtung oeffnet sich ein gefuehrter Profil-Fortschritt statt einer grossen Gesamtmaske.
+- Private und geschaeftliche Adresse sind getrennte Felder.
 - Login per Master-Passwort bleibt erhalten.
 - PIN speichert nur einen lokal verschluesselten Passwort-Blob.
 - Passkey/WebAuthn-PRF bleibt optional erhalten.

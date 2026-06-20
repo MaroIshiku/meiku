@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ish-contact-static-2026-06-20-python';
+const CACHE_NAME = 'ish-contact-static-2026-06-20-profile-progress';
 const STATIC_ASSETS = [
   './', './index.html', './css/style.css', './js/app.js', './js/auth.js', './js/crypto.js', './js/qr.js', './js/store.js',
   './manifest.json', './assets/logo.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/favicon.png', './assets/pb.png', './assets/pp.png'

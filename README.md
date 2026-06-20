@@ -9,6 +9,9 @@ Mobile-first PWA fuer eine private digitale Visitenkarte mit Zahlungs-QRs. Die A
 - PIN-Schnelllogin mit lokal verschluesseltem Master-Passwort
 - optionaler Passkey-/Biometrie-Schnelllogin via WebAuthn-PRF
 - Reiter: Privat, Firma, PayPal, Bank
+- minimale Ersteinrichtung: voller Name, Master-Passwort und Server-Secret
+- geführter Profil-Fortschritt für Privat, Geschäftlich, PayPal und Bank
+- getrennte private und geschäftliche Adresse
 - lokale QR-Erzeugung ohne Drittanbieter-API
 - vCard-QR nur mit privaten Feldern
 - PayPal-QR und GiroCode/EPC-QR mit synchronisiertem Betrag

@@ -5,11 +5,19 @@ import { Store } from './store.js';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
+  ['s', 'Privat-Straße / Hausnummer', 'text'], ['z', 'Privat-PLZ / Stadt', 'text'],
   ['c', 'Firma', 'text'], ['j', 'Position / Jobtitel', 'text'], ['cp', 'Büro-Telefon', 'tel'], ['cm', 'Dienst-Handy', 'tel'], ['ce', 'Firmen-E-Mail', 'email'],
-  ['w', 'Webseite', 'url'], ['s', 'Straße / Hausnummer', 'text'], ['z', 'PLZ / Stadt', 'text'], ['pp', 'PayPal-Nutzername', 'text'],
+  ['w', 'Webseite', 'text'], ['cs', 'Geschäftsstraße / Hausnummer', 'text'], ['cz', 'Geschäfts-PLZ / Stadt', 'text'], ['pp', 'PayPal-Nutzername', 'text'],
   ['ib', 'IBAN', 'text'], ['bic', 'BIC', 'text']
 ];
+const SETUP_FIELDS = [['n', 'Vollständiger Name', 'text', true]];
 const FIELD_LABELS = Object.fromEntries(FIELDS.map(([key, label]) => [key, label]));
+const PROFILE_STEPS = [
+  { id: 'privat', title: 'Privat', hint: 'Private Kontaktdaten und private Adresse.', fields: ['m', 'e1', 's', 'z'] },
+  { id: 'firma', title: 'Geschäftlich', hint: 'Firma, berufliche Kontakte und separate Geschäftsadresse.', fields: ['c', 'j', 'cp', 'cm', 'ce', 'w', 'cs', 'cz'] },
+  { id: 'paypal', title: 'PayPal', hint: 'paypal.me Nutzername für Zahlungslinks.', fields: ['pp'] },
+  { id: 'bank', title: 'Bank', hint: 'SEPA-Daten für GiroCode / EPC-QR.', fields: ['ib', 'bic'] }
+];
 const AMOUNTS = ['5', '10', '20', '50', '100'];
 const THEMES = ['teal', 'wald', 'ozean', 'rose', 'lavendel', 'graphit'];
 const MODES = ['auto', 'light', 'dark'];
@@ -22,7 +30,7 @@ init();
 
 async function init() {
   applyTheme();
-  renderSetupFields($('#setupFields'));
+  renderSetupFields($('#setupFields'), {}, SETUP_FIELDS);
   buildPinPad();
   bindAuth();
   bindGlobal();
@@ -52,7 +60,7 @@ function bindAuth() {
       const saved = await Store.saveToken(token);
       Object.assign(state, { token: saved.token, updated: saved.updated, data: normalizeData(data), masterPassword: password });
       showVault();
-      openPinSetup(true);
+      openProfileProgress(0, true);
       toast('Tresor gespeichert.');
     } catch (error) { toast(error.message); }
   });
@@ -80,7 +88,7 @@ function showSetup(offlineError) {
   $('#authScreen').classList.remove('hidden');
   $('#vaultScreen').classList.add('hidden');
   $('#authTitle').textContent = 'Ersteinrichtung';
-  $('#authHint').textContent = offlineError ? 'data.json konnte nicht geladen werden. Du kannst trotzdem lokal starten und später speichern.' : 'Token ist leer. Lege deinen verschlüsselten Tresor an.';
+  $('#authHint').textContent = offlineError ? 'Token konnte nicht geladen werden. Du kannst trotzdem lokal starten und später speichern.' : 'Lege nur den Tresor an. Dein Profil füllst du danach Schritt für Schritt aus.';
   $('#setupForm').classList.remove('hidden');
   $('#passwordLogin').classList.add('hidden');
   $('#quickUnlock').classList.add('hidden');
@@ -113,12 +121,16 @@ async function unlockWithPassword(password) {
 function showVault() {
   $('#authScreen').classList.add('hidden');
   $('#vaultScreen').classList.remove('hidden');
+  updateVaultHeader();
+  setTab(state.activeTab);
+  Auth.startAutoLock(() => location.reload());
+}
+
+function updateVaultHeader() {
   $('#heroName').textContent = state.data.n || 'Ohne Name';
   $('#heroInitials').textContent = initials(state.data.n);
   $('#updatedAt').textContent = state.updated ? `Aktualisiert ${formatDate(state.updated)}` : 'Noch nicht gespeichert';
   updateAvatar();
-  setTab(state.activeTab);
-  Auth.startAutoLock(() => location.reload());
 }
 
 function setTab(tab) {
@@ -206,20 +218,22 @@ async function closeQrOverlay() {
 }
 
 function privateRows() {
+  const address = [state.data.s, state.data.z].filter(Boolean).join(', ');
   return [
     { icon: '📱', label: 'Handy', value: state.data.m, href: state.data.m ? `tel:${state.data.m}` : '' },
     { icon: '✉️', label: 'E-Mail', value: state.data.e1, href: state.data.e1 ? `mailto:${state.data.e1}` : '' },
-    { icon: '📍', label: 'Adresse', value: [state.data.s, state.data.z].filter(Boolean).join(', '), href: [state.data.s, state.data.z].some(Boolean) ? `https://maps.google.com/?q=${encodeURIComponent([state.data.s, state.data.z].filter(Boolean).join(' '))}` : '' }
+    { icon: '📍', label: 'Privatadresse', value: address, href: address ? `https://maps.google.com/?q=${encodeURIComponent([state.data.s, state.data.z].filter(Boolean).join(' '))}` : '' }
   ];
 }
 function companyRows() {
+  const companyAddress = [state.data.cs, state.data.cz].filter(Boolean).join(', ');
   return [
     { icon: '🏢', label: 'Firma', value: state.data.c }, { icon: '💼', label: 'Position', value: state.data.j },
     { icon: '☎️', label: 'Büro', value: state.data.cp, href: state.data.cp ? `tel:${state.data.cp}` : '' },
     { icon: '📲', label: 'Dienst-Handy', value: state.data.cm, href: state.data.cm ? `tel:${state.data.cm}` : '' },
     { icon: '✉️', label: 'Firmen-E-Mail', value: state.data.ce, href: state.data.ce ? `mailto:${state.data.ce}` : '' },
     { icon: '🌐', label: 'Webseite', value: state.data.w, href: state.data.w ? normalizeUrl(state.data.w) : '' },
-    { icon: '📍', label: 'Adresse', value: [state.data.s, state.data.z].filter(Boolean).join(', '), href: [state.data.s, state.data.z].some(Boolean) ? `https://maps.google.com/?q=${encodeURIComponent([state.data.s, state.data.z].filter(Boolean).join(' '))}` : '' }
+    { icon: '📍', label: 'Geschäftsadresse', value: companyAddress, href: companyAddress ? `https://maps.google.com/?q=${encodeURIComponent([state.data.cs, state.data.cz].filter(Boolean).join(' '))}` : '' }
   ];
 }
 
@@ -233,7 +247,7 @@ async function shareCurrentTab() {
 function buildShareText() {
   const d = state.data;
   if (state.activeTab === 'privat') return [d.n, d.m, d.e1, [d.s, d.z].filter(Boolean).join(', ')].filter(Boolean).join('\n');
-  if (state.activeTab === 'firma') return [d.n, d.c, d.j, d.cp, d.cm, d.ce, d.w].filter(Boolean).join('\n');
+  if (state.activeTab === 'firma') return [d.n, d.c, d.j, d.cp, d.cm, d.ce, d.w, [d.cs, d.cz].filter(Boolean).join(', ')].filter(Boolean).join('\n');
   if (state.activeTab === 'paypal') return [`Empfänger: ${d.n}`, `PayPal: ${QrPayload.paypal(d, state.amount)}`, normalizeAmount(state.amount) ? `Betrag: ${normalizeAmount(state.amount)} €` : ''].filter(Boolean).join('\n');
   return [`Empfänger: ${d.n}`, `IBAN: ${formatIban(d.ib)}`, `BIC: ${(d.bic || '').toUpperCase()}`, normalizeAmount(state.amount) ? `Betrag: ${normalizeAmount(state.amount)} €` : '', state.purpose ? `Zweck: ${state.purpose}` : ''].filter(Boolean).join('\n');
 }
@@ -280,7 +294,7 @@ async function settingsClick(e) {
   if (theme) { localStorage.setItem('dv2.theme', theme); applyTheme(); return; }
   if (mode) { localStorage.setItem('dv2.mode', mode); applyTheme(); return; }
   if (!action) return;
-  if (action === 'edit') openEditSheet();
+  if (action === 'edit') openProfileProgress(0, false);
   if (action === 'password') openPasswordSheet();
   if (action === 'pin') openPinSetup(false);
   if (action === 'passkey') setupPasskey();
@@ -310,19 +324,78 @@ async function settingsChange(e) {
 }
 
 function openEditSheet() {
-  const form = document.createElement('form');
-  form.className = 'stack';
-  form.id = 'editForm';
-  renderSetupFields(form, state.data);
-  form.insertAdjacentHTML('beforeend', '<button class="btn primary" type="submit">Änderungen verschlüsselt speichern</button>');
-  openSheet('Daten bearbeiten', form);
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    const data = normalizeData(collectForm(form));
-    if (!data.n) return toast('Name ist Pflicht.');
-    try { await saveCurrentData(data); closeSheet(); toast('Gespeichert.'); }
-    catch (error) { toast(error.message); }
-  });
+  openProfileProgress(0, false);
+}
+
+function openProfileProgress(stepIndex = 0, firstRun = false) {
+  let index = Math.max(0, Math.min(PROFILE_STEPS.length - 1, stepIndex));
+  let draft = normalizeData(state.data || {});
+
+  const render = () => {
+    const step = PROFILE_STEPS[index];
+    const completed = PROFILE_STEPS.filter(item => stepCompletion(item, draft).done).length;
+    const body = document.createElement('div');
+    body.className = 'profile-progress';
+    body.innerHTML = `
+      <div class="progress-summary">
+        <div>
+          <p class="eyebrow">Fortschritt</p>
+          <h3>${esc(completed)} von ${PROFILE_STEPS.length} Bereichen</h3>
+          <p class="muted">${firstRun ? 'Fülle dein Profil in getrennten Schritten aus. Alles bleibt optional und verschlüsselt.' : 'Bearbeite jeden Bereich getrennt. Änderungen werden verschlüsselt gespeichert.'}</p>
+        </div>
+        <div class="progress-ring" aria-label="${esc(completed)} von ${PROFILE_STEPS.length} Bereichen vollständig">${esc(completed)}/${PROFILE_STEPS.length}</div>
+      </div>
+      <div class="progress-track" aria-hidden="true"><span style="width:${Math.round((index + 1) / PROFILE_STEPS.length * 100)}%"></span></div>
+      <ol class="stepper" aria-label="Profilfortschritt">
+        ${PROFILE_STEPS.map((item, i) => {
+          const status = stepCompletion(item, draft);
+          const stateClass = i === index ? 'active' : i < index ? 'done' : '';
+          return `<li class="${stateClass}"><span>${status.done ? '✓' : i + 1}</span><div><b>${esc(item.title)}</b><small>${status.count}/${item.fields.length} Felder</small></div></li>`;
+        }).join('')}
+      </ol>
+      <form id="profileStepForm" class="stack">
+        <div class="step-panel">
+          <p class="eyebrow">Schritt ${index + 1}</p>
+          <h3>${esc(step.title)}</h3>
+          <p class="muted">${esc(step.hint)}</p>
+          <div class="setup-grid" id="profileStepFields"></div>
+        </div>
+        <div class="progress-actions">
+          <button class="btn tonal" type="button" data-progress-back ${index === 0 ? 'disabled' : ''}>Zurück</button>
+          <button class="btn ghost" type="button" data-progress-close>${firstRun ? 'Später' : 'Schließen'}</button>
+          <button class="btn primary" type="submit">${index === PROFILE_STEPS.length - 1 ? 'Fertig' : 'Speichern & weiter'}</button>
+        </div>
+      </form>`;
+
+    openSheet(firstRun ? 'Profil vervollständigen' : 'Daten bearbeiten', body);
+    renderSetupFields($('#profileStepFields'), draft, fieldDefs(step.fields));
+
+    $('#profileStepForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      draft = normalizeData({ ...draft, ...collectForm(event.currentTarget) });
+      try {
+        await saveCurrentData(draft, false);
+        if (index === PROFILE_STEPS.length - 1) {
+          closeSheet();
+          toast('Profil gespeichert.');
+        } else {
+          index += 1;
+          toast('Gespeichert.');
+          render();
+        }
+      } catch (error) {
+        toast(error.message);
+      }
+    });
+    $('[data-progress-back]')?.addEventListener('click', () => {
+      draft = normalizeData({ ...draft, ...collectForm($('#profileStepForm')) });
+      index = Math.max(0, index - 1);
+      render();
+    });
+    $('[data-progress-close]')?.addEventListener('click', closeSheet);
+  };
+
+  render();
 }
 
 function openPasswordSheet() {
@@ -355,11 +428,15 @@ async function setupPasskey() {
   catch (error) { toast(error.message); }
 }
 
-async function saveCurrentData(data) {
+async function saveCurrentData(data, refresh = true) {
   const token = await encryptJson(data, state.masterPassword);
   const saved = await Store.saveToken(token);
   state.data = data; state.token = saved.token; state.updated = saved.updated;
-  showVault();
+  if (refresh) showVault();
+  else {
+    updateVaultHeader();
+    renderTab();
+  }
 }
 
 function openSheet(title, body) {
@@ -371,15 +448,20 @@ function openSheet(title, body) {
 }
 function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheetBody').replaceChildren(); }
 
-function renderSetupFields(root, data = {}) {
+function renderSetupFields(root, data = {}, fields = FIELDS) {
   const frag = document.createDocumentFragment();
-  for (const [key, label, type, required] of FIELDS) {
+  for (const [key, label, type, required] of fields) {
     const field = document.createElement('label');
     field.className = 'field';
     field.innerHTML = `<span>${esc(label)}${required ? ' *' : ''}</span><input name="${key}" type="${type || 'text'}" value="${esc(data[key] || '')}" ${required ? 'required' : ''}>`;
     frag.append(field);
   }
   root.replaceChildren(frag);
+}
+function fieldDefs(keys) { return keys.map(key => FIELDS.find(([field]) => field === key)).filter(Boolean); }
+function stepCompletion(step, data) {
+  const count = step.fields.filter(field => String(data[field] || '').trim()).length;
+  return { count, done: count === step.fields.length };
 }
 function collectForm(form) {
   const data = {};
