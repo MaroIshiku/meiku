@@ -34,12 +34,35 @@ async function init() {
   buildPinPad();
   bindAuth();
   bindGlobal();
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(console.warn);
+  registerServiceWorker();
   const loaded = await Store.loadData();
   state.token = loaded.token;
   state.updated = loaded.updated;
   if (!loaded.token) showSetup(loaded.offlineError);
   else showLogin();
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then(registration => {
+    activateWaitingWorker(registration.waiting);
+    registration.addEventListener('updatefound', () => {
+      const worker = registration.installing;
+      worker?.addEventListener('statechange', () => {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) activateWaitingWorker(worker);
+      });
+    });
+  }).catch(console.warn);
+}
+
+function activateWaitingWorker(worker) {
+  worker?.postMessage({ type: 'SKIP_WAITING' });
 }
 
 function bindAuth() {

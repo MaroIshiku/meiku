@@ -187,7 +187,9 @@ class ContactCardHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(target.stat().st_size))
         if self.path_no_query in NETWORK_ONLY_PATHS:
             self.send_header("Cache-Control", "no-store")
-        elif target.name == "index.html" or target.suffix in {".html", ".json"}:
+        elif target.name == "sw.js":
+            self.send_header("Cache-Control", "no-store")
+        elif target.name == "index.html" or target.suffix in {".html", ".json", ".js", ".css"}:
             self.send_header("Cache-Control", "no-cache")
         else:
             self.send_header("Cache-Control", "public, max-age=31536000, immutable")
