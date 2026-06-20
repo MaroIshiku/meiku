@@ -38,10 +38,11 @@ ISH_CONTACT_PORT=8080
 DV2_SHARED_SECRET=ein-langes-zufaelliges-secret
 ```
 
-4. Container starten:
+4. Fertiges GHCR-Image ziehen und Container starten:
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```
 
 5. In ZimaOS/Reverse Proxy die App per HTTPS veroeffentlichen. HTTPS ist wichtig fuer Web Crypto, Service Worker, Wake Lock und Passkeys.
@@ -75,3 +76,13 @@ DV2_SHARED_SECRET=dev-secret DV2_DATA_FILE=./data/data.json python server.py --h
 ```
 
 Dann `http://127.0.0.1:8080` oeffnen. Fuer echte Nutzung bitte HTTPS verwenden.
+
+## Image
+
+Das Docker-Image wird per GitHub Actions nach GHCR veroeffentlicht:
+
+```text
+ghcr.io/maroishiku/ish-contact:latest
+```
+
+`docker-compose.yml` nutzt dieses Image direkt. Ein lokaler Build auf ZimaOS ist nicht noetig.

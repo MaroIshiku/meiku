@@ -1,7 +1,6 @@
 services:
   ish-contact:
-    build: .
-    image: ish-contact:latest
+    image: ghcr.io/maroishiku/ish-contact:latest
     container_name: ish-contact
     restart: unless-stopped
     environment:
