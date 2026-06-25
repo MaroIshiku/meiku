@@ -1,3 +1,7 @@
+const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+const MIN_TOKEN_LENGTH = 64;
+const TOKEN_RE = /^[A-Za-z0-9+/=._:-]+$/;
+
 export const Store = {
   async loadData() {
     try {
@@ -17,6 +21,9 @@ export const Store = {
   async saveToken(token) {
     const secret = Store.getSecret();
     if (!secret) throw new Error('Server-Secret fehlt. Öffne die Einstellungen und hinterlege es.');
+    if (typeof token !== 'string' || token.length < MIN_TOKEN_LENGTH || !TOKEN_RE.test(token)) {
+      throw new Error('Token fehlt oder ist ungültig.');
+    }
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': secret },
@@ -46,13 +53,20 @@ export const Store = {
 
   importToken(file) {
     return new Promise((resolve, reject) => {
+      if (!file || file.size > MAX_IMPORT_BYTES) {
+        reject(new Error('Token-Datei ist zu groß oder ungültig.'));
+        return;
+      }
       const reader = new FileReader();
       reader.onerror = () => reject(new Error('Datei konnte nicht gelesen werden.'));
       reader.onload = () => {
         try {
           const parsed = JSON.parse(String(reader.result));
-          if (!parsed.token) throw new Error('Import enthält keinen Token.');
-          resolve({ token: parsed.token, updated: parsed.updated || null });
+          const token = String(parsed.token || '');
+          if (token.length < MIN_TOKEN_LENGTH || !TOKEN_RE.test(token)) {
+            throw new Error('Import enthält keinen gültigen Token.');
+          }
+          resolve({ token, updated: parsed.updated || null });
         } catch (error) { reject(error); }
       };
       reader.readAsText(file);

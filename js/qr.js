@@ -312,21 +312,14 @@ function renderStyledModules(ctx, modules, cell, border, palette) {
   }
 
   const n = modules.length;
-  const inset = cell * (palette.dense ? 0.18 : 0.14);
+  const radius = cell * (palette.dense ? 0.34 : 0.37);
   const finderZones = [[0, 0], [0, n - 7], [n - 7, 0]];
   for (let r = 0; r < n; r++) {
-    let c = 0;
-    while (c < n) {
-      if (!modules[r][c] || isFinderZone(r, c, n)) { c++; continue; }
-      const start = c;
-      while (c < n && modules[r][c] && !isFinderZone(r, c, n)) c++;
-      const run = c - start;
-      ctx.fillStyle = moduleColor(r, start, palette);
-      const x = (start + border) * cell + inset;
-      const y = (r + border) * cell + inset;
-      const w = run * cell - inset * 2;
-      const h = cell - inset * 2;
-      roundRect(ctx, x, y, w, h, run > 1 ? h / 2 : h * 0.36);
+    for (let c = 0; c < n; c++) {
+      if (!modules[r][c] || isFinderZone(r, c, n)) continue;
+      ctx.fillStyle = moduleColor(r, c, palette);
+      ctx.beginPath();
+      ctx.arc((c + border + 0.5) * cell, (r + border + 0.5) * cell, radius, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -340,13 +333,13 @@ function drawFinder(ctx, row, col, cell, border, palette) {
   const mid = cell * 5;
   const inner = cell * 2.25;
   ctx.fillStyle = palette.dark;
-  roundRect(ctx, x, y, outer, outer, outer * 0.28);
+  circle(ctx, x + outer / 2, y + outer / 2, outer / 2);
   ctx.fill();
   ctx.fillStyle = palette.finderLight;
-  roundRect(ctx, x + cell, y + cell, mid, mid, mid * 0.34);
+  circle(ctx, x + outer / 2, y + outer / 2, mid / 2);
   ctx.fill();
   ctx.fillStyle = palette.dark;
-  roundRect(ctx, x + cell * 2.35, y + cell * 2.35, inner, inner, inner * 0.42);
+  circle(ctx, x + outer / 2, y + outer / 2, inner / 2);
   ctx.fill();
 }
 
@@ -366,6 +359,12 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x + width, y + height, x, y + height, r);
   ctx.arcTo(x, y + height, x, y, r);
   ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function circle(ctx, x, y, radius) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.closePath();
 }
 

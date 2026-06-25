@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=sharely-login-20260625';
-import { decryptJson, encryptJson } from './crypto.js?v=sharely-login-20260625';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-login-20260625';
-import { Store } from './store.js?v=sharely-login-20260625';
+import { Auth } from './auth.js?v=sharely-compact-20260625';
+import { decryptJson, encryptJson } from './crypto.js?v=sharely-compact-20260625';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-compact-20260625';
+import { Store } from './store.js?v=sharely-compact-20260625';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
@@ -186,7 +186,6 @@ function renderTab() {
     return;
   }
   if (state.activeTab === 'privat') renderContactTab(root, 'Privat', 'Telefon, Mail und Adresse.', privateRows(), QrPayload.vcard(state.data), 'vCard privat');
-  if (state.activeTab === 'firma') renderContactTab(root, 'Firma', 'Geschäftliche Kontaktdaten.', companyRows(), null, null);
   if (state.activeTab === 'paypal') renderPaymentTab(root, 'paypal');
   if (state.activeTab === 'bank') renderPaymentTab(root, 'bank');
 }
@@ -277,12 +276,20 @@ function qrCard(payload, label, extraNode) {
   qrFrame.append(qr);
   wrap.append(qrFrame);
   if (extraNode) wrap.append(extraNode); else wrap.insertAdjacentHTML('beforeend', '<div class="qr-caption" aria-hidden="true"></div>');
+  const actions = document.createElement('div');
+  actions.className = 'qr-card-actions';
+  const open = document.createElement('button');
+  open.className = 'btn tonal qr-open-action';
+  open.type = 'button';
+  open.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6v2H8.4l3.7 3.7-1.4 1.4L7 7.4V10H5V4Zm8 0h6v6h-2V7.4l-3.7 3.7-1.4-1.4L15.6 6H13V4ZM5 14h2v2.6l3.7-3.7 1.4 1.4L8.4 18H11v2H5v-6Zm12 0h2v6h-6v-2h2.6l-3.7-3.7 1.4-1.4 3.7 3.7V14Z"/></svg><b>Öffnen</b>';
+  open.addEventListener('click', () => openQrOverlay(qr.dataset.payload || payload));
   const share = document.createElement('button');
   share.className = 'btn tonal qr-share-action';
   share.type = 'button';
   share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-1 0-1.9.5-2.4 1.2L8.9 13.7a3.2 3.2 0 0 0 0-3.4l6.7-3.6A3 3 0 1 0 15 5c0 .2 0 .4.1.6L8.3 9.2a3 3 0 1 0 0 5.6l6.8 3.6a3 3 0 1 0 2.9-2.3Z"/></svg><b>Teilen</b>';
   share.addEventListener('click', shareCurrentTab);
-  wrap.append(share);
+  actions.append(open, share);
+  wrap.append(actions);
   return wrap;
 }
 
@@ -477,7 +484,7 @@ function openProfileProgress(stepIndex = 0, firstRun = false) {
         </div>
         <div class="progress-ring" aria-label="${esc(filledFields)} von ${allStepFields.length} Feldern ausgefüllt">${esc(filledFields)}/${allStepFields.length}</div>
       </div>
-      <div class="progress-track" aria-hidden="true"><span style="width:${Math.round((index + 1) / PROFILE_STEPS.length * 100)}%"></span></div>
+      <div class="progress-track" aria-hidden="true"><span class="progress-fill progress-fill-${index + 1}"></span></div>
       <ol class="stepper" aria-label="Profilfortschritt">
         ${PROFILE_STEPS.map((item, i) => {
           const status = stepCompletion(item, draft);

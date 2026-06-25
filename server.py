@@ -28,6 +28,28 @@ MAX_BODY_BYTES = 1024 * 1024
 MIN_TOKEN_LENGTH = 64
 TOKEN_RE = re.compile(r"^[A-Za-z0-9+/=._:-]+$")
 NETWORK_ONLY_PATHS = {"/api/data", "/api/token", "/data.json", "/save.php"}
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "X-Frame-Options": "DENY",
+    "X-Permitted-Cross-Domain-Policies": "none",
+    "Content-Security-Policy": (
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self'; "
+        "img-src 'self' data: blob:; "
+        "connect-src 'self'; "
+        "manifest-src 'self'; "
+        "worker-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'none'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'"
+    ),
+}
 
 
 class AppConfig:
@@ -80,7 +102,8 @@ def read_token_file(path: Path) -> dict:
 
 
 class ContactCardHandler(BaseHTTPRequestHandler):
-    server_version = "ShareLy/1.0"
+    server_version = "ShareLy"
+    sys_version = ""
 
     @property
     def config(self) -> AppConfig:
@@ -91,10 +114,8 @@ class ContactCardHandler(BaseHTTPRequestHandler):
             super().log_message(fmt, *args)
 
     def end_headers(self) -> None:
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Referrer-Policy", "no-referrer")
-        self.send_header("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
-        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        for name, value in SECURITY_HEADERS.items():
+            self.send_header(name, value)
         super().end_headers()
 
     def do_GET(self) -> None:
