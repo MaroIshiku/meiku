@@ -634,6 +634,258 @@ body {
   }
 }
 
+/* ShareLy lavender login screen */
+.auth-footnote {
+  display: none;
+}
+
+body[data-auth-mode="login"] .app-shell {
+  max-width: none;
+}
+
+body[data-auth-mode="login"] .auth-screen {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
+  min-height: 100svh;
+  padding: calc(34px + env(safe-area-inset-top, 0px)) 18px calc(28px + env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(ellipse at 50% 18%, rgb(255 255 255 / .92), transparent 34rem),
+    radial-gradient(ellipse at 100% 76%, color-mix(in srgb, var(--color-primary-container) 42%, transparent), transparent 22rem),
+    linear-gradient(180deg, #fbf8ff 0%, #f7f0ff 58%, #fbf8ff 100%);
+}
+
+body[data-auth-mode="login"] .auth-card {
+  align-self: center;
+  width: min(100%, 340px);
+  max-height: none;
+  overflow: visible;
+  padding: 38px 22px 30px;
+  border: 1px solid rgb(255 255 255 / .78);
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .92), rgb(255 255 255 / .82)),
+    color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-container));
+  box-shadow:
+    0 22px 44px rgb(89 68 142 / .13),
+    inset 0 1px 0 rgb(255 255 255 / .88);
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+body[data-auth-mode="login"] .login-lockup {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  min-height: auto;
+  margin: 0 0 26px;
+  color: #171827;
+  font-size: 2rem;
+  font-weight: 760;
+}
+
+body[data-auth-mode="login"] .login-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  box-shadow: none;
+}
+
+.auth-badge {
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  margin: 0 auto 32px;
+  padding: 0 15px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-primary-container) 58%, white);
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: .18em;
+  font-size: .72rem;
+  font-weight: 860;
+}
+
+.auth-badge svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
+body[data-auth-mode="login"] .auth-card h1 {
+  margin-bottom: 12px;
+  color: #171827;
+  font-size: clamp(1.82rem, 8vw, 2.08rem);
+  line-height: 1.02;
+  letter-spacing: 0;
+  font-weight: 840;
+  white-space: nowrap;
+}
+
+body[data-auth-mode="login"] #authHint {
+  max-width: 250px;
+  margin: 0 auto 28px;
+  color: #686276;
+  font-size: 1.08rem;
+  line-height: 1.46;
+}
+
+body[data-auth-mode="login"] .stack {
+  margin-top: 0;
+  gap: 16px;
+}
+
+.auth-password-field {
+  text-align: left;
+}
+
+body[data-auth-mode="login"] .auth-password-field > span:first-child {
+  margin: 0 0 8px 4px;
+  color: var(--color-primary);
+  font-size: .98rem;
+  font-weight: 820;
+}
+
+.password-shell {
+  min-height: 64px;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 34%, transparent);
+  border-radius: 24px;
+  background: rgb(255 255 255 / .54);
+  color: #5b3dbc;
+}
+
+.password-shell svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.password-shell input {
+  min-height: 60px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none !important;
+  color: #2b2840;
+  font-size: .92rem;
+}
+
+.password-shell input::placeholder {
+  color: #746e82;
+  opacity: 1;
+}
+
+.password-shell:focus-within {
+  border-color: color-mix(in srgb, var(--color-primary) 72%, white);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.password-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: #5b3dbc;
+}
+
+.unlock-btn {
+  min-height: 62px;
+  margin-top: 14px;
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, #8768dc, #a486e7 52%, #7c60ce) !important;
+  color: white;
+  box-shadow: 0 14px 26px rgb(111 85 200 / .22);
+  font-size: 1.06rem;
+}
+
+.unlock-btn svg,
+.pin-unlock-btn span {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+body[data-auth-mode="login"] .quick-unlock {
+  margin-top: 18px;
+}
+
+.pin-unlock-btn {
+  min-height: 58px;
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--color-primary-container) 56%, white) !important;
+  color: #4f35a5;
+  font-size: 1rem;
+}
+
+.pin-unlock-btn span {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  letter-spacing: .08em;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+body[data-auth-mode="login"] .auth-footnote {
+  align-self: end;
+  min-height: 42px;
+  margin: 28px 0 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #706a7e;
+  font-size: .92rem;
+}
+
+body[data-auth-mode="login"] .auth-footnote span {
+  width: 36px;
+  height: 36px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-primary-container) 64%, white);
+  color: var(--color-primary);
+  font-size: .66rem;
+}
+
+@media (max-width: 380px) {
+  body[data-auth-mode="login"] .auth-screen {
+    padding-inline: 14px;
+  }
+
+  body[data-auth-mode="login"] .auth-card {
+    width: min(100%, 332px);
+    padding: 34px 18px 28px;
+    border-radius: 32px;
+  }
+
+  body[data-auth-mode="login"] .login-lockup {
+    margin-bottom: 24px;
+    font-size: 1.78rem;
+  }
+
+  .auth-badge {
+    margin-bottom: 30px;
+    letter-spacing: .14em;
+    font-size: .66rem;
+  }
+}
+
 /* ShareLy Material 3 mobile pass */
 :root {
   --color-primary: #6F55C8;

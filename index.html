@@ -9,11 +9,11 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fffbff">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#15121c">
   <title>ShareLy</title>
-  <link rel="manifest" href="manifest.json?v=sharely-m3-20260625">
-  <link rel="icon" href="assets/favicon.png?v=sharely-m3-20260625" sizes="64x64">
-  <link rel="icon" href="assets/icon-192.png?v=sharely-m3-20260625" sizes="192x192">
-  <link rel="apple-touch-icon" href="assets/icon-192.png?v=sharely-m3-20260625">
-  <link rel="stylesheet" href="css/style.css?v=sharely-m3-20260625">
+  <link rel="manifest" href="manifest.json?v=sharely-login-20260625">
+  <link rel="icon" href="assets/favicon.png?v=sharely-login-20260625" sizes="64x64">
+  <link rel="icon" href="assets/icon-192.png?v=sharely-login-20260625" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/icon-192.png?v=sharely-login-20260625">
+  <link rel="stylesheet" href="css/style.css?v=sharely-login-20260625">
 </head>
 <body data-theme="lavendel" data-mode="auto">
   <noscript>Diese App braucht JavaScript, weil Verschlüsselung und QR-Codes komplett lokal laufen.</noscript>
@@ -22,19 +22,31 @@
     <section id="authScreen" class="auth-screen">
       <div class="auth-card glass-card">
         <div class="login-lockup" aria-label="ShareLy">
-          <img src="assets/sharely-logo.png?v=sharely-m3-20260625" alt="" class="login-logo" width="72" height="72">
+          <img src="assets/sharely-logo.png?v=sharely-login-20260625" alt="" class="login-logo" width="72" height="72">
           <span>ShareLy</span>
         </div>
-        <p class="eyebrow">Verschlüsselter Tresor</p>
+        <p class="eyebrow auth-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Zm3 4a2 2 0 0 0-1 3.73V19h2v-1.27A2 2 0 0 0 12 14Z"/></svg>
+          <span>Verschlüsselter Tresor</span>
+        </p>
         <h1 id="authTitle">ShareLy</h1>
         <p id="authHint" class="muted">Lade verschlüsselten Token…</p>
 
         <form id="passwordLogin" class="stack hidden" autocomplete="current-password">
-          <label class="field">
+          <label class="field auth-password-field">
             <span>Master-Passwort</span>
-            <input id="masterPassword" type="password" autocomplete="current-password" inputmode="text" required>
+            <span class="password-shell">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z"/></svg>
+              <input id="masterPassword" type="password" autocomplete="current-password" inputmode="text" placeholder="Master-Passwort eingeben" required>
+              <button id="masterPasswordToggle" class="password-toggle" type="button" aria-label="Master-Passwort anzeigen" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c5 0 8.7 4.6 9.8 6.1a1.5 1.5 0 0 1 0 1.8C20.7 14.4 17 19 12 19s-8.7-4.6-9.8-6.1a1.5 1.5 0 0 1 0-1.8C3.3 9.6 7 5 12 5Zm0 3.1a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8Zm0 2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8Z"/></svg>
+              </button>
+            </span>
           </label>
-          <button class="btn primary" type="submit">Entsperren</button>
+          <button class="btn primary unlock-btn" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z"/></svg>
+            <span>Entsperren</span>
+          </button>
         </form>
 
         <form id="setupForm" class="stack hidden" autocomplete="off">
@@ -51,7 +63,7 @@
         </form>
 
         <div id="quickUnlock" class="quick-unlock hidden">
-          <button id="pinOpen" class="btn tonal" type="button">Mit PIN entsperren</button>
+          <button id="pinOpen" class="btn tonal pin-unlock-btn" type="button"><span aria-hidden="true">•••</span>Mit PIN entsperren</button>
           <button id="passkeyLogin" class="btn tonal" type="button">Mit Passkey entsperren</button>
         </div>
 
@@ -61,12 +73,13 @@
           <button id="pinCancel" class="btn ghost" type="button">Abbrechen</button>
         </div>
       </div>
+      <p class="auth-footnote"><span aria-hidden="true">●</span> Lokal und sicher auf diesem Gerät.</p>
     </section>
 
     <section id="vaultScreen" class="vault hidden">
       <header class="hero top-app-bar">
         <div class="brand-lockup" aria-label="ShareLy">
-          <img src="assets/sharely-logo.png?v=sharely-m3-20260625" alt="" width="48" height="48">
+          <img src="assets/sharely-logo.png?v=sharely-login-20260625" alt="" width="48" height="48">
           <span>ShareLy</span>
         </div>
         <div class="hero-actions">
@@ -107,6 +120,6 @@
 
   <div id="toast" class="toast hidden" role="status"></div>
 
-  <script type="module" src="js/app.js?v=sharely-m3-20260625"></script>
+  <script type="module" src="js/app.js?v=sharely-login-20260625"></script>
 </body>
 </html>

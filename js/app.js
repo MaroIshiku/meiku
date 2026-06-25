@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=sharely-m3-20260625';
-import { decryptJson, encryptJson } from './crypto.js?v=sharely-m3-20260625';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-m3-20260625';
-import { Store } from './store.js?v=sharely-m3-20260625';
+import { Auth } from './auth.js?v=sharely-login-20260625';
+import { decryptJson, encryptJson } from './crypto.js?v=sharely-login-20260625';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-login-20260625';
+import { Store } from './store.js?v=sharely-login-20260625';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
@@ -74,6 +74,14 @@ function bindAuth() {
     event.preventDefault();
     await unlockWithPassword($('#masterPassword').value);
   });
+  $('#masterPasswordToggle')?.addEventListener('click', () => {
+    const input = $('#masterPassword');
+    const toggle = $('#masterPasswordToggle');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    toggle.setAttribute('aria-pressed', String(show));
+    toggle.setAttribute('aria-label', show ? 'Master-Passwort verbergen' : 'Master-Passwort anzeigen');
+  });
   $('#setupForm').addEventListener('submit', async event => {
     event.preventDefault();
     const data = collectForm(event.currentTarget);
@@ -112,6 +120,7 @@ function bindGlobal() {
 }
 
 function showSetup(offlineError) {
+  document.body.dataset.authMode = 'setup';
   $('#authScreen').classList.remove('hidden');
   $('#vaultScreen').classList.add('hidden');
   $('#authTitle').textContent = 'Ersteinrichtung';
@@ -122,6 +131,7 @@ function showSetup(offlineError) {
 }
 
 function showLogin() {
+  document.body.dataset.authMode = 'login';
   $('#authScreen').classList.remove('hidden');
   $('#vaultScreen').classList.add('hidden');
   $('#authTitle').textContent = 'Willkommen zurück';
@@ -146,6 +156,7 @@ async function unlockWithPassword(password) {
 }
 
 function showVault() {
+  delete document.body.dataset.authMode;
   $('#authScreen').classList.add('hidden');
   $('#vaultScreen').classList.remove('hidden');
   updateVaultHeader();
