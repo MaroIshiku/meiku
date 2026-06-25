@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=sharely-compact-20260625';
-import { decryptJson, encryptJson } from './crypto.js?v=sharely-compact-20260625';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-compact-20260625';
-import { Store } from './store.js?v=sharely-compact-20260625';
+import { Auth } from './auth.js?v=sharely-ui-20260626';
+import { decryptJson, encryptJson } from './crypto.js?v=sharely-ui-20260626';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-ui-20260626';
+import { Store } from './store.js?v=sharely-ui-20260626';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
@@ -279,14 +279,18 @@ function qrCard(payload, label, extraNode) {
   const actions = document.createElement('div');
   actions.className = 'qr-card-actions';
   const open = document.createElement('button');
-  open.className = 'btn tonal qr-open-action';
+  open.className = 'qr-icon-action qr-open-action';
   open.type = 'button';
-  open.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6v2H8.4l3.7 3.7-1.4 1.4L7 7.4V10H5V4Zm8 0h6v6h-2V7.4l-3.7 3.7-1.4-1.4L15.6 6H13V4ZM5 14h2v2.6l3.7-3.7 1.4 1.4L8.4 18H11v2H5v-6Zm12 0h2v6h-6v-2h2.6l-3.7-3.7 1.4-1.4 3.7 3.7V14Z"/></svg><b>Öffnen</b>';
+  open.setAttribute('aria-label', 'QR-Code öffnen');
+  open.title = 'QR-Code öffnen';
+  open.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6v2H8.4l3.7 3.7-1.4 1.4L7 7.4V10H5V4Zm8 0h6v6h-2V7.4l-3.7 3.7-1.4-1.4L15.6 6H13V4ZM5 14h2v2.6l3.7-3.7 1.4 1.4L8.4 18H11v2H5v-6Zm12 0h2v6h-6v-2h2.6l-3.7-3.7 1.4-1.4 3.7 3.7V14Z"/></svg>';
   open.addEventListener('click', () => openQrOverlay(qr.dataset.payload || payload));
   const share = document.createElement('button');
-  share.className = 'btn tonal qr-share-action';
+  share.className = 'qr-icon-action qr-share-action';
   share.type = 'button';
-  share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-1 0-1.9.5-2.4 1.2L8.9 13.7a3.2 3.2 0 0 0 0-3.4l6.7-3.6A3 3 0 1 0 15 5c0 .2 0 .4.1.6L8.3 9.2a3 3 0 1 0 0 5.6l6.8 3.6a3 3 0 1 0 2.9-2.3Z"/></svg><b>Teilen</b>';
+  share.setAttribute('aria-label', 'Daten teilen');
+  share.title = 'Daten teilen';
+  share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-1 0-1.9.5-2.4 1.2L8.9 13.7a3.2 3.2 0 0 0 0-3.4l6.7-3.6A3 3 0 1 0 15 5c0 .2 0 .4.1.6L8.3 9.2a3 3 0 1 0 0 5.6l6.8 3.6a3 3 0 1 0 2.9-2.3Z"/></svg>';
   share.addEventListener('click', shareCurrentTab);
   actions.append(open, share);
   wrap.append(actions);
@@ -349,49 +353,73 @@ function buildShareText() {
 }
 
 function openSettings() {
-  openSheet('Profil & Einstellungen', `
-    <div class="settings-list">
-      <div class="profile-summary">
-        <div class="avatar-wrap summary-avatar">${localStorage.getItem('dv2.avatar') ? `<img src="${esc(localStorage.getItem('dv2.avatar'))}" alt="">` : `<span>${esc(initials(state.data?.n))}</span>`}</div>
-        <div>
+  const avatar = localStorage.getItem('dv2.avatar');
+  const avatarNode = avatar
+    ? `<img src="${esc(avatar)}" alt="">`
+    : `<span>${esc(initials(state.data?.n))}</span>`;
+  openSheet('ShareLy', `
+    <button class="profile-close" type="button" data-close-sheet aria-label="Menü schließen">×</button>
+    <div class="profile-menu-content">
+      <section class="profile-card">
+        <button class="avatar-wrap profile-avatar" type="button" data-action="avatar-pick" aria-label="Profilbild ändern">
+          ${avatarNode}
+          <span class="avatar-camera" aria-hidden="true">📷</span>
+        </button>
+        <div class="profile-card-main">
           <h3>${esc(state.data?.n || 'ShareLy Profil')}</h3>
-          <p class="muted">${esc(state.data?.e1 || state.data?.ce || 'Lokaler Kontakt- & Zahlungs-Tresor')}</p>
+          <p>${esc(state.data?.e1 || state.data?.ce || 'Lokaler Kontakt- & Zahlungs-Tresor')}</p>
         </div>
+        <input id="avatarFile" type="file" accept="image/*" hidden>
+      </section>
+
+      <section class="profile-info-card" aria-label="Tresorstatus">
+        <div><b>Tresor</b><span>Ende-zu-Ende verschlüsselt</span></div>
+        <div><b>Aktualisiert</b><span>${state.updated ? esc(formatDate(state.updated)) : 'Noch nicht gespeichert'}</span></div>
+      </section>
+
+      <div class="profile-actions">
+        ${profileMenuRow('📝', 'Daten bearbeiten', 'Kontakt- und Zahlungsdaten Schritt für Schritt pflegen', 'edit')}
+        ${profileMenuRow('🖼️', 'Profilbild wählen', 'Automatisch zuschneiden und lokal speichern', 'avatar-pick')}
+        ${avatar ? profileMenuRow('🧹', 'Profilbild entfernen', 'Lokales Profilbild von diesem Gerät löschen', 'avatar-remove') : ''}
+        ${profileMenuRow('🔐', 'Master-Passwort', 'Tresor neu verschlüsseln', 'password')}
+        ${profileMenuRow('🔢', 'PIN', 'Schnell-Login auf diesem Gerät einrichten', 'pin')}
+        ${profileMenuRow('🔑', 'Passkey / Biometrie', 'Nur wenn Chrome einen PRF-Schlüssel liefert', 'passkey')}
       </div>
-      <div class="settings-section"><h3>Konto</h3>
-        <button class="btn tonal" data-action="edit">Daten bearbeiten</button>
-        <button class="btn tonal" data-action="password">Passwort ändern</button>
-      </div>
-      <div class="settings-section"><h3>Profilbild</h3>
-        <label class="btn tonal">Bild auswählen<input id="avatarFile" type="file" accept="image/*" hidden></label>
-        <button class="btn tonal" data-action="avatar-remove">Profilbild entfernen</button>
-        <p class="muted">Optional und aktuell lokal auf diesem Gerät gespeichert.</p>
-      </div>
-      <div class="settings-section"><h3>Sicherheit</h3>
-        <button class="btn tonal" data-action="pin">PIN einrichten/ändern</button>
-        <button class="btn tonal" data-action="passkey">Passkey / Biometrie einrichten</button>
-        <p class="muted">Passkey-Schnelllogin braucht PRF-Unterstützung vom Browser und Authenticator. Wenn das Gerät keinen Schlüssel liefert, bleibt PIN die zuverlässige Option.</p>
-      </div>
-      <div class="settings-section"><h3>Darstellung</h3>
+
+      <section class="settings-section compact-settings">
+        <h3>Darstellung</h3>
         <div class="option-grid">${THEMES.map(t => `<button class="btn small tonal" data-theme-pick="${t}">${labelTheme(t)}</button>`).join('')}</div>
-        <hr class="soft"><div class="option-grid">${MODES.map(m => `<button class="btn small tonal" data-mode-pick="${m}">${labelMode(m)}</button>`).join('')}</div>
-      </div>
-      <div class="settings-section"><h3>Backup</h3>
-        <button class="btn tonal" data-action="export">Token exportieren</button>
-        <label class="btn tonal">Token importieren<input id="importFile" type="file" accept="application/json,.json,.txt" hidden></label>
-      </div>
-      <div class="settings-section"><h3>Session</h3>
-        <button class="btn warn" data-action="lock">Tresor sperren</button>
-        <button class="btn warn" data-action="logout">Abmelden / Schnell-Logins löschen</button>
-        <p class="muted">Zuletzt aktualisiert: ${state.updated ? esc(formatDate(state.updated)) : '—'}</p>
-      </div>
-      <div class="settings-section"><h3>Server</h3><label class="field"><span>Shared Secret</span><input id="secretInput" type="password" value="${esc(Store.getSecret())}"></label><button class="btn tonal" data-action="secret">Secret speichern</button></div>
+        <div class="option-grid">${MODES.map(m => `<button class="btn small tonal" data-mode-pick="${m}">${labelMode(m)}</button>`).join('')}</div>
+      </section>
+
+      <section class="settings-section compact-settings">
+        <h3>Backup & Server</h3>
+        <button class="profile-row-button" data-action="export" type="button"><span>⬇️</span><b>Token exportieren</b></button>
+        <label class="profile-row-button"><span>⬆️</span><b>Token importieren</b><input id="importFile" type="file" accept="application/json,.json,.txt" hidden></label>
+        <label class="field"><span>Shared Secret</span><input id="secretInput" type="password" value="${esc(Store.getSecret())}"></label>
+        <button class="btn tonal" data-action="secret" type="button">Secret speichern</button>
+      </section>
+
+      <section class="profile-actions session-actions">
+        ${profileMenuRow('⏻', 'Tresor sperren', 'Zur Entsperrung zurückkehren', 'lock')}
+        ${profileMenuRow('↪', 'Abmelden', 'Secret und Schnell-Logins lokal entfernen', 'logout')}
+      </section>
     </div>`);
+  $('#sheet').classList.add('profile-menu');
   $('#sheetBody').onclick = settingsClick;
   $('#sheetBody').onchange = settingsChange;
 }
 
+function profileMenuRow(icon, title, subtitle, action) {
+  return `
+    <button class="profile-menu-row" data-action="${action}" type="button">
+      <span class="profile-row-icon" aria-hidden="true">${icon}</span>
+      <span><b>${esc(title)}</b><small>${esc(subtitle)}</small></span>
+    </button>`;
+}
+
 async function settingsClick(e) {
+  if (e.target.closest('[data-close-sheet]')) { closeSheet(); return; }
   const action = e.target.closest('[data-action]')?.dataset.action;
   const theme = e.target.closest('[data-theme-pick]')?.dataset.themePick;
   const mode = e.target.closest('[data-mode-pick]')?.dataset.modePick;
@@ -399,6 +427,7 @@ async function settingsClick(e) {
   if (mode) { localStorage.setItem(MODE_KEY, mode); applyTheme(); return; }
   if (!action) return;
   if (action === 'edit') openProfileProgress(0, false);
+  if (action === 'avatar-pick') { $('#avatarFile')?.click(); return; }
   if (action === 'password') openPasswordSheet();
   if (action === 'pin') openPinSetup(false);
   if (action === 'passkey') setupPasskey();
@@ -579,13 +608,14 @@ async function saveCurrentData(data, refresh = true) {
 }
 
 function openSheet(title, body) {
+  $('#sheet').classList.remove('profile-menu');
   $('#sheetTitle').textContent = title;
   const sheetBody = $('#sheetBody');
   if (typeof body === 'string') sheetBody.innerHTML = body;
   else sheetBody.replaceChildren(body);
   $('#sheet').classList.remove('hidden');
 }
-function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheetBody').replaceChildren(); }
+function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheet').classList.remove('profile-menu'); $('#sheetBody').replaceChildren(); }
 
 function renderSetupFields(root, data = {}, fields = FIELDS) {
   const frag = document.createDocumentFragment();

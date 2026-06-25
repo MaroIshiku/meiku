@@ -1,8 +1,8 @@
-const CACHE_NAME = 'sharely-static-2026-06-25-compact';
+const CACHE_NAME = 'sharely-static-2026-06-26-ui';
 const STATIC_ASSETS = [
   './', './index.html', './css/style.css', './js/app.js', './js/auth.js', './js/crypto.js', './js/qr.js', './js/store.js',
-  './css/style.css?v=sharely-compact-20260625', './js/app.js?v=sharely-compact-20260625', './js/auth.js?v=sharely-compact-20260625', './js/crypto.js?v=sharely-compact-20260625', './js/qr.js?v=sharely-compact-20260625', './js/store.js?v=sharely-compact-20260625',
-  './manifest.json', './assets/sharely-logo.png', './assets/icon-192.png', './assets/icon-512.png', './assets/favicon.png', './assets/pb.png', './assets/pp.png'
+  './css/style.css?v=sharely-ui-20260626', './js/app.js?v=sharely-ui-20260626', './js/auth.js?v=sharely-ui-20260626', './js/crypto.js?v=sharely-ui-20260626', './js/qr.js?v=sharely-ui-20260626', './js/store.js?v=sharely-ui-20260626',
+  './manifest.json?v=sharely-ui-20260626', './assets/sharely-logo.png', './assets/sharely-icon-192-20260626.png', './assets/sharely-icon-512-20260626.png', './assets/sharely-favicon-20260626.png', './assets/pb.png', './assets/pp.png'
 ];
 const NETWORK_ONLY = /(?:api\/data|api\/token|data\.json|save\.php)(?:\?|$)/;
 const STATIC_REQUEST = /\.(?:html|css|js|json|png|svg|webmanifest)(?:\?|$)/;
