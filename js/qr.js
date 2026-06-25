@@ -379,6 +379,19 @@ export const QrPayload = {
     lines.push('END:VCARD');
     return lines.join('\n');
   },
+  vcardCompany(data) {
+    const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${escapeVcard(data.n)}`];
+    if (data.c) lines.push(`ORG:${escapeVcard(data.c)}`);
+    if (data.j) lines.push(`TITLE:${escapeVcard(data.j)}`);
+    if (data.cp) lines.push(`TEL;TYPE=WORK,VOICE:${sanitizePhone(data.cp)}`);
+    if (data.cm) lines.push(`TEL;TYPE=WORK,CELL:${sanitizePhone(data.cm)}`);
+    if (data.ce) lines.push(`EMAIL;TYPE=WORK:${data.ce}`);
+    if (data.w) lines.push(`URL:${normalizeUrl(data.w)}`);
+    const adr = [data.cs, data.cz].filter(Boolean).join(' ');
+    if (adr) lines.push(`ADR;TYPE=WORK:;;${escapeVcard(data.cs)};${escapeVcard(data.cz)};;;;`);
+    lines.push('END:VCARD');
+    return lines.join('\n');
+  },
   paypal(data, amount) {
     const user = String(data.pp || '').replace(/^@/, '').trim();
     if (!user) return 'https://paypal.me/';
@@ -403,4 +416,5 @@ export function normalizeAmount(value) {
 export function formatIbanRaw(iban) { return String(iban || '').replace(/\s+/g, '').toUpperCase(); }
 export function formatIban(iban) { return formatIbanRaw(iban).replace(/(.{4})/g, '$1 ').trim(); }
 function sanitizePhone(phone) { return String(phone || '').replace(/[^+0-9]/g, ''); }
+function normalizeUrl(url) { return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
 function escapeVcard(value = '') { return String(value).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }

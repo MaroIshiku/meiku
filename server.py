@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small production-minded server for the encrypted contact-card PWA.
+"""Small production-minded server for the encrypted ShareLy PWA.
 
 The browser still performs all encryption and decryption. This server only
 serves static files and stores the encrypted token atomically.
@@ -80,7 +80,7 @@ def read_token_file(path: Path) -> dict:
 
 
 class ContactCardHandler(BaseHTTPRequestHandler):
-    server_version = "IshContact/1.0"
+    server_version = "ShareLy/1.0"
 
     @property
     def config(self) -> AppConfig:
@@ -206,7 +206,7 @@ class ContactCardServer(ThreadingHTTPServer):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Serve the encrypted contact-card PWA.")
+    parser = argparse.ArgumentParser(description="Serve the encrypted ShareLy PWA.")
     parser.add_argument("--host", default=os.environ.get("DV2_HOST", "0.0.0.0"))
     parser.add_argument("--port", type=int, default=int(os.environ.get("DV2_PORT", "8080")))
     parser.add_argument("--static-dir", type=Path, default=Path(os.environ.get("DV2_STATIC_DIR", DEFAULT_STATIC_DIR)))
@@ -225,7 +225,7 @@ def main() -> None:
     )
     config.validate()
     httpd = ContactCardServer((args.host, args.port), config)
-    print(f"Ish Contact listening on http://{args.host}:{args.port}", flush=True)
+    print(f"ShareLy listening on http://{args.host}:{args.port}", flush=True)
     httpd.serve_forever()
 
 

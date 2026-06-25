@@ -1,7 +1,8 @@
-const CACHE_NAME = 'ish-contact-static-2026-06-21-modern-qr';
+const CACHE_NAME = 'sharely-static-2026-06-25-m3';
 const STATIC_ASSETS = [
   './', './index.html', './css/style.css', './js/app.js', './js/auth.js', './js/crypto.js', './js/qr.js', './js/store.js',
-  './manifest.json', './assets/logo.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/favicon.png', './assets/pb.png', './assets/pp.png'
+  './css/style.css?v=sharely-m3-20260625', './js/app.js?v=sharely-m3-20260625', './js/auth.js?v=sharely-m3-20260625', './js/crypto.js?v=sharely-m3-20260625', './js/qr.js?v=sharely-m3-20260625', './js/store.js?v=sharely-m3-20260625',
+  './manifest.json', './assets/sharely-logo.png', './assets/icon-192.png', './assets/icon-512.png', './assets/favicon.png', './assets/pb.png', './assets/pp.png'
 ];
 const NETWORK_ONLY = /(?:api\/data|api\/token|data\.json|save\.php)(?:\?|$)/;
 self.addEventListener('install', event => {

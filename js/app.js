@@ -1,7 +1,7 @@
-import { Auth } from './auth.js';
-import { decryptJson, encryptJson } from './crypto.js';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js';
-import { Store } from './store.js';
+import { Auth } from './auth.js?v=sharely-m3-20260625';
+import { decryptJson, encryptJson } from './crypto.js?v=sharely-m3-20260625';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=sharely-m3-20260625';
+import { Store } from './store.js?v=sharely-m3-20260625';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
@@ -19,7 +19,11 @@ const PROFILE_STEPS = [
   { id: 'bank', title: 'Bank', hint: 'SEPA-Daten für GiroCode / EPC-QR.', fields: ['ib', 'bic'] }
 ];
 const AMOUNTS = ['5', '10', '20', '50', '100'];
-const THEMES = ['teal', 'wald', 'ozean', 'rose', 'lavendel', 'graphit'];
+const THEME_KEY = 'sharely-theme';
+const MODE_KEY = 'sharely-mode';
+const LEGACY_THEME_KEY = 'dv2.theme';
+const LEGACY_MODE_KEY = 'dv2.mode';
+const THEMES = ['lavendel', 'mint', 'sky', 'amber', 'graphit'];
 const MODES = ['auto', 'light', 'dark'];
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -99,7 +103,7 @@ function bindAuth() {
 
 function bindGlobal() {
   $('#settingsBtn').addEventListener('click', openSettings);
-  $('#shareBtn').addEventListener('click', shareCurrentTab);
+  $('#heroAvatarWrap')?.addEventListener('click', openSettings);
   $$('.bottom-nav button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
   $('#qrClose').addEventListener('click', closeQrOverlay);
   $('#qrOverlay').addEventListener('click', e => { if (e.target.id === 'qrOverlay') closeQrOverlay(); });
@@ -160,11 +164,16 @@ function setTab(tab) {
   state.activeTab = tab;
   $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
   renderTab();
+  requestAnimationFrame(() => { $('#tabContent').scrollTop = 0; });
 }
 
 function renderTab() {
   const root = $('#tabContent');
   if (!state.data) return;
+  if (state.activeTab === 'firma') {
+    renderContactTab(root, 'Firma', 'Geschäftliche Kontaktdaten.', companyRows(), QrPayload.vcardCompany(state.data), 'vCard Firma');
+    return;
+  }
   if (state.activeTab === 'privat') renderContactTab(root, 'Privat', 'Telefon, Mail und Adresse.', privateRows(), QrPayload.vcard(state.data), 'vCard privat');
   if (state.activeTab === 'firma') renderContactTab(root, 'Firma', 'Geschäftliche Kontaktdaten.', companyRows(), null, null);
   if (state.activeTab === 'paypal') renderPaymentTab(root, 'paypal');
@@ -195,11 +204,11 @@ function renderPaymentTab(root, kind) {
   box.innerHTML = `
     <label class="field"><span>Betrag</span><input id="amountInput" inputmode="decimal" autocomplete="off" value="${esc(state.amount)}" placeholder="z. B. 12,50"></label>
     <div class="chips">${AMOUNTS.map(v => `<button class="chip ${normalizeAmount(state.amount) === Number(v).toFixed(2) ? 'active' : ''}" data-amount="${v}" type="button">${v} €</button>`).join('')}</div>
-    ${isPayPal ? '' : `<label class="field"><span>Verwendungszweck</span><input id="purposeInput" autocomplete="off" value="${esc(state.purpose)}" placeholder="Optional"></label>`}`;
+    <label class="field"><span>Verwendungszweck</span><input id="purposeInput" autocomplete="off" value="${esc(state.purpose)}" placeholder="Optional"></label>`;
   root.append(box);
   const info = document.createElement('div');
   info.className = 'qr-caption';
-  const qrWrap = qrCard(payload, `${title} QR`, info);
+  const qrWrap = qrCard(payload, isPayPal ? 'PayPal.me Link' : 'SEPA / EPC QR-Code', info);
   root.append(qrWrap);
   const refreshPreview = () => updatePaymentPreview(kind, box, qrWrap, info);
   $('#amountInput', box).addEventListener('input', e => {
@@ -245,14 +254,24 @@ function contactRow({ icon, label, value, href }) {
 
 function qrCard(payload, label, extraNode) {
   const wrap = document.createElement('div');
-  wrap.className = 'qr-card';
+  wrap.className = 'qr-card qr-share-card';
+  wrap.insertAdjacentHTML('beforeend', `<div class="qr-card-head"><h3>${esc(label)}</h3></div>`);
+  const qrFrame = document.createElement('div');
+  qrFrame.className = 'qr-frame';
   const qr = document.createElement('div');
   qr.className = 'qr-target';
   qr.dataset.payload = payload;
   renderQr(qr, payload, qrRenderOptions(false, 512));
   qr.addEventListener('click', () => openQrOverlay(qr.dataset.payload || payload));
-  wrap.append(qr);
-  if (extraNode) wrap.append(extraNode); else wrap.insertAdjacentHTML('beforeend', `<div class="qr-caption">${esc(label)}</div>`);
+  qrFrame.append(qr);
+  wrap.append(qrFrame);
+  if (extraNode) wrap.append(extraNode); else wrap.insertAdjacentHTML('beforeend', '<div class="qr-caption" aria-hidden="true"></div>');
+  const share = document.createElement('button');
+  share.className = 'btn tonal qr-share-action';
+  share.type = 'button';
+  share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-1 0-1.9.5-2.4 1.2L8.9 13.7a3.2 3.2 0 0 0 0-3.4l6.7-3.6A3 3 0 1 0 15 5c0 .2 0 .4.1.6L8.3 9.2a3 3 0 1 0 0 5.6l6.8 3.6a3 3 0 1 0 2.9-2.3Z"/></svg><b>Teilen</b>';
+  share.addEventListener('click', shareCurrentTab);
+  wrap.append(share);
   return wrap;
 }
 
@@ -291,12 +310,20 @@ function companyRows() {
 async function shareCurrentTab() {
   const text = buildShareText();
   try {
-    if (navigator.share) await navigator.share({ title: 'Digitale Visitenkarte', text });
+    if (navigator.share) await navigator.share({ title: 'ShareLy', text });
     else await copyText(text);
   } catch (error) { if (error.name !== 'AbortError') toast(error.message); }
 }
 function buildShareText() {
   const d = state.data;
+  if (state.activeTab === 'paypal') {
+    return [
+      `Empfaenger: ${d.n}`,
+      `PayPal: ${QrPayload.paypal(d, state.amount)}`,
+      normalizeAmount(state.amount) ? `Betrag: ${normalizeAmount(state.amount)} EUR` : '',
+      state.purpose ? `Verwendungszweck: ${state.purpose}` : ''
+    ].filter(Boolean).join('\n');
+  }
   if (state.activeTab === 'privat') return [d.n, d.m, d.e1, [d.s, d.z].filter(Boolean).join(', ')].filter(Boolean).join('\n');
   if (state.activeTab === 'firma') return [d.n, d.c, d.j, d.cp, d.cm, d.ce, d.w, [d.cs, d.cz].filter(Boolean).join(', ')].filter(Boolean).join('\n');
   if (state.activeTab === 'paypal') return [`Empfänger: ${d.n}`, `PayPal: ${QrPayload.paypal(d, state.amount)}`, normalizeAmount(state.amount) ? `Betrag: ${normalizeAmount(state.amount)} €` : ''].filter(Boolean).join('\n');
@@ -304,8 +331,15 @@ function buildShareText() {
 }
 
 function openSettings() {
-  openSheet('Einstellungen', `
+  openSheet('Profil & Einstellungen', `
     <div class="settings-list">
+      <div class="profile-summary">
+        <div class="avatar-wrap summary-avatar">${localStorage.getItem('dv2.avatar') ? `<img src="${esc(localStorage.getItem('dv2.avatar'))}" alt="">` : `<span>${esc(initials(state.data?.n))}</span>`}</div>
+        <div>
+          <h3>${esc(state.data?.n || 'ShareLy Profil')}</h3>
+          <p class="muted">${esc(state.data?.e1 || state.data?.ce || 'Lokaler Kontakt- & Zahlungs-Tresor')}</p>
+        </div>
+      </div>
       <div class="settings-section"><h3>Konto</h3>
         <button class="btn tonal" data-action="edit">Daten bearbeiten</button>
         <button class="btn tonal" data-action="password">Passwort ändern</button>
@@ -343,8 +377,8 @@ async function settingsClick(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
   const theme = e.target.closest('[data-theme-pick]')?.dataset.themePick;
   const mode = e.target.closest('[data-mode-pick]')?.dataset.modePick;
-  if (theme) { localStorage.setItem('dv2.theme', theme); applyTheme(); return; }
-  if (mode) { localStorage.setItem('dv2.mode', mode); applyTheme(); return; }
+  if (theme) { localStorage.setItem(THEME_KEY, theme); applyTheme(); return; }
+  if (mode) { localStorage.setItem(MODE_KEY, mode); applyTheme(); return; }
   if (!action) return;
   if (action === 'edit') openProfileProgress(0, false);
   if (action === 'password') openPasswordSheet();
@@ -683,12 +717,20 @@ function bindLongPress(node, callback) {
 async function copyText(text) { await navigator.clipboard.writeText(text); toast('Kopiert.'); }
 function toast(message) { const el = $('#toast'); el.textContent = message; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add('hidden'), 2600); }
 function vibrate() { if (navigator.vibrate) navigator.vibrate(8); }
-function applyTheme() { document.body.dataset.theme = localStorage.getItem('dv2.theme') || 'teal'; document.body.dataset.mode = localStorage.getItem('dv2.mode') || 'auto'; }
-function initials(name = '') { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join('') || 'DV'; }
+function applyTheme() {
+  const legacyTheme = ({ teal: 'lavendel', wald: 'mint', ozean: 'sky', rose: 'amber' })[localStorage.getItem(LEGACY_THEME_KEY)] || localStorage.getItem(LEGACY_THEME_KEY);
+  const theme = localStorage.getItem(THEME_KEY) || (THEMES.includes(legacyTheme) ? legacyTheme : 'lavendel');
+  const mode = localStorage.getItem(MODE_KEY) || localStorage.getItem(LEGACY_MODE_KEY) || 'auto';
+  document.body.dataset.theme = THEMES.includes(theme) ? theme : 'lavendel';
+  document.body.dataset.mode = MODES.includes(mode) ? mode : 'auto';
+  localStorage.setItem(THEME_KEY, document.body.dataset.theme);
+  localStorage.setItem(MODE_KEY, document.body.dataset.mode);
+}
+function initials(name = '') { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join('') || 'SL'; }
 function formatDate(value) { try { return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)); } catch { return value; } }
 function normalizeUrl(url) { return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
-function labelTheme(t) { return ({ teal: 'Teal', wald: 'Wald', ozean: 'Ozean', rose: 'Rose', lavendel: 'Lavendel', graphit: 'Graphit' })[t] || t; }
-function labelMode(m) { return ({ auto: 'Auto', light: 'Hell', dark: 'Dunkel' })[m] || m; }
+function labelTheme(t) { return ({ lavendel: 'Lavendel', mint: 'Mint', sky: 'Sky', amber: 'Amber', graphit: 'Graphit' })[t] || t; }
+function labelMode(m) { return ({ auto: 'System', light: 'Hell', dark: 'Dunkel' })[m] || m; }
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
 function esc(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]); }

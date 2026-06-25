@@ -29,8 +29,8 @@ export const Auth = {
     const credential = await navigator.credentials.create({
       publicKey: {
         challenge,
-        rp: { name: 'Digitale Visitenkarte v2' },
-        user: { id: userId, name: 'single-user@local', displayName: 'Digitale Visitenkarte' },
+        rp: { name: 'ShareLy' },
+        user: { id: userId, name: 'sharely-user@local', displayName: 'ShareLy' },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
         authenticatorSelection: { residentKey: 'preferred', userVerification: 'required' },
         timeout: 60000,

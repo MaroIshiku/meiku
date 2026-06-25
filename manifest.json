@@ -1,13 +1,13 @@
 {
-  "name": "Ish Contact",
-  "short_name": "Ish Contact",
-  "description": "Clientseitig verschlüsselter Kontakt- und Zahlungs-Tresor.",
+  "name": "ShareLy",
+  "short_name": "ShareLy",
+  "description": "Lokaler, sicherer Kontakt- und Zahlungs-QR-Tresor.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1412",
-  "theme_color": "#006b5b",
+  "background_color": "#FFFBFF",
+  "theme_color": "#6F55C8",
   "icons": [
     {
       "src": "assets/favicon.png",

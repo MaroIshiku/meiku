@@ -1,6 +1,6 @@
-# Ish Contact
+# ShareLy
 
-Mobile-first PWA fuer eine private digitale Visitenkarte mit Zahlungs-QRs. Die App laeuft als schlanker Python-Webserver im Docker-Container, ist fuer ZimaOS geeignet und bleibt sicherheitsseitig clientseitig verschluesselt: Der Server speichert nur den AES-GCM-Token und sieht nie Klartextdaten.
+Mobile-first PWA fuer private und geschaeftliche Kontaktdaten mit PayPal- und SEPA/EPC-Zahlungs-QRs. Die App laeuft als schlanker Python-Webserver im Docker-Container, ist fuer ZimaOS geeignet und bleibt sicherheitsseitig clientseitig verschluesselt: Der Server speichert nur den AES-GCM-Token und sieht nie Klartextdaten.
 
 ## Funktionen
 
@@ -13,7 +13,7 @@ Mobile-first PWA fuer eine private digitale Visitenkarte mit Zahlungs-QRs. Die A
 - geführter Profil-Fortschritt für Privat, Geschäftlich, PayPal und Bank
 - getrennte private und geschäftliche Adresse
 - lokale QR-Erzeugung ohne Drittanbieter-API
-- vCard-QR nur mit privaten Feldern
+- getrennte vCard-QRs fuer Privat und Firma
 - PayPal-QR und GiroCode/EPC-QR mit synchronisiertem Betrag
 - Export/Import des verschluesselten Tokens
 - PWA-Manifest, Service Worker und mobile-only Layout
