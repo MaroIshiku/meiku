@@ -13,8 +13,12 @@ RUN addgroup -S ishcontact && adduser -S -G ishcontact -u 10001 ishcontact \
     && mkdir -p /data \
     && chown -R ishcontact:ishcontact /data /app
 
-COPY --chown=ishcontact:ishcontact index.html manifest.json sw.js server.py save.php build-info.json ./
+COPY --chown=ishcontact:ishcontact index.html manifest.json app.manifest.json sw.js server.py save.php build-info.json ./
 COPY --chown=ishcontact:ishcontact css ./css
+COPY --chown=ishcontact:ishcontact design-system ./design-system
+COPY --chown=ishcontact:ishcontact icons ./icons
+COPY --chown=ishcontact:ishcontact contracts ./contracts
+COPY --chown=ishcontact:ishcontact checklists ./checklists
 COPY --chown=ishcontact:ishcontact js ./js
 COPY --chown=ishcontact:ishcontact assets ./assets
 

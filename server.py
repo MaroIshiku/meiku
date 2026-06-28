@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small production-minded server for the encrypted Datello PWA.
+"""Small production-minded server for the encrypted Meiku PWA.
 
 The browser still performs all encryption and decryption. This server only
 serves static files and stores the encrypted token atomically.
@@ -23,7 +23,9 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_STATIC_DIR = ROOT
-DEFAULT_DATA_FILE = Path(os.environ.get("DV2_DATA_FILE", "/data/data.json"))
+DEFAULT_DATA_DIR = Path(os.environ.get("ISHIKU_DATA_DIR", "/data"))
+DEFAULT_DATA_FILE = Path(os.environ.get("DV2_DATA_FILE", DEFAULT_DATA_DIR / "data.json"))
+DEFAULT_SETUP_SECRET_FILE = Path("/run/secrets/ishiku_setup_secret")
 MAX_BODY_BYTES = 1024 * 1024
 MIN_TOKEN_LENGTH = 64
 TOKEN_RE = re.compile(r"^[A-Za-z0-9+/=._:-]+$")
@@ -63,9 +65,9 @@ class AppConfig:
         if not self.static_dir.exists():
             raise SystemExit(f"Static directory does not exist: {self.static_dir}")
         if not self.secret and not self.dev_allow_weak_secret:
-            raise SystemExit("DV2_SHARED_SECRET must be set.")
+            raise SystemExit("ISHIKU_SETUP_SECRET, ISHIKU_SETUP_SECRET_FILE, or DV2_SHARED_SECRET must be set.")
         if self.secret == "CHANGE_ME" and not self.dev_allow_weak_secret:
-            raise SystemExit("DV2_SHARED_SECRET must not be CHANGE_ME.")
+            raise SystemExit("Configured shared secret must not be CHANGE_ME.")
         self.data_file.parent.mkdir(parents=True, exist_ok=True)
         if not self.data_file.exists():
             atomic_write_json(self.data_file, {"token": "", "updated": None})
@@ -101,8 +103,29 @@ def read_token_file(path: Path) -> dict:
     return {"token": str(data.get("token") or ""), "updated": data.get("updated")}
 
 
+def read_secret_file(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise SystemExit(f"Configured setup secret file is not readable: {path}") from exc
+
+
+def configured_secret() -> str:
+    explicit_secret_file = os.environ.get("ISHIKU_SETUP_SECRET_FILE")
+    if explicit_secret_file:
+        return read_secret_file(Path(explicit_secret_file))
+
+    if DEFAULT_SETUP_SECRET_FILE.exists():
+        return read_secret_file(DEFAULT_SETUP_SECRET_FILE)
+
+    return (
+        os.environ.get("ISHIKU_SETUP_SECRET", "").strip()
+        or os.environ.get("DV2_SHARED_SECRET", "").strip()
+    )
+
+
 class ContactCardHandler(BaseHTTPRequestHandler):
-    server_version = "Datello"
+    server_version = "Meiku"
     sys_version = ""
 
     @property
@@ -122,13 +145,21 @@ class ContactCardHandler(BaseHTTPRequestHandler):
         if self.path_no_query == "/healthz":
             self.respond_json({"ok": True})
             return
+        if self.path_no_query == "/readyz":
+            self.respond_json({
+                "ok": True,
+                "dataFile": str(self.config.data_file),
+                "hasSecret": bool(self.config.secret),
+                "dataWritable": os.access(self.config.data_file.parent, os.W_OK),
+            }, no_store=True)
+            return
         if self.path_no_query in {"/api/data", "/data.json"}:
             self.respond_json(read_token_file(self.config.data_file), no_store=True)
             return
         self.serve_static()
 
     def do_HEAD(self) -> None:
-        if self.path_no_query == "/healthz":
+        if self.path_no_query in {"/healthz", "/readyz"}:
             self.send_response(HTTPStatus.NO_CONTENT)
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
@@ -227,7 +258,7 @@ class ContactCardServer(ThreadingHTTPServer):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Serve the encrypted Datello PWA.")
+    parser = argparse.ArgumentParser(description="Serve the encrypted Meiku PWA.")
     parser.add_argument("--host", default=os.environ.get("DV2_HOST", "0.0.0.0"))
     parser.add_argument("--port", type=int, default=int(os.environ.get("DV2_PORT", "8080")))
     parser.add_argument("--static-dir", type=Path, default=Path(os.environ.get("DV2_STATIC_DIR", DEFAULT_STATIC_DIR)))
@@ -241,12 +272,12 @@ def main() -> None:
     config = AppConfig(
         static_dir=args.static_dir,
         data_file=args.data_file,
-        secret=os.environ.get("DV2_SHARED_SECRET", ""),
+        secret=configured_secret(),
         dev_allow_weak_secret=args.dev_allow_weak_secret,
     )
     config.validate()
     httpd = ContactCardServer((args.host, args.port), config)
-    print(f"Datello listening on http://{args.host}:{args.port}", flush=True)
+    print(f"Meiku listening on http://{args.host}:{args.port}", flush=True)
     httpd.serve_forever()
 
 

@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=datello-debug-20260626';
-import { decryptJson, encryptJson } from './crypto.js?v=datello-debug-20260626';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=datello-debug-20260626';
-import { Store } from './store.js?v=datello-debug-20260626';
+import { Auth } from './auth.js?v=meiku-20260628';
+import { decryptJson, encryptJson } from './crypto.js?v=meiku-20260628';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=meiku-20260628';
+import { Store } from './store.js?v=meiku-20260628';
 
 const FIELDS = [
   ['n', 'Vollständiger Name', 'text', true], ['m', 'Privat-Handy', 'tel'], ['e1', 'Privat-E-Mail', 'email'],
@@ -19,12 +19,16 @@ const PROFILE_STEPS = [
   { id: 'bank', title: 'Bank', hint: 'SEPA-Daten für GiroCode / EPC-QR.', fields: ['ib', 'bic'] }
 ];
 const AMOUNTS = ['5', '10', '20', '50', '100'];
-const THEME_KEY = 'datello-theme';
-const MODE_KEY = 'datello-mode';
+const APP_NAME = 'Meiku';
+const APP_TITLE = 'Meiku - Profile Share';
+const APP_SUBTITLE = 'Profile Share';
+const APP_ID = 'meiku';
+const THEME_KEY = `${APP_ID}-theme`;
+const MODE_KEY = `${APP_ID}-mode`;
 const LEGACY_THEME_KEY = 'dv2.theme';
 const LEGACY_MODE_KEY = 'dv2.mode';
-const THEMES = ['lavendel', 'mint', 'sky', 'amber', 'graphit'];
-const MODES = ['auto', 'light', 'dark'];
+const THEMES = ['lavender', 'mint', 'sky', 'amber', 'rose', 'graphite'];
+const MODES = ['system', 'light', 'dark'];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -34,6 +38,7 @@ init();
 
 async function init() {
   applyTheme();
+  bindThemeMode();
   renderSetupFields($('#setupFields'), {}, SETUP_FIELDS);
   buildPinPad();
   bindAuth();
@@ -45,6 +50,12 @@ async function init() {
   state.updated = loaded.updated;
   if (!loaded.token) showSetup(loaded.offlineError);
   else showLogin();
+}
+
+function bindThemeMode() {
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (localStorage.getItem(MODE_KEY) === 'system') applyTheme();
+  });
 }
 
 function registerServiceWorker() {
@@ -111,6 +122,7 @@ function bindAuth() {
 }
 
 function bindGlobal() {
+  bindLogoFallback();
   $('#settingsBtn').addEventListener('click', openSettings);
   $('#heroAvatarWrap')?.addEventListener('click', openSettings);
   $$('.bottom-nav button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
@@ -118,6 +130,12 @@ function bindGlobal() {
   $('#qrOverlay').addEventListener('click', e => { if (e.target.id === 'qrOverlay') closeQrOverlay(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeQrOverlay(); closeSheet(); } });
   $('[data-close-sheet]')?.addEventListener('click', closeSheet);
+}
+
+function bindLogoFallback() {
+  $$('.app-symbol img, .login-logo').forEach(img => {
+    img.addEventListener('error', () => img.closest('.app-symbol')?.classList.add('logo-missing'));
+  });
 }
 
 function showSetup(offlineError) {
@@ -335,7 +353,7 @@ function companyRows() {
 async function shareCurrentTab() {
   const text = buildShareText();
   try {
-    if (navigator.share) await navigator.share({ title: 'Datello', text });
+  if (navigator.share) await navigator.share({ title: APP_NAME, text });
     else await copyText(text);
   } catch (error) { if (error.name !== 'AbortError') toast(error.message); }
 }
@@ -360,7 +378,7 @@ function openSettings() {
   const avatarNode = avatar
     ? `<img src="${esc(avatar)}" alt="">`
     : `<span>${esc(initials(state.data?.n))}</span>`;
-  openSheet('Datello', `
+  openSheet(APP_NAME, `
     <button class="profile-close" type="button" data-close-sheet aria-label="Menü schließen">×</button>
     <div class="profile-menu-content">
       <section class="profile-card">
@@ -369,8 +387,8 @@ function openSettings() {
           <span class="avatar-camera" aria-hidden="true">📷</span>
         </button>
         <div class="profile-card-main">
-          <h3>${esc(state.data?.n || 'Datello Profil')}</h3>
-          <p>${esc(state.data?.e1 || state.data?.ce || 'Lokaler Kontakt- & Zahlungs-Tresor')}</p>
+          <h3>${esc(state.data?.n || `${APP_NAME} Profil`)}</h3>
+          <p>${esc(state.data?.e1 || state.data?.ce || 'Lokaler Kontakt- und Zahlungs-Tresor')}</p>
         </div>
         <input id="avatarFile" type="file" accept="image/*" hidden>
       </section>
@@ -462,12 +480,12 @@ function openDebugInfo() {
   const info = state.buildInfo || {};
   const forkRepos = Array.isArray(info.forkRepos) ? info.forkRepos : [];
   const rows = [
-    ['App', info.app || 'Datello'],
+    ['App', info.app || APP_TITLE],
     ['Build-SHA', shortSha(info.buildSha)],
     ['Voller SHA', info.buildSha || 'local'],
     ['Repo aktualisiert', formatDebugDate(info.repoUpdatedAt)],
     ['Image gebaut', formatDebugDate(info.builtAt)],
-    ['Quelle', info.sourceRepo || 'MaroIshiku/Datello'],
+    ['Quelle', info.sourceRepo || 'MaroIshiku/meiku'],
     ['Ref', info.sourceRef || 'local'],
     ['Workflow-Run', info.workflowRun || 'local'],
     ['Fork-Repositories', forkRepos.length ? `${forkRepos.length} eingebunden` : 'Keine eingebunden']
@@ -796,13 +814,27 @@ async function copyText(text) { await navigator.clipboard.writeText(text); toast
 function toast(message) { const el = $('#toast'); el.textContent = message; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add('hidden'), 2600); }
 function vibrate() { if (navigator.vibrate) navigator.vibrate(8); }
 function applyTheme() {
-  const legacyTheme = ({ teal: 'lavendel', wald: 'mint', ozean: 'sky', rose: 'amber' })[localStorage.getItem(LEGACY_THEME_KEY)] || localStorage.getItem(LEGACY_THEME_KEY);
-  const theme = localStorage.getItem(THEME_KEY) || (THEMES.includes(legacyTheme) ? legacyTheme : 'lavendel');
-  const mode = localStorage.getItem(MODE_KEY) || localStorage.getItem(LEGACY_MODE_KEY) || 'auto';
-  document.body.dataset.theme = THEMES.includes(theme) ? theme : 'lavendel';
-  document.body.dataset.mode = MODES.includes(mode) ? mode : 'auto';
-  localStorage.setItem(THEME_KEY, document.body.dataset.theme);
-  localStorage.setItem(MODE_KEY, document.body.dataset.mode);
+  const legacyTheme = normalizeTheme(
+    localStorage.getItem(THEME_KEY) ||
+    localStorage.getItem(LEGACY_THEME_KEY)
+  );
+  const legacyMode = normalizeMode(
+    localStorage.getItem(MODE_KEY) ||
+    localStorage.getItem(LEGACY_MODE_KEY)
+  );
+  const theme = THEMES.includes(legacyTheme) ? legacyTheme : 'lavender';
+  const mode = MODES.includes(legacyMode) ? legacyMode : 'system';
+  const resolvedMode = mode === 'system'
+    ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.mode = mode;
+  document.documentElement.dataset.resolvedMode = resolvedMode;
+  document.body.dataset.theme = theme;
+  document.body.dataset.mode = mode;
+  localStorage.setItem(THEME_KEY, theme);
+  localStorage.setItem(MODE_KEY, mode);
 }
 function initials(name = '') { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join('') || 'DT'; }
 function formatDate(value) { try { return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)); } catch { return value; } }
@@ -814,12 +846,18 @@ async function loadBuildInfo() {
     if (!response.ok) throw new Error('Buildinfo nicht verfügbar.');
     return await response.json();
   } catch {
-    return { app: 'Datello', buildSha: 'local', repoUpdatedAt: null, builtAt: null, sourceRepo: 'MaroIshiku/Datello', sourceRef: 'local', workflowRun: null, forkRepos: [] };
+    return { app: APP_TITLE, buildSha: 'local', repoUpdatedAt: null, builtAt: null, sourceRepo: 'MaroIshiku/meiku', sourceRef: 'local', workflowRun: null, forkRepos: [] };
   }
 }
 function normalizeUrl(url) { return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
-function labelTheme(t) { return ({ lavendel: 'Lavendel', mint: 'Mint', sky: 'Sky', amber: 'Amber', graphit: 'Graphit' })[t] || t; }
-function labelMode(m) { return ({ auto: 'System', light: 'Hell', dark: 'Dunkel' })[m] || m; }
+function normalizeTheme(theme) {
+  return ({ lavendel: 'lavender', lavender: 'lavender', teal: 'mint', wald: 'mint', mint: 'mint', ozean: 'sky', sky: 'sky', amber: 'amber', rose: 'rose', graphit: 'graphite', graphite: 'graphite' })[theme] || theme;
+}
+function normalizeMode(mode) {
+  return ({ auto: 'system', system: 'system', light: 'light', dark: 'dark' })[mode] || mode;
+}
+function labelTheme(t) { return ({ lavender: 'Lavender', mint: 'Mint', sky: 'Sky', amber: 'Amber', rose: 'Rose', graphite: 'Graphite' })[t] || t; }
+function labelMode(m) { return ({ system: 'System', light: 'Hell', dark: 'Dunkel' })[m] || m; }
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
 function esc(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]); }

@@ -1,11 +1,11 @@
-name: datello
+name: meiku
 
 services:
-  datello:
-    image: ghcr.io/maroishiku/datello:latest
+  meiku:
+    image: ghcr.io/maroishiku/meiku:latest
     pull_policy: always
-    container_name: datello
-    hostname: datello
+    container_name: meiku
+    hostname: meiku
     restart: unless-stopped
     init: true
     user: "10001:10001"
@@ -14,9 +14,12 @@ services:
 
     environment:
       TZ: ${TZ:-Europe/Berlin}
+      ISHIKU_DATA_DIR: /data
+      ISHIKU_LOG_LEVEL: ${ISHIKU_LOG_LEVEL:-info}
+      ISHIKU_SETUP_SECRET: ${ISHIKU_SETUP_SECRET:-${DV2_SHARED_SECRET:?Set ISHIKU_SETUP_SECRET or DV2_SHARED_SECRET before starting Meiku}}
       DV2_PORT: "8080"
       DV2_DATA_FILE: /data/data.json
-      DV2_SHARED_SECRET: ${DV2_SHARED_SECRET:?Set DV2_SHARED_SECRET before starting Datello}
+      DV2_SHARED_SECRET: ${DV2_SHARED_SECRET:-${ISHIKU_SETUP_SECRET:-}}
       DV2_ACCESS_LOG: ${DV2_ACCESS_LOG:-false}
 
     ports:
@@ -26,7 +29,7 @@ services:
 
     volumes:
       - type: bind
-        source: ${DATELLO_DATA_PATH:-${ISH_CONTACT_DATA_PATH:-/DATA/AppData/datello/data}}
+        source: ${MEIKU_DATA_PATH:-${DATELLO_DATA_PATH:-/DATA/AppData/meiku/data}}
         target: /data
 
     read_only: true
@@ -41,7 +44,7 @@ services:
     cpus: "0.50"
 
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=3).read()"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -54,51 +57,51 @@ services:
         max-file: "3"
 
     networks:
-      - datello
+      - meiku
 
     labels:
-      org.opencontainers.image.title: "Datello"
-      org.opencontainers.image.description: "Private encrypted contact and payment QR vault with local QR generation."
-      org.opencontainers.image.source: "https://github.com/MaroIshiku/Datello"
-      org.opencontainers.image.url: "https://github.com/MaroIshiku/Datello"
+      org.opencontainers.image.title: "Meiku - Profile Share"
+      org.opencontainers.image.description: "Private encrypted profile, contact and payment QR vault with local QR generation."
+      org.opencontainers.image.source: "https://github.com/MaroIshiku/meiku"
+      org.opencontainers.image.url: "https://github.com/MaroIshiku/meiku"
 
 networks:
-  datello:
-    name: datello
+  meiku:
+    name: meiku
     driver: bridge
 
 x-casaos:
   architectures:
     - amd64
     - arm64
-  main: datello
+  main: meiku
   author: MaroIshiku
   developer: MaroIshiku
   category: Utilities
   title:
-    en_us: Datello
-    de_de: Datello
+    en_us: Meiku
+    de_de: Meiku
   tagline:
-    en_us: Private encrypted contact and payment QR vault.
-    de_de: Privater verschluesselter Kontakt- und Zahlungs-QR-Tresor.
+    en_us: Profile Share for encrypted contact and payment QR cards.
+    de_de: Profile Share fuer verschluesselte Kontakt- und Zahlungs-QR-Karten.
   description:
-    en_us: Mobile-first PWA for an encrypted digital contact card. The server stores only the encrypted token; QR codes and encryption run locally in the browser.
-    de_de: Mobile-first PWA fuer eine verschluesselte digitale Visitenkarte. Der Server speichert nur den verschluesselten Token; QR-Codes und Verschluesselung laufen lokal im Browser.
-  icon: https://raw.githubusercontent.com/MaroIshiku/Datello/main/assets/datello-icon-512-20260626.png
-  thumbnail: https://raw.githubusercontent.com/MaroIshiku/Datello/main/assets/datello-icon-512-20260626.png
+    en_us: Mobile-first PWA for encrypted private and business profile cards. The server stores only the encrypted token; QR codes and encryption run locally in the browser.
+    de_de: Mobile-first PWA fuer verschluesselte private und geschaeftliche Profilkarten. Der Server speichert nur den verschluesselten Token; QR-Codes und Verschluesselung laufen lokal im Browser.
+  icon: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/meiku-icon-512-20260628.png
+  thumbnail: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/meiku-icon-512-20260628.png
   index: /
   port_map: ${WEBUI_PORT:-8080}
   tips:
     before_install:
       en_us: |
-        Required: set DV2_SHARED_SECRET to a long random value before starting.
+        Required: set ISHIKU_SETUP_SECRET to a long random value before starting. DV2_SHARED_SECRET remains supported as a legacy alias.
 
-        Persistent data is stored on the ZimaOS host at /DATA/AppData/datello/data and mounted into the container at /data. The directory must be writable by UID/GID 10001.
+        Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. The directory must be writable by UID/GID 10001.
 
         Publish the WebUI through HTTPS if you want full PWA, Web Crypto, Service Worker and Passkey support.
       de_de: |
-        Pflicht: Setze DV2_SHARED_SECRET vor dem Start auf einen langen zufaelligen Wert.
+        Pflicht: Setze ISHIKU_SETUP_SECRET vor dem Start auf einen langen zufaelligen Wert. DV2_SHARED_SECRET bleibt als Legacy-Alias unterstuetzt.
 
-        Persistente Daten liegen auf dem ZimaOS-Host unter /DATA/AppData/datello/data und werden im Container nach /data gemountet. Das Verzeichnis muss fuer UID/GID 10001 schreibbar sein.
+        Persistente Daten liegen auf dem ZimaOS-Host unter /DATA/AppData/meiku/data und werden im Container nach /data gemountet. Das Verzeichnis muss fuer UID/GID 10001 schreibbar sein.
 
         Veroeffentliche die WebUI ueber HTTPS, wenn PWA, Web Crypto, Service Worker und Passkeys vollstaendig funktionieren sollen.

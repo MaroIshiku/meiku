@@ -1,4 +1,6 @@
 .env
+.agents/
+.git-local/
 data/
 data-*/
 tmp-*.png

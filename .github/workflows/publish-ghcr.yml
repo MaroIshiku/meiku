@@ -33,7 +33,7 @@ jobs:
               text=True,
           ).strip()
           info = {
-              "app": "Datello",
+              "app": "Meiku - Profile Share",
               "buildSha": sha,
               "repoUpdatedAt": repo_updated_at,
               "builtAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -61,7 +61,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/maroishiku/datello
+          images: ghcr.io/maroishiku/meiku
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=sha-

@@ -1,36 +1,36 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="lavender" data-mode="system" data-resolved-mode="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fffbff">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#15121c">
-  <title>Datello</title>
-  <link rel="manifest" href="manifest.json?v=datello-debug-20260626">
-  <link rel="icon" href="assets/datello-favicon-20260626.png" sizes="64x64">
-  <link rel="icon" href="assets/datello-icon-192-20260626.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="assets/datello-icon-192-20260626.png">
-  <link rel="stylesheet" href="css/style.css?v=datello-debug-20260626">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFBFF">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#15121A">
+  <title>Meiku - Profile Share</title>
+  <link rel="manifest" href="manifest.json?v=meiku-20260628">
+  <link rel="icon" href="assets/meiku-favicon-20260628.png" sizes="64x64">
+  <link rel="icon" href="assets/meiku-icon-192-20260628.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/meiku-icon-192-20260628.png">
+  <link rel="stylesheet" href="css/meiku.css?v=meiku-20260628">
 </head>
-<body data-theme="lavendel" data-mode="auto">
-  <noscript>Diese App braucht JavaScript, weil Verschlüsselung und QR-Codes komplett lokal laufen.</noscript>
+<body data-theme="lavender" data-mode="system">
+  <noscript>Diese App braucht JavaScript, weil Verschluesselung und QR-Codes komplett lokal laufen.</noscript>
 
   <main id="app" class="app-shell" aria-live="polite">
     <section id="authScreen" class="auth-screen">
       <div class="auth-card glass-card">
-        <div class="login-lockup" aria-label="Datello Profile Share">
-          <img src="assets/datello-logo-20260626.png" alt="" class="login-logo" width="72" height="72">
-          <span class="brand-text"><b>Datello</b><small>Profile Share</small></span>
+        <div class="login-lockup" aria-label="Meiku Profile Share">
+          <img src="assets/meiku-logo-20260628.png" alt="" class="login-logo" width="72" height="72">
+          <span class="brand-text"><b>Meiku</b><small>Profile Share</small></span>
         </div>
         <p class="eyebrow auth-badge">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Zm3 4a2 2 0 0 0-1 3.73V19h2v-1.27A2 2 0 0 0 12 14Z"/></svg>
-          <span>Verschlüsselter Tresor</span>
+          <span>Verschluesselter Tresor</span>
         </p>
-        <h1 id="authTitle">Datello</h1>
-        <p id="authHint" class="muted">Lade verschlüsselten Token…</p>
+        <h1 id="authTitle">Meiku</h1>
+        <p id="authHint" class="muted">Lade verschluesselten Token...</p>
 
         <form id="passwordLogin" class="stack hidden" autocomplete="current-password">
           <label class="field auth-password-field">
@@ -59,11 +59,11 @@
             <span>Server-Secret</span>
             <input id="setupSecret" type="password" autocomplete="off" required>
           </label>
-          <button class="btn primary" type="submit">Tresor anlegen & Profil starten</button>
+          <button class="btn primary" type="submit">Tresor anlegen und Profil starten</button>
         </form>
 
         <div id="quickUnlock" class="quick-unlock hidden">
-          <button id="pinOpen" class="btn tonal pin-unlock-btn" type="button"><span aria-hidden="true">•••</span>Mit PIN entsperren</button>
+          <button id="pinOpen" class="btn tonal pin-unlock-btn" type="button"><span aria-hidden="true">...</span>Mit PIN entsperren</button>
           <button id="passkeyLogin" class="btn tonal" type="button">Mit Passkey entsperren</button>
         </div>
 
@@ -73,22 +73,27 @@
           <button id="pinCancel" class="btn ghost" type="button">Abbrechen</button>
         </div>
       </div>
-      <p class="auth-footnote"><span aria-hidden="true">●</span> Lokal und sicher auf diesem Gerät.</p>
+      <p class="auth-footnote">Lokal und sicher auf diesem Geraet.</p>
     </section>
 
     <section id="vaultScreen" class="vault hidden">
       <header class="hero top-app-bar">
-        <div class="brand-lockup" aria-label="Datello Profile Share">
-          <img src="assets/datello-logo-20260626.png" alt="" width="48" height="48">
-          <span class="brand-text"><b>Datello</b><small>Profile Share</small></span>
+        <div class="brand-lockup" aria-label="Meiku Profile Share">
+          <span class="app-symbol">
+            <img src="assets/meiku-logo-20260628.png" alt="" width="42" height="42">
+            <svg data-logo-fallback viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4V4Zm3 3v9a1 1 0 0 0 1 1h7V8a1 1 0 0 0-1-1H8Zm2 2h4v2h-4V9Zm0 4h5v2h-5v-2Z"/></svg>
+          </span>
+          <span class="brand-text"><b>Meiku</b><small>Profile Share</small></span>
         </div>
         <div class="hero-actions">
-          <button id="settingsBtn" class="icon-btn" type="button" aria-label="Einstellungen öffnen">⚙</button>
+          <button id="settingsBtn" class="icon-btn" type="button" aria-label="Einstellungen oeffnen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.5-2-3.5-2.4 1a7.7 7.7 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.7 7.7 0 0 0 7 6.5l-2.4-1-2 3.5 2 1.5c-.1.5-.1 1-.1 1.5s0 1 .1 1.5l-2 1.5 2 3.5 2.4-1a7.7 7.7 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.7 7.7 0 0 0 2.6-1.5l2.4 1 2-3.5-2-1.5ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
+          </button>
         </div>
         <div class="hero-content">
-          <button class="avatar-wrap avatar-button" id="heroAvatarWrap" type="button" aria-label="Profil & Einstellungen Ã¶ffnen"><img id="heroAvatar" alt="Profilbild" hidden><span id="heroInitials">DT</span></button>
-          <p class="eyebrow">Datello</p>
-          <h1 id="heroName">—</h1>
+          <button class="avatar-wrap avatar-button" id="heroAvatarWrap" type="button" aria-label="Profil und Einstellungen oeffnen"><img id="heroAvatar" alt="Profilbild" hidden><span id="heroInitials">MK</span></button>
+          <p class="eyebrow">Meiku</p>
+          <h1 id="heroName">-</h1>
           <p id="updatedAt" class="updated">Noch nicht gespeichert</p>
         </div>
       </header>
@@ -96,16 +101,16 @@
       <section id="tabContent" class="content-card" tabindex="-1"></section>
 
       <nav class="bottom-nav" aria-label="Hauptnavigation">
-        <button data-tab="privat" class="active" type="button"><span>👤</span><b>Privat</b></button>
-        <button data-tab="firma" type="button"><span>🏢</span><b>Firma</b></button>
-        <button data-tab="paypal" type="button"><span>💸</span><b>PayPal</b></button>
-        <button data-tab="bank" type="button"><span>🏦</span><b>Bank</b></button>
+        <button data-tab="privat" class="active" type="button"><span aria-hidden="true">P</span><b>Privat</b></button>
+        <button data-tab="firma" type="button"><span aria-hidden="true">F</span><b>Firma</b></button>
+        <button data-tab="paypal" type="button"><span aria-hidden="true">€</span><b>PayPal</b></button>
+        <button data-tab="bank" type="button"><span aria-hidden="true">B</span><b>Bank</b></button>
       </nav>
     </section>
   </main>
 
   <div id="qrOverlay" class="qr-overlay hidden" role="dialog" aria-modal="true" aria-label="QR-Code Vollbild">
-    <button id="qrClose" class="icon-btn close" type="button" aria-label="QR-Code schließen">×</button>
+    <button id="qrClose" class="icon-btn close" type="button" aria-label="QR-Code schliessen">x</button>
     <div id="qrBig" class="qr-big"></div>
   </div>
 
@@ -120,6 +125,6 @@
 
   <div id="toast" class="toast hidden" role="status"></div>
 
-  <script type="module" src="js/app.js?v=datello-debug-20260626"></script>
+  <script type="module" src="js/app.js?v=meiku-20260628"></script>
 </body>
 </html>

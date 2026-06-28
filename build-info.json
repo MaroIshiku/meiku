@@ -1,9 +1,9 @@
 {
-  "app": "Datello",
+  "app": "Meiku - Profile Share",
   "buildSha": "local",
   "repoUpdatedAt": null,
   "builtAt": null,
-  "sourceRepo": "MaroIshiku/Datello",
+  "sourceRepo": "MaroIshiku/meiku",
   "sourceRef": "local",
   "workflowRun": null,
   "forkRepos": []

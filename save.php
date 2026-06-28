@@ -7,7 +7,14 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 const DATA_FILE = __DIR__ . '/data.json';
 const MIN_TOKEN_LENGTH = 64;
 
-$secret = getenv('DV2_SHARED_SECRET') ?: 'CHANGE_ME_SHARED_SECRET_64_CHARS_MINIMUM_DO_NOT_COMMIT_REAL_SECRET';
+$secretFile = getenv('ISHIKU_SETUP_SECRET_FILE') ?: '/run/secrets/ishiku_setup_secret';
+$secret = '';
+if (is_readable($secretFile)) {
+    $secret = trim((string) file_get_contents($secretFile));
+}
+if ($secret === '') {
+    $secret = trim((string) (getenv('ISHIKU_SETUP_SECRET') ?: getenv('DV2_SHARED_SECRET') ?: ''));
+}
 $provided = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -16,16 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!is_string($provided) || !hash_equals($secret, $provided)) {
+if ($secret === '' || !is_string($provided) || !hash_equals($secret, $provided)) {
     http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'Ungültiges Shared Secret.']);
+    echo json_encode(['ok' => false, 'error' => 'Ungueltiges Shared Secret.']);
     exit;
 }
 
 $raw = file_get_contents('php://input');
 if ($raw === false || strlen($raw) > 1024 * 1024) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'Ungültiger Request.']);
+    echo json_encode(['ok' => false, 'error' => 'Ungueltiger Request.']);
     exit;
 }
 
