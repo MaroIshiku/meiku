@@ -486,14 +486,6 @@ h3 {
   display: block;
 }
 
-.hero-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.hero-actions .icon-btn,
 .qr-overlay .icon-btn {
   background: var(--color-surface-soft);
   color: var(--color-on-surface);
@@ -524,6 +516,7 @@ h3 {
 
 .avatar-button {
   flex: 0 0 auto;
+  margin-left: auto;
   border: 3px solid var(--color-background);
 }
 

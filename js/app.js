@@ -123,7 +123,6 @@ function bindAuth() {
 
 function bindGlobal() {
   bindLogoFallback();
-  $('#settingsBtn').addEventListener('click', openSettings);
   $('#heroAvatarWrap')?.addEventListener('click', openSettings);
   $$('.bottom-nav button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
   $('#qrClose').addEventListener('click', closeQrOverlay);
