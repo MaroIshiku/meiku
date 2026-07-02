@@ -134,15 +134,15 @@ a {
 .brand-text {
   min-width: 0;
   display: grid;
-  gap: 1px;
+  gap: 0;
   line-height: 1;
 }
 
 .brand-text b {
   color: var(--color-on-background);
-  font-size: 1.24rem;
-  line-height: 1.05;
-  font-weight: 800;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 750;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -150,10 +150,10 @@ a {
 
 .brand-text small {
   color: var(--color-on-surface-muted);
-  font-size: .75rem;
-  line-height: 1.2;
-  font-weight: 720;
-  text-transform: uppercase;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 550;
+  text-transform: none;
 }
 
 .eyebrow {
@@ -434,7 +434,7 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 40;
-  min-height: calc(var(--app-header-mobile-min-height) + env(safe-area-inset-top, 0px));
+  min-height: calc(var(--app-header-desktop-min-height) + env(safe-area-inset-top, 0px));
   padding: calc(var(--space-2) + env(safe-area-inset-top, 0px)) var(--space-4) var(--space-2);
   border-bottom: 1px solid var(--color-outline);
   background: color-mix(in srgb, var(--color-background) 88%, transparent);
@@ -466,8 +466,8 @@ h3 {
 }
 
 .app-symbol img {
-  width: 100%;
-  height: 100%;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 
@@ -1420,21 +1420,7 @@ h3 {
 
 @media (max-height: 760px) {
   .hero.top-app-bar {
-    min-height: calc(64px + env(safe-area-inset-top, 0px));
-  }
-
-  .app-symbol,
-  .avatar-button {
-    width: 40px;
-    height: 40px;
-  }
-
-  .brand-text b {
-    font-size: 1.08rem;
-  }
-
-  .brand-text small {
-    font-size: .68rem;
+    min-height: calc(var(--app-header-desktop-min-height) + env(safe-area-inset-top, 0px));
   }
 
   .content-card {
