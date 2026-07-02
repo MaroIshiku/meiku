@@ -154,6 +154,9 @@ a {
   line-height: 18px;
   font-weight: 550;
   text-transform: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .eyebrow {
@@ -434,7 +437,8 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 40;
-  min-height: calc(var(--app-header-desktop-min-height) + env(safe-area-inset-top, 0px));
+  width: 100%;
+  min-height: calc(var(--app-header-mobile-min-height) + env(safe-area-inset-top, 0px));
   padding: calc(var(--space-2) + env(safe-area-inset-top, 0px)) var(--space-4) var(--space-2);
   border-bottom: 1px solid var(--color-outline);
   background: color-mix(in srgb, var(--color-background) 88%, transparent);
@@ -447,6 +451,7 @@ h3 {
 
 .brand-lockup {
   min-width: 0;
+  flex: 1 1 auto;
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
@@ -492,7 +497,11 @@ h3 {
 }
 
 .hero-content {
-  display: contents;
+  min-width: 44px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .hero-content .eyebrow,
@@ -516,7 +525,7 @@ h3 {
 
 .avatar-button {
   flex: 0 0 auto;
-  margin-left: auto;
+  margin-left: 0;
   border: 3px solid var(--color-background);
 }
 
@@ -1420,7 +1429,7 @@ h3 {
 
 @media (max-height: 760px) {
   .hero.top-app-bar {
-    min-height: calc(var(--app-header-desktop-min-height) + env(safe-area-inset-top, 0px));
+    min-height: calc(var(--app-header-mobile-min-height) + env(safe-area-inset-top, 0px));
   }
 
   .content-card {

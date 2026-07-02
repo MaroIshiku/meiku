@@ -713,6 +713,7 @@ function updateAvatar() {
   const initialsNode = $('#heroInitials');
   const avatar = localStorage.getItem('dv2.avatar') || '';
   initialsNode.textContent = initials(state.data?.n);
+  initialsNode.hidden = false;
   if (!avatar) {
     wrap.classList.remove('has-image');
     img.removeAttribute('src');
@@ -725,6 +726,7 @@ function updateAvatar() {
     wrap.classList.remove('has-image');
     img.hidden = true;
     img.removeAttribute('src');
+    initialsNode.hidden = false;
   };
   img.onload = () => {
     wrap.classList.add('has-image');

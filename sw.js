@@ -1,16 +1,16 @@
-const CACHE_NAME = 'meiku-static-2026-06-29';
+const CACHE_NAME = 'meiku-static-2026-07-02a';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './design-system/tokens.css',
   './css/meiku.css',
-  './css/meiku.css?v=meiku-20260629',
+  './css/meiku.css?v=meiku-20260702a',
   './js/app.js',
   './js/auth.js',
   './js/crypto.js',
   './js/qr.js',
   './js/store.js',
-  './js/app.js?v=meiku-20260629',
+  './js/app.js?v=meiku-20260702a',
   './js/auth.js?v=meiku-20260629',
   './js/crypto.js?v=meiku-20260629',
   './js/qr.js?v=meiku-20260629',
