@@ -576,6 +576,10 @@ h3 {
   height: 0;
 }
 
+.content-card.has-qr {
+  overflow: hidden;
+}
+
 .panel-head {
   display: flex;
   align-items: start;
@@ -632,7 +636,11 @@ h3 {
 .contact-list {
   display: grid;
   gap: var(--space-2);
-  flex-shrink: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .contact-row {
@@ -701,7 +709,11 @@ h3 {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-3);
-  flex-shrink: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .chips,
@@ -847,42 +859,42 @@ h3 {
 }
 
 .tab-firma .qr-card.qr-share-card {
-  min-height: 154px;
-  padding: var(--space-2);
-  gap: var(--space-1);
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 218px;
+  padding: var(--space-3);
+  gap: var(--space-2);
+  grid-template-columns: none;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .tab-firma .qr-card-head h3 {
-  font-size: .82rem;
+  font-size: var(--type-label-large-size);
+  line-height: var(--type-label-large-line);
 }
 
 .tab-firma .qr-card-head {
-  display: none;
+  display: block;
 }
 
 .tab-firma .qr-frame {
-  grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-column: auto;
+  grid-row: auto;
 }
 
 .tab-firma .qr-canvas {
-  width: min(36vw, 122px) !important;
-  height: min(36vw, 122px) !important;
+  width: min(48vw, 148px) !important;
+  height: min(48vw, 148px) !important;
 }
 
 .tab-firma .qr-caption[aria-hidden="true"] {
-  min-height: 0;
+  min-height: 28px;
 }
 
 .tab-firma .qr-card-actions {
-  position: static;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  transform: none;
-  gap: 6px;
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  gap: var(--space-2);
 }
 
 .tab-firma .qr-icon-action {
@@ -900,7 +912,7 @@ h3 {
   background: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary-container));
   box-shadow: var(--shadow-soft);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-1);
   flex-shrink: 0;
 }
@@ -1492,7 +1504,7 @@ h3 {
   .vault {
     min-height: 100dvh;
     height: auto;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     padding: 0 var(--app-shell-desktop-padding) var(--space-6);
   }
 
@@ -1507,24 +1519,16 @@ h3 {
   }
 
   .content-card {
-    grid-row: 3;
-    width: min(100%, calc(var(--layout-desktop-max-width) - (var(--app-shell-desktop-padding) * 2)));
-    height: min(620px, calc(100dvh - 176px));
-    min-height: 430px;
+    width: min(100%, var(--layout-mobile-max-width));
+    height: auto;
+    max-height: min(640px, calc(100dvh - 176px));
+    min-height: 0;
     margin-inline: auto;
     justify-self: center;
-    padding: var(--space-5);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 390px;
-    grid-template-rows: auto minmax(0, 1fr);
-    align-content: start;
-    overflow: hidden;
-  }
-
-  .content-card:not(.has-qr) {
+    padding: var(--space-3);
     display: flex;
-    height: auto;
-    min-height: 0;
+    flex-direction: column;
+    gap: var(--space-2);
     overflow: auto;
   }
 
@@ -1534,36 +1538,23 @@ h3 {
     grid-column: 1;
   }
 
-  .contact-list,
-  .amount-card {
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-right: var(--space-1);
-    scrollbar-width: thin;
-  }
-
   .payment-switch {
-    width: auto;
-    flex-basis: 240px;
+    width: 100%;
+    flex-basis: 100%;
   }
 
   .qr-card.qr-share-card {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: start;
     width: 100%;
-    height: 390px;
-    min-height: 390px;
-    margin-top: 0;
-    padding: var(--space-5);
-    gap: var(--space-3);
+    min-height: 218px;
+    margin-top: auto;
+    padding: var(--space-3);
+    gap: var(--space-2);
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
   .qr-canvas {
-    width: 220px !important;
-    height: 220px !important;
+    width: min(48vw, 148px) !important;
+    height: min(48vw, 148px) !important;
   }
 
   .tab-firma {
@@ -1603,10 +1594,9 @@ h3 {
 
   .tab-firma .qr-card.qr-share-card {
     width: 100%;
-    height: 390px;
-    min-height: 390px;
-    padding: var(--space-5);
-    gap: var(--space-3);
+    min-height: 218px;
+    padding: var(--space-3);
+    gap: var(--space-2);
     grid-template-columns: none;
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
@@ -1620,8 +1610,8 @@ h3 {
   }
 
   .tab-firma .qr-canvas {
-    width: 220px !important;
-    height: 220px !important;
+    width: min(48vw, 148px) !important;
+    height: min(48vw, 148px) !important;
   }
 
   .tab-firma .qr-caption[aria-hidden="true"] {
@@ -1642,10 +1632,9 @@ h3 {
   }
 
   .bottom-nav {
-    grid-row: 2;
-    width: min(100%, calc(var(--layout-desktop-max-width) - (var(--app-shell-desktop-padding) * 2)));
-    height: 62px;
-    margin-block: 0 var(--space-3);
+    width: min(100%, var(--layout-mobile-max-width));
+    height: 72px;
+    margin-block: var(--space-3) 0;
     justify-self: center;
     display: grid;
   }

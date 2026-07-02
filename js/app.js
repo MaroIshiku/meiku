@@ -205,8 +205,7 @@ function setTab(tab) {
 }
 
 function updateNavActive() {
-  const active = state.activeTab === 'payment' ? state.paymentMode : state.activeTab;
-  $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === active));
+  $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === state.activeTab));
 }
 
 function renderTab() {
