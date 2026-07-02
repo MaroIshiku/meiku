@@ -185,9 +185,11 @@ function showVault() {
 }
 
 function updateVaultHeader() {
-  $('#heroName').textContent = state.data.n || 'No Name';
+  const heroName = $('#heroName');
+  const updatedAt = $('#updatedAt');
+  if (heroName) heroName.textContent = state.data.n || 'No Name';
   $('#heroInitials').textContent = initials(state.data.n);
-  $('#updatedAt').textContent = state.updated ? `Updated ${formatDate(state.updated)}` : 'Not saved yet';
+  if (updatedAt) updatedAt.textContent = state.updated ? `Updated ${formatDate(state.updated)}` : 'Not saved yet';
   updateAvatar();
 }
 
@@ -391,13 +393,18 @@ function openSettings() {
   const avatarNode = avatar
     ? `<img src="${esc(avatar)}" alt="">`
     : `<span>${esc(initials(state.data?.n))}</span>`;
-  openSheet(APP_NAME, `
-    <button class="profile-close" type="button" data-close-sheet aria-label="Close menu">×</button>
+  openProfileMenu(avatar, avatarNode);
+  return;
+}
+
+function openProfileMenu(avatar, avatarNode) {
+  openSheet('Profile', `
+    <button class="profile-close" type="button" data-close-sheet aria-label="Close menu">&times;</button>
     <div class="profile-menu-content">
-      <section class="profile-card">
+      <section class="profile-card profile-card-button">
         <button class="avatar-wrap profile-avatar" type="button" data-action="avatar-pick" aria-label="Change profile picture">
           ${avatarNode}
-          <span class="avatar-camera" aria-hidden="true">📷</span>
+          <span class="avatar-camera" aria-hidden="true">${menuIcon('camera')}</span>
         </button>
         <div class="profile-card-main">
           <h3>${esc(state.data?.n || `${APP_NAME} Profile`)}</h3>
@@ -405,43 +412,64 @@ function openSettings() {
         </div>
         <input id="avatarFile" type="file" accept="image/*" hidden>
       </section>
-
-      <section class="profile-info-card" aria-label="Vault status">
-        <div><b>Vault</b><span>End-to-end encrypted</span></div>
-        <button class="debug-info-button" data-action="debug" type="button"><b>Debug</b><span>Build and repository information</span></button>
-      </section>
-
       <div class="profile-actions">
-        ${profileMenuRow('📝', 'Edit data', 'Maintain contact and payment details step by step', 'edit')}
-        ${profileMenuRow('🖼️', 'Choose profile picture', 'Crop automatically and store locally', 'avatar-pick')}
-        ${avatar ? profileMenuRow('🧹', 'Remove profile picture', 'Delete the local profile picture from this device', 'avatar-remove') : ''}
-        ${profileMenuRow('🔐', 'Master Password', 'Re-encrypt vault', 'password')}
-        ${profileMenuRow('🔢', 'PIN', 'Set up quick login on this device', 'pin')}
-        ${profileMenuRow('🔑', 'Passkey / Biometrics', 'Only when Chrome provides a PRF key', 'passkey')}
+        ${profileMenuRowClean('edit', 'Edit data', 'Maintain contact and payment details', 'edit')}
+        ${profileMenuRowClean('palette', 'Appearance', 'Theme and color mode', 'appearance')}
+        ${profileMenuRowClean('image', 'Profile picture', 'Crop and store locally', 'avatar-pick')}
+        ${avatar ? profileMenuRowClean('trash', 'Remove profile picture', 'Delete the local profile picture', 'avatar-remove') : ''}
+        ${profileMenuRowClean('info', 'About', 'Build and repository information', 'debug')}
       </div>
-
-      <section class="settings-section compact-settings">
+      <section class="settings-section compact-settings" data-appearance-panel hidden>
         <h3>Appearance</h3>
         <div class="option-grid">${THEMES.map(t => `<button class="btn small tonal" data-theme-pick="${t}">${labelTheme(t)}</button>`).join('')}</div>
         <div class="option-grid">${MODES.map(m => `<button class="btn small tonal" data-mode-pick="${m}">${labelMode(m)}</button>`).join('')}</div>
       </section>
-
+      <section class="profile-actions">
+        ${profileMenuRowClean('lock', 'Master Password', 'Re-encrypt vault', 'password')}
+        ${profileMenuRowClean('pin', 'PIN', 'Set up quick login on this device', 'pin')}
+        ${profileMenuRowClean('key', 'Passkey / Biometrics', 'Only when Chrome provides a PRF key', 'passkey')}
+      </section>
       <section class="settings-section compact-settings">
         <h3>Backup & Server</h3>
-        <button class="profile-row-button" data-action="export" type="button"><span>⬇️</span><b>Export Token</b></button>
-        <label class="profile-row-button"><span>⬆️</span><b>Import Token</b><input id="importFile" type="file" accept="application/json,.json,.txt" hidden></label>
+        <button class="profile-row-button" data-action="export" type="button"><span>${menuIcon('download')}</span><b>Export Token</b></button>
+        <label class="profile-row-button"><span>${menuIcon('upload')}</span><b>Import Token</b><input id="importFile" type="file" accept="application/json,.json,.txt" hidden></label>
         <label class="field"><span>Server Secret</span><input id="secretInput" type="password" value="${esc(Store.getSecret())}"></label>
         <button class="btn tonal" data-action="secret" type="button">Save Secret</button>
       </section>
-
       <section class="profile-actions session-actions">
-        ${profileMenuRow('⏻', 'Lock Vault', 'Return to unlock', 'lock')}
-        ${profileMenuRow('↪', 'Sign Out', 'Remove secret and quick logins locally', 'logout')}
+        ${profileMenuRowClean('lock', 'Lock Vault', 'Return to unlock', 'lock')}
+        ${profileMenuRowClean('logout', 'Sign Out', 'Remove secret and quick logins locally', 'logout')}
       </section>
     </div>`);
   $('#sheet').classList.add('profile-menu');
   $('#sheetBody').onclick = settingsClick;
   $('#sheetBody').onchange = settingsChange;
+}
+
+function profileMenuRowClean(iconName, title, subtitle, action) {
+  return `
+    <button class="profile-menu-row" data-action="${action}" type="button">
+      <span class="profile-row-icon" aria-hidden="true">${menuIcon(iconName)}</span>
+      <span><b>${esc(title)}</b><small>${esc(subtitle)}</small></span>
+    </button>`;
+}
+
+function menuIcon(name) {
+  const paths = {
+    edit: 'M5 19h1.4L16.7 8.7l-1.4-1.4L5 17.6V19Zm-2 2v-4.2L16.7 3.1a1 1 0 0 1 1.4 0l2.8 2.8a1 1 0 0 1 0 1.4L7.2 21H3Z',
+    palette: 'M12 22a10 10 0 1 1 0-20 8 8 0 0 1 8 8c0 2.2-1.8 4-4 4h-1.8c-.8 0-1.2.9-.7 1.5.6.7.9 1.4.9 2.2A4.3 4.3 0 0 1 12 22ZM7.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm3-3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm4 2a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
+    image: 'M5 20a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5Zm1.5-3h11l-3.4-4.5-2.7 3.4-1.9-2.4L6.5 17ZM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+    camera: 'M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+    trash: 'M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12ZM8 4l1-1h6l1 1h4v2H4V4h4Z',
+    info: 'M11 17h2v-6h-2v6Zm1-8a1.2 1.2 0 1 0 0-2.4A1.2 1.2 0 0 0 12 9Zm0 13a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z',
+    lock: 'M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z',
+    pin: 'M12 2 7 7h3v6l-4 7 1.7 1 4.3-7.5L16.3 21l1.7-1-4-7V7h3l-5-5Z',
+    key: 'M7 14a5 5 0 1 1 4.6-3H22v3h-3v3h-3v-3h-4.4A5 5 0 0 1 7 14Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+    download: 'M5 20h14v-2H5v2Zm7-16v9.2l3.6-3.6L17 11l-5 5-5-5 1.4-1.4 3.6 3.6V4h2Z',
+    upload: 'M5 20h14v-2H5v2Zm7-16 5 5-1.4 1.4L13 7.8V16h-2V7.8l-2.6 2.6L7 9l5-5Z',
+    logout: 'M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7v2H5v14h7v2H5Zm11-4-1.4-1.4 2.6-2.6H9v-2h8.2l-2.6-2.6L16 7l5 5-5 5Z'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.info}"/></svg>`;
 }
 
 function profileMenuRow(icon, title, subtitle, action) {
@@ -461,6 +489,11 @@ async function settingsClick(e) {
   if (mode) { localStorage.setItem(MODE_KEY, mode); applyTheme(); return; }
   if (!action) return;
   if (action === 'edit') openProfileProgress(0, false);
+  if (action === 'appearance') {
+    const panel = $('[data-appearance-panel]');
+    if (panel) panel.hidden = !panel.hidden;
+    return;
+  }
   if (action === 'avatar-pick') { $('#avatarFile')?.click(); return; }
   if (action === 'password') openPasswordSheet();
   if (action === 'pin') openPinSetup(false);

@@ -83,7 +83,7 @@ a {
 }
 
 .app-shell {
-  width: min(100%, var(--layout-mobile-max-width));
+  width: 100%;
   height: 100dvh;
   margin-inline: auto;
   display: block;
@@ -552,7 +552,8 @@ h3 {
 
 .content-card {
   min-height: 0;
-  margin: 0 var(--space-4);
+  width: min(calc(100% - (var(--space-4) * 2)), var(--layout-desktop-max-width));
+  margin: 0 auto;
   padding: var(--space-3);
   border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
@@ -887,9 +888,9 @@ h3 {
 }
 
 .bottom-nav {
-  width: auto;
+  width: min(calc(100% - (var(--space-4) * 2)), var(--layout-desktop-max-width));
   height: 72px;
-  margin: 0 var(--space-4);
+  margin: 0 auto;
   padding: var(--space-2);
   border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
@@ -1107,6 +1108,14 @@ h3 {
   place-items: center;
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
+}
+
+.profile-row-icon svg,
+.profile-row-button > span svg,
+.avatar-camera svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
 }
 
 .profile-menu-row b,
@@ -1471,7 +1480,7 @@ h3 {
   }
 
   .app-shell {
-    width: min(100%, var(--layout-desktop-max-width));
+    width: 100%;
     min-height: 100dvh;
     height: auto;
     overflow: visible;
@@ -1485,7 +1494,7 @@ h3 {
   }
 
   .hero.top-app-bar {
-    padding-inline: var(--space-6);
+    padding-inline: var(--space-4);
   }
 
   .meiku-header-inner {
