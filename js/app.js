@@ -753,8 +753,8 @@ function updateAvatar() {
     img.hidden = true;
     return;
   }
-  img.src = avatar;
-  img.hidden = false;
+  wrap.classList.remove('has-image');
+  img.hidden = true;
   img.onerror = () => {
     wrap.classList.remove('has-image');
     img.hidden = true;
@@ -765,6 +765,7 @@ function updateAvatar() {
     wrap.classList.add('has-image');
     img.hidden = false;
   };
+  img.src = avatar;
   if (img.complete && img.naturalWidth > 0) {
     wrap.classList.add('has-image');
     img.hidden = false;

@@ -553,6 +553,7 @@ h3 {
 .content-card {
   min-height: 0;
   width: min(calc(100% - (var(--space-4) * 2)), var(--layout-desktop-max-width));
+  justify-self: center;
   margin: 0 auto;
   padding: var(--space-3);
   border: 1px solid var(--color-outline);
@@ -1503,6 +1504,7 @@ h3 {
 
   .content-card {
     margin-inline: auto;
+    justify-self: center;
     padding: var(--space-5);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
