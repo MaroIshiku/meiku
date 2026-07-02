@@ -791,6 +791,7 @@ function qrRenderOptions(fullscreen, size) {
   }
   return {
     size,
+    className: 'qr-canvas',
     light: '#ffffff',
     finderLight: '#ffffff',
     dark: '#111111',

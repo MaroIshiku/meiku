@@ -716,6 +716,13 @@ h3 {
   scrollbar-width: thin;
 }
 
+.tab-payment .amount-card {
+  flex: 0 0 auto;
+  align-content: start;
+  grid-auto-rows: max-content;
+  overflow: visible;
+}
+
 .chips,
 .option-grid {
   display: grid;
@@ -725,6 +732,8 @@ h3 {
 
 .chips {
   grid-template-columns: repeat(5, max-content);
+  align-items: center;
+  align-content: start;
   overflow-x: auto;
   padding-bottom: 2px;
   scrollbar-width: none;
@@ -732,9 +741,13 @@ h3 {
 
 .chip {
   min-height: 36px;
+  block-size: 36px;
   padding-inline: var(--space-3);
   border: 1px solid var(--color-outline);
   border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--color-surface);
   color: var(--color-on-surface);
   font-size: var(--type-label-medium-size);
