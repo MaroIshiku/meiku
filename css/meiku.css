@@ -89,7 +89,7 @@ a {
   display: block;
   position: relative;
   overflow: hidden;
-  background: var(--color-background);
+  background: transparent;
 }
 
 .auth-screen {
@@ -430,7 +430,7 @@ h3 {
   gap: var(--space-3);
   padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
   overflow: hidden;
-  background: var(--color-background);
+  background: transparent;
 }
 
 .hero.top-app-bar {
@@ -438,12 +438,18 @@ h3 {
   top: 0;
   z-index: 40;
   width: 100%;
-  min-height: calc(var(--app-header-mobile-min-height) + env(safe-area-inset-top, 0px));
-  padding: calc(var(--space-2) + env(safe-area-inset-top, 0px)) var(--space-4) var(--space-2);
-  border-bottom: 1px solid var(--color-outline);
+  padding: env(safe-area-inset-top, 0px) var(--space-4) var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-outline) 72%, transparent);
   background: color-mix(in srgb, var(--color-background) 88%, transparent);
   color: var(--color-on-background);
   backdrop-filter: blur(16px);
+  display: block;
+}
+
+.meiku-header-inner {
+  min-height: var(--app-header-mobile-min-height);
+  width: min(100%, var(--layout-desktop-max-width));
+  margin-inline: auto;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -496,16 +502,8 @@ h3 {
   color: var(--color-on-surface);
 }
 
-.hero-content {
-  min-width: 44px;
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.hero-content .eyebrow,
-.hero-content h1,
+.meiku-header-inner > .eyebrow,
+.meiku-header-inner > h1,
 .updated {
   display: none;
 }
@@ -1428,8 +1426,8 @@ h3 {
 }
 
 @media (max-height: 760px) {
-  .hero.top-app-bar {
-    min-height: calc(var(--app-header-mobile-min-height) + env(safe-area-inset-top, 0px));
+  .meiku-header-inner {
+    min-height: var(--app-header-mobile-min-height);
   }
 
   .content-card {
@@ -1487,8 +1485,11 @@ h3 {
   }
 
   .hero.top-app-bar {
-    min-height: calc(var(--app-header-desktop-min-height) + env(safe-area-inset-top, 0px));
     padding-inline: var(--space-6);
+  }
+
+  .meiku-header-inner {
+    min-height: var(--app-header-desktop-min-height);
   }
 
   .content-card {
