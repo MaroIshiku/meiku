@@ -1497,6 +1497,8 @@ h3 {
   }
 
   .hero.top-app-bar {
+    width: calc(100% + (var(--app-shell-desktop-padding) * 2));
+    margin-inline: calc(var(--app-shell-desktop-padding) * -1);
     padding-inline: var(--space-4);
   }
 
