@@ -199,9 +199,14 @@ function setTab(tab) {
     tab = 'payment';
   }
   state.activeTab = tab;
-  $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  updateNavActive();
   renderTab();
   requestAnimationFrame(() => { $('#tabContent').scrollTop = 0; });
+}
+
+function updateNavActive() {
+  const active = state.activeTab === 'payment' ? state.paymentMode : state.activeTab;
+  $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === active));
 }
 
 function renderTab() {
@@ -256,6 +261,7 @@ function renderPaymentTab(root) {
   root.append(qrWrap);
   $$('.payment-switch button', root).forEach(button => button.addEventListener('click', () => {
     state.paymentMode = button.dataset.paymentMode;
+    updateNavActive();
     renderPaymentTab(root);
   }));
   const refreshPreview = () => updatePaymentPreview(box, qrWrap, info);
