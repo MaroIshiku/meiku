@@ -277,6 +277,13 @@ h3 {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
+.auth-username-field input:disabled {
+  opacity: 1;
+  color: var(--color-on-surface-muted);
+  background: var(--color-surface-soft);
+  cursor: default;
+}
+
 .password-shell {
   min-height: 48px;
   display: grid;

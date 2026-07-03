@@ -25,6 +25,7 @@ const APP_SUBTITLE = 'Profile Share';
 const APP_ID = 'meiku';
 const THEME_KEY = `${APP_ID}-theme`;
 const MODE_KEY = `${APP_ID}-mode`;
+const LOGIN_NAME_KEY = `${APP_ID}-login-name`;
 const LEGACY_THEME_KEY = 'dv2.theme';
 const LEGACY_MODE_KEY = 'dv2.mode';
 const THEMES = ['lavender', 'mint', 'sky', 'amber', 'rose', 'graphite'];
@@ -106,6 +107,7 @@ function bindAuth() {
       const token = await encryptJson(normalizeData(data), password);
       const saved = await Store.saveToken(token);
       Object.assign(state, { token: saved.token, updated: saved.updated, data: normalizeData(data), masterPassword: password });
+      rememberLoginName(state.data.n);
       showVault();
       openProfileProgress(0, true);
       toast('Vault saved.');
@@ -156,6 +158,7 @@ function showLogin() {
   $('#vaultScreen').classList.add('hidden');
   $('#authTitle').textContent = 'Meiku';
   $('#authHint').textContent = 'Profile Share';
+  $('#loginUsername').value = loginDisplayName();
   $('#setupForm').classList.add('hidden');
   $('#passwordLogin').classList.remove('hidden');
   $('#quickUnlock').classList.toggle('hidden', !(Auth.hasPin() || Auth.hasPasskey()));
@@ -168,6 +171,7 @@ async function unlockWithPassword(password) {
     const data = await decryptJson(state.token, password);
     state.data = normalizeData(data);
     state.masterPassword = password;
+    rememberLoginName(state.data.n);
     showVault();
   } catch (error) {
     console.error(error);
@@ -699,6 +703,7 @@ async function saveCurrentData(data, refresh = true) {
   const token = await encryptJson(data, state.masterPassword);
   const saved = await Store.saveToken(token);
   state.data = data; state.token = saved.token; state.updated = saved.updated;
+  rememberLoginName(state.data.n);
   if (refresh) showVault();
   else {
     updateVaultHeader();
@@ -900,6 +905,11 @@ function applyTheme() {
   localStorage.setItem(MODE_KEY, mode);
 }
 function initials(name = '') { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join('') || 'MK'; }
+function loginDisplayName() { return state.data?.n || localStorage.getItem(LOGIN_NAME_KEY) || 'Meiku'; }
+function rememberLoginName(name) {
+  const value = String(name || '').trim();
+  if (value) localStorage.setItem(LOGIN_NAME_KEY, value);
+}
 function formatDate(value) { try { return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)); } catch { return value; } }
 function formatDebugDate(value) { return value ? formatDate(value) : 'Not set in local build'; }
 function shortSha(value) { return value && value !== 'local' ? `${value.slice(0, 12)}…` : 'local'; }
