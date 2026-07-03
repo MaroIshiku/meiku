@@ -154,8 +154,8 @@ function showLogin() {
   document.body.dataset.authMode = 'login';
   $('#authScreen').classList.remove('hidden');
   $('#vaultScreen').classList.add('hidden');
-  $('#authTitle').textContent = 'Welcome back';
-  $('#authHint').textContent = 'Unlock your contact and payment vault.';
+  $('#authTitle').textContent = 'Meiku';
+  $('#authHint').textContent = 'Profile Share';
   $('#setupForm').classList.add('hidden');
   $('#passwordLogin').classList.remove('hidden');
   $('#quickUnlock').classList.toggle('hidden', !(Auth.hasPin() || Auth.hasPasskey()));

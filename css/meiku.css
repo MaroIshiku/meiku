@@ -124,8 +124,8 @@ a {
 }
 
 .login-logo {
-  width: 82px;
-  height: 82px;
+  width: 72px;
+  height: 72px;
   border-radius: var(--radius-lg);
   object-fit: contain;
   background: var(--color-primary-container);
@@ -180,6 +180,12 @@ a {
   width: 18px;
   height: 18px;
   fill: currentColor;
+}
+
+body[data-auth-mode="login"] .login-lockup .brand-text,
+body[data-auth-mode="login"] .auth-badge,
+body[data-auth-mode="login"] .auth-footnote {
+  display: none;
 }
 
 h1,
