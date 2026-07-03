@@ -13,7 +13,7 @@
   <link rel="icon" href="assets/meiku-favicon-20260629.png" sizes="64x64">
   <link rel="icon" href="assets/meiku-icon-192-20260629.png" sizes="192x192">
   <link rel="apple-touch-icon" href="assets/meiku-icon-192-20260629.png">
-  <link rel="stylesheet" href="css/meiku.css?v=meiku-20260703d">
+  <link rel="stylesheet" href="css/meiku.css?v=meiku-20260703e">
 </head>
 <body data-theme="lavender" data-mode="system">
   <noscript>This app needs JavaScript because encryption and QR codes run locally.</noscript>
@@ -23,14 +23,12 @@
       <div class="auth-card glass-card">
         <div class="login-lockup" aria-label="Meiku Profile Share">
           <img src="assets/meiku-logo-20260629.png" alt="" class="login-logo" width="72" height="72">
-          <span class="brand-text"><b>Meiku</b><small>Profile Share</small></span>
+          <span class="brand-text"><b id="authTitle">Meiku</b><small id="authHint">Loading encrypted token...</small></span>
         </div>
         <p class="eyebrow auth-badge">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Zm3 4a2 2 0 0 0-1 3.73V19h2v-1.27A2 2 0 0 0 12 14Z"/></svg>
           <span>Encrypted Vault</span>
         </p>
-        <h1 id="authTitle">Meiku</h1>
-        <p id="authHint" class="muted">Loading encrypted token...</p>
 
         <form id="passwordLogin" class="stack hidden" autocomplete="current-password">
           <label class="field auth-username-field">
@@ -38,18 +36,11 @@
             <input id="loginUsername" type="text" value="Meiku" disabled>
           </label>
           <label class="field auth-password-field">
-            <span>Master Password</span>
-            <span class="password-shell">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z"/></svg>
-              <input id="masterPassword" type="password" autocomplete="current-password" inputmode="text" placeholder="Enter master password" required>
-              <button id="masterPasswordToggle" class="password-toggle" type="button" aria-label="Show master password" aria-pressed="false">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c5 0 8.7 4.6 9.8 6.1a1.5 1.5 0 0 1 0 1.8C20.7 14.4 17 19 12 19s-8.7-4.6-9.8-6.1a1.5 1.5 0 0 1 0-1.8C3.3 9.6 7 5 12 5Zm0 3.1a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8Zm0 2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8Z"/></svg>
-              </button>
-            </span>
+            <span>Password</span>
+            <input id="masterPassword" type="password" autocomplete="current-password" inputmode="text" required>
           </label>
           <button class="btn primary unlock-btn" type="submit">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z"/></svg>
-            <span>Unlock</span>
+            <span>Sign in</span>
           </button>
         </form>
 

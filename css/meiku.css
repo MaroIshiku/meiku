@@ -93,7 +93,7 @@ a {
 }
 
 .auth-screen {
-  min-height: 100dvh;
+  min-block-size: 100dvh;
   padding: calc(var(--space-6) + env(safe-area-inset-top, 0px)) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   display: grid;
   place-items: center;
@@ -104,8 +104,8 @@ a {
 }
 
 .auth-card {
-  width: min(100%, 460px);
-  max-height: calc(100dvh - 40px);
+  inline-size: min(100%, 460px);
+  max-block-size: calc(100dvh - 40px);
   overflow: auto;
   padding: var(--space-6);
   border: 1px solid var(--color-outline);
@@ -119,17 +119,17 @@ a {
   display: grid;
   justify-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  margin-block-end: var(--space-6);
   text-align: center;
 }
 
 .login-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-lg);
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: var(--radius-xl);
   object-fit: contain;
   background: var(--color-primary-container);
-  box-shadow: var(--shadow-soft);
+  padding: 10px;
 }
 
 .brand-text {
@@ -140,10 +140,10 @@ a {
 }
 
 .brand-text b {
-  color: var(--color-on-background);
-  font-size: 18px;
-  line-height: 22px;
-  font-weight: 750;
+  color: var(--color-on-surface);
+  font-size: var(--type-headline-medium-size);
+  line-height: var(--type-headline-medium-line);
+  font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -151,13 +151,13 @@ a {
 
 .brand-text small {
   color: var(--color-on-surface-muted);
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 550;
+  font-size: var(--type-body-medium-size);
+  line-height: var(--type-body-medium-line);
+  font-weight: 400;
   text-transform: none;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .eyebrow {
@@ -182,10 +182,19 @@ a {
   fill: currentColor;
 }
 
-body[data-auth-mode="login"] .login-lockup .brand-text,
 body[data-auth-mode="login"] .auth-badge,
 body[data-auth-mode="login"] .auth-footnote {
   display: none;
+}
+
+body[data-auth-mode="login"] #passwordLogin {
+  gap: var(--space-4);
+  margin-block-start: 0;
+}
+
+body[data-auth-mode="login"] .unlock-btn {
+  width: 100%;
+  margin-block-start: var(--space-5);
 }
 
 h1,
