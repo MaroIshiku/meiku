@@ -126,11 +126,11 @@ function bindAuth() {
 function bindGlobal() {
   bindLogoFallback();
   $('#heroAvatarWrap')?.addEventListener('click', openSettings);
-  $$('.bottom-nav button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+  $$('.psu-bottom-nav button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
   $('#qrClose').addEventListener('click', closeQrOverlay);
   $('#qrOverlay').addEventListener('click', e => { if (e.target.id === 'qrOverlay') closeQrOverlay(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeQrOverlay(); closeSheet(); } });
-  $('[data-close-sheet]')?.addEventListener('click', closeSheet);
+  $('#sheet')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeSheet(); });
 }
 
 function bindLogoFallback() {
@@ -209,7 +209,10 @@ function setTab(tab) {
 }
 
 function updateNavActive() {
-  $$('.bottom-nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === state.activeTab));
+  $$('.psu-bottom-nav button').forEach(btn => {
+    if (btn.dataset.tab === state.activeTab) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
+  });
 }
 
 function renderTab() {
@@ -410,7 +413,7 @@ function openProfileMenu(avatar, avatarNode) {
   openSheet('Profile', `
     <button class="profile-close" type="button" data-close-sheet aria-label="Close menu">&times;</button>
     <div class="profile-menu-content">
-      <section class="profile-card profile-card-button">
+      <section class="profile-card profile-card-button" data-action="edit" role="button" tabindex="0">
         <button class="avatar-wrap profile-avatar" type="button" data-action="avatar-pick" aria-label="Change profile picture">
           ${avatarNode}
           <span class="avatar-camera" aria-hidden="true">${menuIcon('camera')}</span>
@@ -430,8 +433,8 @@ function openProfileMenu(avatar, avatarNode) {
       </div>
       <section class="settings-section compact-settings" data-appearance-panel hidden>
         <h3>Appearance</h3>
-        <div class="option-grid">${THEMES.map(t => `<button class="btn small tonal" data-theme-pick="${t}">${labelTheme(t)}</button>`).join('')}</div>
-        <div class="option-grid">${MODES.map(m => `<button class="btn small tonal" data-mode-pick="${m}">${labelMode(m)}</button>`).join('')}</div>
+        <div class="option-grid" data-theme-picker>${THEMES.map(t => `<button class="btn small tonal" data-theme-choice="${t}">${labelTheme(t)}</button>`).join('')}</div>
+        <div class="option-grid" data-mode-picker>${MODES.map(m => `<button class="btn small tonal" data-mode-choice="${m}">${labelMode(m)}</button>`).join('')}</div>
       </section>
       <section class="profile-actions">
         ${profileMenuRowClean('lock', 'Master Password', 'Re-encrypt vault', 'password')}
@@ -492,8 +495,8 @@ function profileMenuRow(icon, title, subtitle, action) {
 async function settingsClick(e) {
   if (e.target.closest('[data-close-sheet]')) { closeSheet(); return; }
   const action = e.target.closest('[data-action]')?.dataset.action;
-  const theme = e.target.closest('[data-theme-pick]')?.dataset.themePick;
-  const mode = e.target.closest('[data-mode-pick]')?.dataset.modePick;
+  const theme = e.target.closest('[data-theme-choice]')?.dataset.themeChoice;
+  const mode = e.target.closest('[data-mode-choice]')?.dataset.modeChoice;
   if (theme) { localStorage.setItem(THEME_KEY, theme); applyTheme(); return; }
   if (mode) { localStorage.setItem(MODE_KEY, mode); applyTheme(); return; }
   if (!action) return;
@@ -879,7 +882,7 @@ function bindLongPress(node, callback) {
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(e => node.addEventListener(e, () => clearTimeout(timer)));
 }
 async function copyText(text) { await navigator.clipboard.writeText(text); toast('Copied.'); }
-function toast(message) { const el = $('#toast'); el.textContent = message; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add('hidden'), 2600); }
+function toast(message) { const el = $('#psu-toast-host'); el.textContent = message; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add('hidden'), 2600); }
 function vibrate() { if (navigator.vibrate) navigator.vibrate(8); }
 function applyTheme() {
   const legacyTheme = normalizeTheme(
