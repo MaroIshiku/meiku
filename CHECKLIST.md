@@ -14,9 +14,9 @@ Date: 2026-06-29
 
 ## Design System
 
-- The active interface uses `design-system/tokens.css` from Pixel Soft Utility Codex Pack v4.
-- Shared ZIP artifacts are stored in the repository: `design-system/`, `icons/`, `contracts/`, `checklists/`.
-- `app.manifest.json` describes Meiku according to the Pixel Soft Utility app manifest schema.
+- The active interface implements the central `ishiku-design-5` contract through local `design-system/` tokens and components.
+- `.ishiku/design-system.lock` binds the implementation to the single workspace contract without copying the full specification.
+- `app.manifest.json` contains Meiku identity and behavior metadata only; it does not define a separate design language.
 - The app name is `Meiku - Profile Share`.
 - The header uses the shared AppLogo/AppName/AppSubtitle pattern.
 - Theme attributes live on `document.documentElement`: `data-theme`, `data-mode`, `data-resolved-mode`.
