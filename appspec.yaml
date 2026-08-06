@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "application": {
+    "id": "meiku",
+    "name": "Meiku",
+    "family": "ishiku",
+    "locale": "en"
+  },
+  "summary": "Create and share encrypted private and business profile cards with contact, payment, and QR information.",
+  "requirements": [
+    {
+      "id": "CORE-001",
+      "title": "Core product behavior",
+      "priority": "critical",
+      "acceptance": [
+        "Create and share encrypted private and business profile cards with contact, payment, and QR information.",
+        "Existing documented and reachable behavior remains available unless an approved migration decision says otherwise."
+      ],
+      "security_critical": false
+    },
+    {
+      "id": "AUTH-001",
+      "title": "Approved single-vault access",
+      "priority": "critical",
+      "acceptance": [
+        "Private profile data remains protected by the existing client-side encrypted vault.",
+        "No server account or alternative sign-in method is offered."
+      ],
+      "security_critical": true
+    },
+    {
+      "id": "UI-001",
+      "title": "Consistent English interface",
+      "priority": "high",
+      "acceptance": [
+        "All user-facing interface text is English.",
+        "The app uses ishiku semantic tokens, shared layout contracts, responsive behavior, and WCAG 2.2 AA interaction."
+      ],
+      "security_critical": false
+    },
+    {
+      "id": "OPS-001",
+      "title": "Safe standalone operation",
+      "priority": "high",
+      "acceptance": [
+        "A fresh clone can build, test, and run without the outer workspace.",
+        "Health checks, persistent data, runtime secrets, backup, restore, and upgrade procedures are verifiable."
+      ],
+      "security_critical": true
+    },
+    {
+      "id": "REL-001",
+      "title": "Reproducible release",
+      "priority": "high",
+      "acceptance": [
+        "Pull requests and releases use clone-local verification scripts.",
+        "Released images are immutable, scanned, SBOM-equipped, provenance-attested, and rollback-documented."
+      ],
+      "security_critical": true
+    }
+  ]
+}

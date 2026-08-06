@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "kit_version": "1.0.1",
+  "application": {
+    "id": "meiku",
+    "name": "Meiku",
+    "family": "ishiku",
+    "type": "web_application"
+  },
+  "platform": {
+    "profile": "client-vault-adapter",
+    "authentication": "meiku-client-vault",
+    "design_system": "ishiku-design-1",
+    "security_baseline": "level-2",
+    "locale": "en"
+  },
+  "quality": {
+    "default_risk_class": "C",
+    "soak_test_required_for": [
+      "C",
+      "D"
+    ]
+  },
+  "updates": {
+    "timezone": "Europe/Berlin",
+    "weekly_schedule": {
+      "day": "monday",
+      "time": "05:00"
+    }
+  },
+  "repository": {
+    "default_branch": "main",
+    "container_registry": "ghcr.io"
+  },
+  "verification": {
+    "commands": [
+      {
+        "name": "ishiku-compliance",
+        "command": "node .ishiku/kit/scripts/compliance-test .",
+        "required_for_verified": true
+      },
+      {
+        "name": "application",
+        "command": "python -m compileall -q server.py && node --check js/app.js && node --check js/auth.js && node --check js/crypto.js",
+        "required_for_verified": true
+      },
+      {
+        "name": "compose",
+        "command": "docker compose --env-file .env.example -f docker-compose.yml config --quiet",
+        "required_for_verified": true
+      },
+      {
+        "name": "container",
+        "command": "docker build -t meiku:verify .",
+        "required_for_verified": true
+      }
+    ]
+  },
+  "upstreams": []
+}

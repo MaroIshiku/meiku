@@ -2,7 +2,7 @@ name: meiku
 
 services:
   meiku:
-    image: ghcr.io/maroishiku/meiku:latest
+    image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:0.1.0}
     pull_policy: always
     container_name: meiku
     hostname: meiku

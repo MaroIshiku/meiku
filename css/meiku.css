@@ -139,7 +139,9 @@ a {
   line-height: 1;
 }
 
-.brand-text b {
+.brand-text b,
+.brand-text h1 {
+  margin: 0;
   color: var(--color-on-surface);
   font-size: var(--type-headline-medium-size);
   line-height: var(--type-headline-medium-line);
