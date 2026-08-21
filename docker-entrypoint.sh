@@ -14,10 +14,10 @@ if [ "$(id -u)" = "0" ]; then
   if chown -R "$APP_UID:$APP_GID" "$DATA_DIR"; then
     exec su-exec "$APP_UID:$APP_GID" "$@"
   else
-    echo "Meiku warning: could not chown $DATA_DIR to $APP_UID:$APP_GID." >&2
-    echo "Meiku warning: continuing as root so existing mounted data remains readable and writable." >&2
+    echo "Meiku error: could not chown $DATA_DIR to $APP_UID:$APP_GID." >&2
+    echo "Fix the bind-mount ownership; Meiku will not continue as root." >&2
+    exit 1
   fi
-  exec "$@"
 fi
 
 exec "$@"

@@ -1,0 +1,13 @@
+{
+  "id": "OVR-001",
+  "reason": "Meiku keeps PIN quick unlock because it is substantially more reliable and usable for this single-vault product than the previous WebAuthn PRF implementation.",
+  "policy": "security.md: authentication credentials and tokens must not be stored in localStorage",
+  "security_assessment": "The persisted blob contains AES-GCM encrypted client-vault credentials, never plaintext. New PINs require six digits and one million PBKDF2-SHA-256 iterations. Plaintext write secrets are limited to sessionStorage, auto-lock remains five minutes, password changes and sign-out clear the PIN, and legacy passkey data is removed. Offline PIN guessing remains the accepted residual risk and must be reviewed by the stated date.",
+  "owner": "MaroIshiku",
+  "review_date": "2027-02-21",
+  "tests": [
+    "tests/test-auth.mjs",
+    "tests/test-crypto.mjs",
+    "tests/test-store.mjs"
+  ]
+}

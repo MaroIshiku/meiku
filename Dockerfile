@@ -1,4 +1,4 @@
-FROM python:3.13-alpine@sha256:399babc8b49529dabfd9c922f2b5eea81d611e4512e3ed250d75bd2e7683f4b0
+FROM python:3.13-alpine@sha256:540c7d91f98ff6880174c40e99067bf5941eb54d818a7a5e094d188b196a934d
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -11,6 +11,7 @@ WORKDIR /app
 
 RUN addgroup -S ishcontact && adduser -S -G ishcontact -u 10001 ishcontact \
     && apk add --no-cache su-exec \
+    && rm -rf /usr/local/lib/python3.13/site-packages/pip /usr/local/lib/python3.13/site-packages/pip-* /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.13 \
     && mkdir -p /data \
     && chown -R ishcontact:ishcontact /data /app
 

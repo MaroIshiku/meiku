@@ -10,7 +10,12 @@
         "index.html"
       ],
       "tests": {
-        "unit": [],
+        "unit": [
+          "tests/test_server.py",
+          "tests/test-crypto.mjs",
+          "tests/test-store.mjs",
+          "tests/test-auth.mjs"
+        ],
         "integration": [
           ".ishiku/kit/scripts/compliance-test"
         ],
@@ -24,14 +29,25 @@
     {
       "id": "AUTH-001",
       "implementation": [
-        "See migration inventory and application source."
+        "js/auth.js",
+        "js/crypto.js",
+        "js/store.js",
+        ".ishiku/decisions/single-vault-authentication.json",
+        ".ishiku/overrides/OVR-001.json"
       ],
       "tests": {
-        "unit": [],
+        "unit": [
+          "tests/test_server.py",
+          "tests/test-crypto.mjs",
+          "tests/test-store.mjs",
+          "tests/test-auth.mjs"
+        ],
         "integration": [
           ".ishiku/kit/scripts/compliance-test"
         ],
-        "e2e": [],
+        "e2e": [
+          ".ishiku/reports/ops-001-verification.json"
+        ],
         "security": [
           ".ishiku/kit/scripts/compliance-test"
         ]
@@ -41,12 +57,21 @@
     {
       "id": "UI-001",
       "implementation": [
-        "See migration inventory and application source."
+        "index.html",
+        "css/meiku.css",
+        "app.manifest.json",
+        "manifest.json",
+        "sw.js",
+        "assets/icon-source.png",
+        "assets/icons/"
       ],
       "tests": {
-        "unit": [],
+        "unit": [
+          "tests/test_server.py"
+        ],
         "integration": [
-          ".ishiku/kit/scripts/compliance-test"
+          ".ishiku/kit/scripts/compliance-test",
+          ".ishiku/kit/scripts/check-design"
         ],
         "e2e": [],
         "security": [
@@ -58,7 +83,10 @@
     {
       "id": "OPS-001",
       "implementation": [
-        "See migration inventory and application source."
+        ".env.example",
+        "docker-compose.yml",
+        "Meiku - Profile Share.yaml",
+        "README.md"
       ],
       "tests": {
         "unit": [],
@@ -90,7 +118,7 @@
           ".ishiku/kit/scripts/compliance-test"
         ]
       },
-      "status": "verified"
+      "status": "implemented"
     }
   ]
 }

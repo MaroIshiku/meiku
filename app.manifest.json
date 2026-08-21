@@ -6,11 +6,11 @@
   "primary_purpose": "Shares private and business contact details with local profile, contact and payment QR cards.",
   "app_symbol": "badge",
   "app_logo": {
-    "src": "assets/meiku-logo-20260629.png",
-    "favicon": "assets/meiku-favicon-20260629.png",
-    "pwa_icon_192": "assets/meiku-icon-192-20260629.png",
-    "pwa_icon_512": "assets/meiku-icon-512-20260629.png",
-    "pwa_maskable_512": "assets/meiku-icon-512-20260629.png",
+    "src": "assets/icons/icon-128.png",
+    "favicon": "assets/icons/favicon-32.png",
+    "pwa_icon_192": "assets/icons/icon-192.png",
+    "pwa_icon_512": "assets/icons/icon-512.png",
+    "pwa_maskable_512": "assets/icons/icon-maskable-512.png",
     "alt": "",
     "use_as_header_symbol": true,
     "use_as_favicon": true,
@@ -21,7 +21,7 @@
   },
   "default_theme": "lavender",
   "default_mode": "system",
-  "has_account": true,
+  "has_account": false,
   "user_identity_fields": ["avatar", "initials", "display_name", "email"],
   "main_sections": [
     { "id": "privat", "label": "Private", "icon": "account_circle" },
@@ -45,8 +45,8 @@
     "repository_name": "meiku",
     "github_owner": "MaroIshiku",
     "public_repository": true,
-    "short_description": "Meiku is a self-hosted profile and contact card app in the Pixel Soft Utility design system.",
-    "docker_image": "ghcr.io/maroishiku/meiku:latest",
+    "short_description": "Meiku is a self-hosted profile and contact card app in the ishiku design system.",
+    "docker_image": "ghcr.io/maroishiku/meiku:v0.2.5@sha256:a80e2e12070598d0dcde8c2b7a130a626811243be40e4ed428726003363550fc",
     "codex_notice_enabled": true
   }
 }

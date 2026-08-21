@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "kit_version": "1.1.1",
+  "kit_version": "1.2.0",
   "application": {
     "id": "meiku",
     "name": "Meiku",
@@ -37,7 +37,7 @@
       },
       {
         "name": "application",
-        "command": "python -m compileall -q server.py && node --check js/app.js && node --check js/auth.js && node --check js/crypto.js",
+        "command": "python -m compileall -q server.py tests && python -m unittest discover -s tests && node --check js/app.js && node --check js/auth.js && node --check js/crypto.js && node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs",
         "required_for_verified": true
       },
       {

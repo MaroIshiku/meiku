@@ -1,10 +1,14 @@
 {
   "id": "DEC-002",
-  "date": "2026-08-05",
-  "decision": "Meiku remains a single-vault product without additional login methods.",
-  "rationale": "Explicit product-owner decision.",
+  "date": "2026-08-21",
+  "decision": "Meiku remains a single-vault product. Password and six-digit PIN unlock the same client-side vault; the unreliable Passkey/WebAuthn PRF quick unlock is removed.",
+  "rationale": "The product owner prefers the reliable PIN flow. PIN is a local vault-unlock convenience, not a server account or an additional server-side sign-in method.",
   "consequences": [
     "The standard account authentication profile does not apply.",
-    "Vault-specific security tests remain mandatory."
+    "New PIN blobs use one million PBKDF2-SHA-256 iterations and AES-GCM.",
+    "The server write secret is plaintext only in sessionStorage and may be persisted only inside the PIN-encrypted credential blob.",
+    "Legacy four-to-six-digit PIN blobs remain readable for compatibility and prompt the user to create a new six-digit PIN.",
+    "Deprecated passkey metadata and wrapped-password blobs are removed on startup.",
+    "Vault-specific negative security tests and the time-bounded OVR-001 review remain mandatory."
   ]
 }

@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=meiku-20260629';
-import { decryptJson, encryptJson } from './crypto.js?v=meiku-20260629';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=meiku-20260629';
-import { Store } from './store.js?v=meiku-20260629';
+import { Auth } from './auth.js?v=meiku-20260821c';
+import { decryptJson, encryptJson } from './crypto.js?v=meiku-20260821c';
+import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=meiku-20260821c';
+import { Store } from './store.js?v=meiku-20260821c';
 
 const FIELDS = [
   ['n', 'Full Name', 'text', true], ['m', 'Private Mobile', 'tel'], ['e1', 'Private Email', 'email'],
@@ -38,6 +38,8 @@ const state = { token: '', updated: null, data: null, masterPassword: '', active
 init();
 
 async function init() {
+  try { Store.migrateLegacySecret(); } catch { Store.clearSecret(); }
+  Auth.clearDeprecatedPasskey();
   applyTheme();
   bindThemeMode();
   renderSetupFields($('#setupFields'), {}, SETUP_FIELDS);
@@ -102,8 +104,8 @@ function bindAuth() {
     const password = $('#setupPassword').value;
     const secret = $('#setupSecret').value;
     if (password.length < 8) return toast('Password must be at least 8 characters.');
-    Store.setSecret(secret);
     try {
+      Store.setSecret(secret);
       const token = await encryptJson(normalizeData(data), password);
       const saved = await Store.saveToken(token);
       Object.assign(state, { token: saved.token, updated: saved.updated, data: normalizeData(data), masterPassword: password });
@@ -114,13 +116,14 @@ function bindAuth() {
     } catch (error) { toast(error.message); }
   });
   $('#pinOpen').addEventListener('click', () => openPinPad(async pin => {
-    try { await unlockWithPassword(await Auth.passwordFromPin(pin)); }
+    try {
+      const credentials = await Auth.credentialsFromPin(pin);
+      if (credentials.writeSecret) Store.setSecret(credentials.writeSecret);
+      const unlocked = await unlockWithPassword(credentials.masterPassword);
+      if (unlocked && credentials.legacy) toast('PIN unlocked. Set a new 6-digit PIN to upgrade local protection.');
+    }
     catch (error) { toast(error.message); }
   }));
-  $('#passkeyLogin').addEventListener('click', async () => {
-    try { await unlockWithPassword(await Auth.passwordFromPasskey()); }
-    catch (error) { toast(error.message); }
-  });
 }
 
 function bindGlobal() {
@@ -161,9 +164,8 @@ function showLogin() {
   $('#loginUsername').value = loginDisplayName();
   $('#setupForm').classList.add('hidden');
   $('#passwordLogin').classList.remove('hidden');
-  $('#quickUnlock').classList.toggle('hidden', !(Auth.hasPin() || Auth.hasPasskey()));
+  $('#quickUnlock').classList.toggle('hidden', !Auth.hasPin());
   $('#pinOpen').classList.toggle('hidden', !Auth.hasPin());
-  $('#passkeyLogin').classList.toggle('hidden', !Auth.hasPasskey());
 }
 
 async function unlockWithPassword(password) {
@@ -173,9 +175,11 @@ async function unlockWithPassword(password) {
     state.masterPassword = password;
     rememberLoginName(state.data.n);
     showVault();
+    return true;
   } catch (error) {
     console.error(error);
     toast('Password/PIN is wrong or the token is corrupted.');
+    return false;
   }
 }
 
@@ -307,7 +311,7 @@ function contactRow({ icon, label, value, href }) {
   const node = document.createElement(href ? 'a' : 'div');
   node.className = 'contact-row';
   if (href) node.href = href;
-  node.innerHTML = `<span class="ico">${icon}</span><span><b>${esc(label)}</b><span>${esc(value)}</span></span>`;
+  node.innerHTML = `<span class="ico" aria-hidden="true">${menuIcon(icon)}</span><span><b>${esc(label)}</b><span>${esc(value)}</span></span>`;
   bindLongPress(node, () => copyText(value));
   return node;
 }
@@ -362,20 +366,20 @@ async function closeQrOverlay() {
 function privateRows() {
   const address = [state.data.s, state.data.z].filter(Boolean).join(', ');
   return [
-    { icon: '📱', label: 'Mobile', value: state.data.m, href: state.data.m ? `tel:${state.data.m}` : '' },
-    { icon: '✉️', label: 'E-Mail', value: state.data.e1, href: state.data.e1 ? `mailto:${state.data.e1}` : '' },
-    { icon: '📍', label: 'Private address', value: address, href: address ? `https://maps.google.com/?q=${encodeURIComponent([state.data.s, state.data.z].filter(Boolean).join(' '))}` : '' }
+    { icon: 'mobile', label: 'Mobile', value: state.data.m, href: state.data.m ? `tel:${state.data.m}` : '' },
+    { icon: 'email', label: 'Email', value: state.data.e1, href: state.data.e1 ? `mailto:${state.data.e1}` : '' },
+    { icon: 'location', label: 'Private address', value: address, href: address ? `https://maps.google.com/?q=${encodeURIComponent([state.data.s, state.data.z].filter(Boolean).join(' '))}` : '' }
   ];
 }
 function companyRows() {
   const companyAddress = [state.data.cs, state.data.cz].filter(Boolean).join(', ');
   return [
-    { icon: '🏢', label: 'Company', value: state.data.c }, { icon: '💼', label: 'Position', value: state.data.j },
-    { icon: '☎️', label: 'Office', value: state.data.cp, href: state.data.cp ? `tel:${state.data.cp}` : '' },
-    { icon: '📲', label: 'Work Mobile', value: state.data.cm, href: state.data.cm ? `tel:${state.data.cm}` : '' },
-    { icon: '✉️', label: 'Work Email', value: state.data.ce, href: state.data.ce ? `mailto:${state.data.ce}` : '' },
-    { icon: '🌐', label: 'Website', value: state.data.w, href: state.data.w ? normalizeUrl(state.data.w) : '' },
-    { icon: '📍', label: 'Business address', value: companyAddress, href: companyAddress ? `https://maps.google.com/?q=${encodeURIComponent([state.data.cs, state.data.cz].filter(Boolean).join(' '))}` : '' }
+    { icon: 'company', label: 'Company', value: state.data.c }, { icon: 'work', label: 'Position', value: state.data.j },
+    { icon: 'phone', label: 'Office', value: state.data.cp, href: state.data.cp ? `tel:${state.data.cp}` : '' },
+    { icon: 'mobile', label: 'Work mobile', value: state.data.cm, href: state.data.cm ? `tel:${state.data.cm}` : '' },
+    { icon: 'email', label: 'Work email', value: state.data.ce, href: state.data.ce ? `mailto:${state.data.ce}` : '' },
+    { icon: 'website', label: 'Website', value: state.data.w, href: state.data.w ? normalizeUrl(state.data.w) : '' },
+    { icon: 'location', label: 'Business address', value: companyAddress, href: companyAddress ? `https://maps.google.com/?q=${encodeURIComponent([state.data.cs, state.data.cz].filter(Boolean).join(' '))}` : '' }
   ];
 }
 
@@ -438,8 +442,7 @@ function openProfileMenu(avatar, avatarNode) {
       </section>
       <section class="profile-actions">
         ${profileMenuRowClean('lock', 'Master Password', 'Re-encrypt vault', 'password')}
-        ${profileMenuRowClean('pin', 'PIN', 'Set up quick login on this device', 'pin')}
-        ${profileMenuRowClean('key', 'Passkey / Biometrics', 'Only when Chrome provides a PRF key', 'passkey')}
+        ${profileMenuRowClean('pin', 'PIN', 'Set up 6-digit quick unlock on this device', 'pin')}
       </section>
       <section class="settings-section compact-settings">
         <h3>Backup & Server</h3>
@@ -479,7 +482,14 @@ function menuIcon(name) {
     key: 'M7 14a5 5 0 1 1 4.6-3H22v3h-3v3h-3v-3h-4.4A5 5 0 0 1 7 14Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
     download: 'M5 20h14v-2H5v2Zm7-16v9.2l3.6-3.6L17 11l-5 5-5-5 1.4-1.4 3.6 3.6V4h2Z',
     upload: 'M5 20h14v-2H5v2Zm7-16 5 5-1.4 1.4L13 7.8V16h-2V7.8l-2.6 2.6L7 9l5-5Z',
-    logout: 'M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7v2H5v14h7v2H5Zm11-4-1.4-1.4 2.6-2.6H9v-2h8.2l-2.6-2.6L16 7l5 5-5 5Z'
+    logout: 'M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7v2H5v14h7v2H5Zm11-4-1.4-1.4 2.6-2.6H9v-2h8.2l-2.6-2.6L16 7l5 5-5 5Z',
+    mobile: 'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 3v14h10V5H7Zm4 12h2v1h-2v-1Z',
+    phone: 'M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02L6.6 10.8Z',
+    email: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7 8-5H4l8 5Zm0 2L4 8v10h16V8l-8 5Z',
+    location: 'M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7Zm0 9.5A2.5 2.5 0 1 0 12 6a2.5 2.5 0 0 0 0 5.5Z',
+    company: 'M3 21V3h12v6h6v12H3Zm4-4h2v-2H7v2Zm0-4h2v-2H7v2Zm0-4h2V7H7v2Zm4 8h2v-2h-2v2Zm0-4h2v-2h-2v2Zm4 4h2v-4h-2v4Z',
+    work: 'M9 4V2h6v2h5a2 2 0 0 1 2 2v5H2V6a2 2 0 0 1 2-2h5Zm2 0h2V3h-2v1Zm11 9v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7h8v2h4v-2h8Z',
+    website: 'M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm6.9 9a7.9 7.9 0 0 0-1.6-4H15a16 16 0 0 1 .7 4h3.2Zm-5.2 0A14 14 0 0 0 12 5.2 14 14 0 0 0 10.3 11h3.4Zm-5.4 0A16 16 0 0 1 9 7H6.7a7.9 7.9 0 0 0-1.6 4h3.2Zm0 2H5.1a7.9 7.9 0 0 0 1.6 4H9a16 16 0 0 1-.7-4Zm2 0a14 14 0 0 0 1.7 5.8 14 14 0 0 0 1.7-5.8h-3.4Zm5.4 0a16 16 0 0 1-.7 4h2.3a7.9 7.9 0 0 0 1.6-4h-3.2Z'
   };
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.info}"/></svg>`;
 }
@@ -510,12 +520,14 @@ async function settingsClick(e) {
   if (action === 'password') openPasswordSheet();
   if (action === 'pin') openPinSetup(false);
   if (action === 'debug') openDebugInfo();
-  if (action === 'passkey') setupPasskey();
   if (action === 'export') { Store.exportToken({ token: state.token, updated: state.updated }); toast('Export started.'); }
   if (action === 'lock') location.reload();
-  if (action === 'logout') { Auth.clearPin(); Auth.clearPasskey(); localStorage.removeItem('dv2.sharedSecret'); location.reload(); }
+  if (action === 'logout') { Auth.clearPin(); Auth.clearDeprecatedPasskey(); Store.clearSecret(); location.reload(); }
   if (action === 'avatar-remove') { localStorage.removeItem('dv2.avatar'); updateAvatar(); toast('Profile picture removed.'); }
-  if (action === 'secret') { Store.setSecret($('#secretInput').value); toast('Secret saved.'); }
+  if (action === 'secret') {
+    try { Store.setSecret($('#secretInput').value); toast('Secret saved.'); }
+    catch (error) { toast(error.message); }
+  }
 }
 async function settingsChange(e) {
   if (e.target.id === 'avatarFile' && e.target.files[0]) {
@@ -681,25 +693,20 @@ function openPasswordSheet() {
     try {
       state.masterPassword = newPassword;
       await saveCurrentData(state.data);
-      Auth.clearPin(); Auth.clearPasskey();
-      closeSheet(); toast('Password changed. Please set up PIN/passkey again.');
+      Auth.clearPin(); Auth.clearDeprecatedPasskey();
+      closeSheet(); toast('Password changed. Please set up your PIN again.');
     } catch (error) { toast(error.message); }
   });
 }
 
 function openPinSetup(firstRun) {
-  openSheet('Set Up PIN', `<p class="muted">The PIN encrypts your master password locally. Only an AES-GCM blob is stored, never the plaintext password.</p><form id="pinSetupForm" class="stack"><label class="field"><span>New PIN (4-6 digits)</span><input id="newPin" inputmode="numeric" pattern="\\d{4,6}" autocomplete="off" required></label><button class="btn primary" type="submit">Save PIN</button>${firstRun ? '<button class="btn ghost" type="button" data-close-sheet>Later</button>' : ''}</form>`);
+  openSheet('Set Up PIN', `<p class="muted">The 6-digit PIN encrypts your master password and current server write secret locally with one million PBKDF2 iterations. Plaintext credentials are never persisted.</p><form id="pinSetupForm" class="stack"><label class="field"><span>New PIN (6 digits)</span><input id="newPin" inputmode="numeric" pattern="\\d{6}" minlength="6" maxlength="6" autocomplete="off" required></label><button class="btn primary" type="submit">Save PIN</button>${firstRun ? '<button class="btn ghost" type="button" data-close-sheet>Later</button>' : ''}</form>`);
   $('#pinSetupForm').addEventListener('submit', async e => {
     e.preventDefault();
-    try { await Auth.savePin($('#newPin').value, state.masterPassword); closeSheet(); toast('PIN saved.'); }
+    try { await Auth.savePin($('#newPin').value, state.masterPassword, Store.getSecret()); closeSheet(); toast('PIN saved.'); }
     catch (error) { toast(error.message); }
   });
   $$('[data-close-sheet]', $('#sheet')).forEach(n => n.addEventListener('click', closeSheet));
-}
-
-async function setupPasskey() {
-  try { await Auth.setupPasskey(state.masterPassword); toast('Passkey set up.'); }
-  catch (error) { toast(error.message); }
 }
 
 async function saveCurrentData(data, refresh = true) {
@@ -913,7 +920,7 @@ function rememberLoginName(name) {
   const value = String(name || '').trim();
   if (value) localStorage.setItem(LOGIN_NAME_KEY, value);
 }
-function formatDate(value) { try { return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)); } catch { return value; } }
+function formatDate(value) { try { return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)); } catch { return value; } }
 function formatDebugDate(value) { return value ? formatDate(value) : 'Not set in local build'; }
 function shortSha(value) { return value && value !== 'local' ? `${value.slice(0, 12)}…` : 'local'; }
 async function loadBuildInfo() {

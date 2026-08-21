@@ -1,29 +1,30 @@
-const CACHE_NAME = 'meiku-static-2026-07-02a';
+const CACHE_NAME = 'meiku-static-2026-08-21c';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './design-system/tokens.css',
   './css/meiku.css',
-  './css/meiku.css?v=meiku-20260702a',
+  './css/meiku.css?v=meiku-20260821c',
   './js/app.js',
   './js/auth.js',
   './js/crypto.js',
   './js/qr.js',
   './js/store.js',
-  './js/app.js?v=meiku-20260702a',
-  './js/auth.js?v=meiku-20260629',
-  './js/crypto.js?v=meiku-20260629',
-  './js/qr.js?v=meiku-20260629',
-  './js/store.js?v=meiku-20260629',
-  './manifest.json?v=meiku-20260629',
+  './js/app.js?v=meiku-20260821c',
+  './js/auth.js?v=meiku-20260821c',
+  './js/crypto.js?v=meiku-20260821c',
+  './js/qr.js?v=meiku-20260821c',
+  './js/store.js?v=meiku-20260821c',
+  './manifest.json?v=meiku-20260821',
   './app.manifest.json',
   './build-info.json',
-  './assets/meiku-logo-20260629.png',
-  './assets/meiku-icon-192-20260629.png',
-  './assets/meiku-icon-512-20260629.png',
-  './assets/meiku-favicon-20260629.png',
-  './assets/pb.png',
-  './assets/pp.png'
+  './assets/icons/icon-64.png',
+  './assets/icons/icon-128.png',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-maskable-512.png',
+  './assets/icons/favicon-32.png',
+  './assets/icons/apple-touch-icon.png'
 ];
 const NETWORK_ONLY = /(?:api\/data|api\/token|data\.json|save\.php)(?:\?|$)/;
 const STATIC_REQUEST = /\.(?:html|css|js|json|png|svg|webmanifest)(?:\?|$)/;
