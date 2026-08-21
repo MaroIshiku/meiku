@@ -112,11 +112,11 @@
     },
     {
       "path": ".github/workflows/ishiku-pull-request-verify.yml",
-      "sha256": "1f0c7ce8047665407513364126acc38c73023a3bedbe3a9033b181bfa4273076"
+      "sha256": "5fc101403b155ba98db8c04d988f13b76eea976cfae487183bbae7e166da17fe"
     },
     {
       "path": ".github/workflows/ishiku-release-release.yml",
-      "sha256": "36cea05eeb50981b0618e60771926b9ee4baaba7867c1ff6803a1f2bd5852285"
+      "sha256": "39b71d312c40328008180cf79b1a1e93db793b89421f239f4168a5c8d8ff29dc"
     },
     {
       "path": ".github/workflows/ishiku-upstream-update-upstream-update.yml",
