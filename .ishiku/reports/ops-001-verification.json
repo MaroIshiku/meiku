@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "timestamp": "2026-08-21T16:42:00Z",
+  "timestamp": "2026-08-21T16:55:15Z",
   "application": "meiku",
   "requirement_id": "OPS-001",
   "status": "verified",
-  "overall_app_status": "IMPLEMENTED_BUT_NOT_VERIFIED",
+  "overall_app_status": "VERIFIED",
   "fresh_clone": {
     "snapshot_checks_passed": 445,
     "application_commands_passed": true,
     "compose_config_passed": true,
     "container_build_passed": true,
     "remaining_managed_kit_checksum_failures": 0,
-    "expected_unverified_release_requirements": 1
+    "expected_unverified_release_requirements": 0
   },
   "delivery": {
     "host_port": 65003,
@@ -51,6 +51,18 @@
     "indexed_packages": 39,
     "critical_vulnerabilities": 0,
     "high_vulnerabilities": 0
+  },
+  "release": {
+    "github_run": "https://github.com/MaroIshiku/meiku/actions/runs/32505306399",
+    "result": "success",
+    "image": "ghcr.io/maroishiku/meiku:sha-8d7289d@sha256:c45ec6514bb627ef5c03c96e7b5ae8c465894d9354b1cfefb7850e4f785dd727",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "vulnerability_gate": "passed",
+    "sbom": true,
+    "provenance_attestation": true
   },
   "browser": {
     "setup_and_vault_flow_passed": true,

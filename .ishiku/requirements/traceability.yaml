@@ -17,9 +17,12 @@
           "tests/test-auth.mjs"
         ],
         "integration": [
-          ".ishiku/kit/scripts/compliance-test"
+          ".ishiku/kit/scripts/compliance-test",
+          "https://github.com/MaroIshiku/meiku/actions/runs/32505306399"
         ],
-        "e2e": [],
+        "e2e": [
+          "https://github.com/MaroIshiku/meiku/actions/runs/32505306399"
+        ],
         "security": [
           ".ishiku/kit/scripts/compliance-test"
         ]
@@ -118,7 +121,7 @@
           ".ishiku/kit/scripts/compliance-test"
         ]
       },
-      "status": "implemented"
+      "status": "verified"
     }
   ]
 }
