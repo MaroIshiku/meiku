@@ -128,8 +128,7 @@ a {
   block-size: 72px;
   border-radius: var(--radius-xl);
   object-fit: contain;
-  background: var(--color-primary-container);
-  padding: 10px;
+  background: transparent;
 }
 
 .brand-text {
@@ -493,18 +492,18 @@ h3 {
   width: 42px;
   height: 42px;
   flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--color-outline) 60%, transparent);
+  border: 0;
   border-radius: var(--radius-sm);
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--color-primary-container);
+  background: transparent;
   color: var(--color-on-primary-container);
 }
 
 .app-symbol img {
-  width: 26px;
-  height: 26px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
 }
 
@@ -690,6 +689,12 @@ h3 {
   place-items: center;
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
+}
+
+.contact-row .ico svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
 }
 
 .contact-row b {

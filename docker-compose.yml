@@ -2,7 +2,7 @@ name: meiku
 
 services:
   meiku:
-    image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:0.1.0}
+    image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:v0.2.5@sha256:a80e2e12070598d0dcde8c2b7a130a626811243be40e4ed428726003363550fc}
     pull_policy: always
     container_name: meiku
     hostname: meiku
@@ -25,7 +25,7 @@ services:
 
     ports:
       - target: 8080
-        published: ${WEBUI_PORT:-8080}
+        published: ${WEBUI_PORT:-65003}
         protocol: tcp
 
     volumes:
@@ -65,6 +65,7 @@ services:
       - meiku
 
     labels:
+      icon: "https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/icons/icon-512.png"
       org.opencontainers.image.title: "Meiku - Profile Share"
       org.opencontainers.image.description: "Private encrypted profile, contact and payment QR vault with local QR generation."
       org.opencontainers.image.source: "https://github.com/MaroIshiku/meiku"
@@ -92,10 +93,10 @@ x-casaos:
   description:
     en_us: Mobile-first PWA for encrypted private and business profile cards. The server stores only the encrypted token; QR codes and encryption run locally in the browser.
     de_de: Mobile-first PWA for encrypted private and business profile cards. The server stores only the encrypted token; QR codes and encryption run locally in the browser.
-  icon: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/meiku-icon-512-20260629.png
-  thumbnail: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/meiku-icon-512-20260629.png
+  icon: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/icons/icon-512.png
+  thumbnail: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/icons/icon-512.png
   index: /
-  port_map: ${WEBUI_PORT:-8080}
+  port_map: ${WEBUI_PORT:-65003}
   tips:
     before_install:
       en_us: |
@@ -103,10 +104,10 @@ x-casaos:
 
         Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
 
-        Publish the WebUI through HTTPS if you want full PWA, Web Crypto, Service Worker and Passkey support.
+        Publish the WebUI through HTTPS if you want full PWA, Web Crypto and Service Worker support.
       de_de: |
         Required: set ISHIKU_SETUP_SECRET to a long random value before starting. DV2_SHARED_SECRET remains supported as a legacy alias.
 
         Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
 
-        Publish the WebUI through HTTPS if you want full PWA, Web Crypto, Service Worker and Passkey support.
+        Publish the WebUI through HTTPS if you want full PWA, Web Crypto and Service Worker support.

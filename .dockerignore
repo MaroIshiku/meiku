@@ -27,3 +27,22 @@ source-assets
 *.db
 *.bak
 .ishiku/reports
+
+# Repository-only verification and release material
+.github
+.ishiku
+AGENTS.md
+appspec.yaml
+CHECKLIST.md
+README.md
+
+# Source and legacy icons are retained in Git but are not runtime assets
+assets/icon-source.png
+assets/icon-notes.yaml
+assets/meiku-*.png
+assets/pb.png
+assets/pp.png
+assets/icons/icon-1024.png
+assets/icons/icon-256.png
+assets/icons/icon-180.png
+assets/icons/icon-32.png

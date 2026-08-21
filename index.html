@@ -9,11 +9,10 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFBFF">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#15121A">
   <title>Meiku</title>
-  <link rel="manifest" href="manifest.json?v=meiku-20260629">
-  <link rel="icon" href="assets/meiku-favicon-20260629.png" sizes="64x64">
-  <link rel="icon" href="assets/meiku-icon-192-20260629.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="assets/meiku-icon-192-20260629.png">
-  <link rel="stylesheet" href="css/meiku.css?v=meiku-20260703e">
+  <link rel="manifest" href="manifest.json?v=meiku-20260821">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/meiku.css?v=meiku-20260821c">
 </head>
 <body data-theme="lavender" data-mode="system">
   <noscript>This app needs JavaScript because encryption and QR codes run locally.</noscript>
@@ -22,7 +21,7 @@
     <section id="authScreen" class="auth-screen">
       <div class="auth-card glass-card">
         <div class="login-lockup">
-          <img src="assets/meiku-logo-20260629.png" alt="" class="login-logo" width="72" height="72">
+          <img src="assets/icons/icon-128.png" alt="" class="login-logo" width="72" height="72">
           <div class="brand-text"><h1 id="authTitle">Meiku</h1><small id="authHint">Loading encrypted token...</small></div>
         </div>
         <p class="eyebrow auth-badge">
@@ -59,7 +58,6 @@
 
         <div id="quickUnlock" class="quick-unlock hidden">
           <button id="pinOpen" class="btn tonal pin-unlock-btn" type="button"><span aria-hidden="true">...</span>Unlock with PIN</button>
-          <button id="passkeyLogin" class="btn tonal" type="button">Unlock with Passkey</button>
         </div>
 
         <div id="pinPad" class="pin-pad hidden" aria-label="PIN-Pad">
@@ -76,7 +74,7 @@
         <div class="meiku-header-inner">
         <div class="brand-lockup" aria-label="Meiku Profile Share">
           <span class="app-symbol">
-            <img src="assets/meiku-logo-20260629.png" alt="" width="42" height="42">
+            <img src="assets/icons/icon-64.png" alt="" width="42" height="42">
             <svg data-logo-fallback viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4V4Zm3 3v9a1 1 0 0 0 1 1h7V8a1 1 0 0 0-1-1H8Zm2 2h4v2h-4V9Zm0 4h5v2h-5v-2Z"/></svg>
           </span>
           <span class="brand-text"><b>Meiku</b><small>Profile Share</small></span>
@@ -119,6 +117,6 @@
 
   <div id="psu-toast-host" class="psu-toast-host hidden" role="status" aria-live="polite"></div>
 
-  <script type="module" src="js/app.js?v=meiku-20260703d"></script>
+  <script type="module" src="js/app.js?v=meiku-20260821c"></script>
 </body>
 </html>

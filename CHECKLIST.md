@@ -7,10 +7,10 @@ Date: 2026-06-29
 - The Python server serves the Meiku PWA and stores only the encrypted token.
 - Client-side encryption stays entirely in the browser.
 - Dockerfile and `docker-compose.yml` are available for ZimaOS/reverse-proxy operation.
-- ZimaOS Compose uses the GHCR image `ghcr.io/maroishiku/meiku:latest` instead of a local build.
+- ZimaOS Compose defaults to the immutable GHCR release `ghcr.io/maroishiku/meiku:v0.2.5@sha256:a80e2e12070598d0dcde8c2b7a130a626811243be40e4ed428726003363550fc` instead of a local build.
 - Persistence uses the bind mount `/DATA/AppData/meiku/data:/data`.
 - `x-casaos` metadata is available for ZimaOS/CasaOS app import.
-- App logo and PWA icons are derived from the Meiku logo.
+- AppMark, favicon and PWA icons are direct exports from the canonical Meiku icon source.
 
 ## Design System
 
@@ -47,8 +47,9 @@ Date: 2026-06-29
 - After first run, a guided profile progress flow opens.
 - Private and business address are separate fields.
 - Login with master password remains available.
-- PIN stores only a locally encrypted password blob.
-- Passkey/WebAuthn PRF remains optional.
+- New PINs use exactly six digits and protect a local credential blob with one million PBKDF2 iterations plus AES-GCM.
+- The server write secret is kept in session storage or inside the PIN-encrypted blob, never as plaintext persistent browser storage.
+- The unreliable Passkey/WebAuthn PRF quick unlock is not offered; obsolete passkey data is removed on startup.
 - Private, Company and Payments tabs remain available.
 - QR codes are generated locally.
 - vCard contains only private fields.

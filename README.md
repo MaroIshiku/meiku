@@ -14,10 +14,9 @@ The interface uses the shared AppHeader, local logo assets, shared design tokens
 
 ## Features
 
-- Setup, login and editing directly in the PWA
+- Setup, vault unlock and editing directly in the PWA
 - Web Crypto API: AES-GCM-256 plus PBKDF2-SHA-256
-- PIN quick login with locally encrypted master password
-- Optional passkey/biometric quick login through WebAuthn PRF
+- Six-digit PIN quick unlock with locally encrypted credentials and one million PBKDF2 iterations
 - Tabs: Private, Company and Payments
 - Guided profile progress for Private, Business, PayPal and Bank
 - Separate private and business addresses
@@ -36,7 +35,7 @@ The interface uses the shared AppHeader, local logo assets, shared design tokens
 - Custom local QR renderer without an external QR API
 - Python `http.server`-based runtime server
 - Docker/Compose for ZimaOS, CasaOS and other self-hosted setups
-- Pixel Soft Utility Codex Pack v4 for design tokens, contracts and checklists
+- ishiku design system v5 implementation tokens, components and executable checks
 
 ## Installation
 
@@ -48,12 +47,12 @@ cd meiku
 cp .env.example .env
 ```
 
-Set at least one long secret in `.env`:
+Set at least one random secret with 32 or more characters in `.env`. For example, generate one with `openssl rand -base64 32`:
 
 ```env
-WEBUI_PORT=8080
+WEBUI_PORT=65003
 TZ=Europe/Berlin
-ISHIKU_SETUP_SECRET=a-long-random-secret
+ISHIKU_SETUP_SECRET=replace-with-at-least-32-random-characters
 MEIKU_DATA_PATH=/DATA/AppData/meiku/data
 ```
 
@@ -90,11 +89,11 @@ Meiku does not create a server admin account and does not store user password ha
 
 | Variable | Purpose |
 | --- | --- |
-| `WEBUI_PORT` | Host port for the web interface, default `8080`. |
+| `WEBUI_PORT` | Host port for the web interface, default `65003`. The container continues to listen on `8080`. |
 | `TZ` | Time zone, default `Europe/Berlin`. |
 | `ISHIKU_DATA_DIR` | Persistent data folder in the container, default `/data`. |
 | `ISHIKU_LOG_LEVEL` | Shared runtime log level, default `info`. |
-| `ISHIKU_SETUP_SECRET` | Preferred secret for setup and token write access. |
+| `ISHIKU_SETUP_SECRET` | Preferred secret for setup and token write access; at least 32 characters. |
 | `ISHIKU_SETUP_SECRET_FILE` | Optional path to a secret file, preferred over environment secrets. |
 | `DV2_SHARED_SECRET` | Legacy alias for existing installations. |
 | `DV2_ACCESS_LOG` | Enables simple access logs with `true`, `1` or `yes`. |
@@ -120,6 +119,8 @@ Inside the container, the encrypted token is stored at `/data/data.json` by defa
 - The master password is never sent to the server.
 - The server stores only the AES-GCM token.
 - The setup/shared secret is only intended for write access to the encrypted token.
+- The write secret exists in plaintext only for the current browser session. PIN quick unlock persists only an AES-GCM-encrypted credential blob.
+- Legacy plaintext write secrets are migrated out of `localStorage` on startup; deprecated passkey quick-unlock data is removed.
 - Meiku stores no plaintext passwords and no reversibly encrypted server passwords.
 - There is no public server registration.
 - `data.json`, `/api/data`, `/api/token` and `save.php` are not cached by the service worker.
@@ -145,7 +146,7 @@ Backup:
 Local start:
 
 ```bash
-ISHIKU_SETUP_SECRET=dev-secret DV2_DATA_FILE=./data/data.json python server.py --host 127.0.0.1 --port 8080
+ISHIKU_SETUP_SECRET=development-only-secret-at-least-32-characters DV2_DATA_FILE=./data/data.json python server.py --host 127.0.0.1 --port 8080
 ```
 
 Health checks:
@@ -177,4 +178,4 @@ This project was implemented and refined with support from ChatGPT Codex. Codex 
 
 Status: actively in development.
 
-License: not specified yet.
+License: MIT. See `LICENSE`.

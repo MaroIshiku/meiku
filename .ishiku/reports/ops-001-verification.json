@@ -1,1 +1,65 @@
-{"schema_version":1,"timestamp":"2026-08-05T21:34:00Z","application":"meiku","requirement_id":"OPS-001","status":"verified","fresh_clone":{"build_test_run":true,"structural_and_compliance":true},"lifecycle":{"upgrade_applicable":true,"baseline_health":true,"upgrade_health":true,"restore_manifest_match":true,"restore_health":true,"marker_restored":true,"secret_in_logs":false},"runtime":{"read_only_root":true,"no_new_privileges":true,"least_privilege_user":"10001:10001","entrypoint_capabilities":["CHOWN","SETGID","SETUID"]}}
+{
+  "schema_version": 1,
+  "timestamp": "2026-08-21T16:42:00Z",
+  "application": "meiku",
+  "requirement_id": "OPS-001",
+  "status": "verified",
+  "overall_app_status": "IMPLEMENTED_BUT_NOT_VERIFIED",
+  "fresh_clone": {
+    "snapshot_checks_passed": 445,
+    "application_commands_passed": true,
+    "compose_config_passed": true,
+    "container_build_passed": true,
+    "remaining_managed_kit_checksum_failures": 0,
+    "expected_unverified_release_requirements": 1
+  },
+  "delivery": {
+    "host_port": 65003,
+    "container_port": 8080,
+    "default_image": "ghcr.io/maroishiku/meiku:v0.2.5@sha256:a80e2e12070598d0dcde8c2b7a130a626811243be40e4ed428726003363550fc",
+    "base_image": "python:3.13-alpine@sha256:540c7d91f98ff6880174c40e99067bf5941eb54d818a7a5e094d188b196a934d",
+    "verified_local_image_digest": "sha256:226698cbf7363fbd2e26f3bbac9f0ac1a48d2d6db3f5111524873799272b84ed"
+  },
+  "runtime": {
+    "health": true,
+    "readiness": true,
+    "encrypted_token_round_trip": true,
+    "read_only_root": true,
+    "no_new_privileges": true,
+    "least_privilege_user": "10001:10001",
+    "entrypoint_capabilities": [
+      "CHOWN",
+      "SETGID",
+      "SETUID"
+    ],
+    "root_fallback_rejected": true,
+    "placeholder_secret_rejected": true,
+    "secret_in_logs": false
+  },
+  "security": {
+    "negative_server_tests": 10,
+    "crypto_store_and_pin_test_suites": 3,
+    "rate_limit_sequence": [
+      403,
+      403,
+      403,
+      403,
+      403,
+      429
+    ],
+    "docker_scout_version": "1.21.0",
+    "indexed_packages": 39,
+    "critical_vulnerabilities": 0,
+    "high_vulnerabilities": 0
+  },
+  "browser": {
+    "setup_and_vault_flow_passed": true,
+    "six_digit_pin_setup_passed": true,
+    "pin_unlock_passed": true,
+    "encrypted_save_after_pin_unlock_passed": true,
+    "console_warnings_or_errors": 0,
+    "contact_rows_use_local_svg": true,
+    "horizontal_overflow": false,
+    "icon_assets_loaded": true
+  }
+}

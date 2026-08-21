@@ -8,6 +8,7 @@ serves static files and stores the encrypted token atomically.
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import datetime as dt
 import hmac
 import json
@@ -15,6 +16,9 @@ import mimetypes
 import os
 import re
 import tempfile
+import threading
+import time
+import uuid
 from http import HTTPStatus
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
@@ -27,9 +31,19 @@ DEFAULT_DATA_DIR = Path(os.environ.get("ISHIKU_DATA_DIR", "/data"))
 DEFAULT_DATA_FILE = Path(os.environ.get("DV2_DATA_FILE", DEFAULT_DATA_DIR / "data.json"))
 DEFAULT_SETUP_SECRET_FILE = Path("/run/secrets/ishiku_setup_secret")
 MAX_BODY_BYTES = 1024 * 1024
+MIN_SETUP_SECRET_LENGTH = 32
 MIN_TOKEN_LENGTH = 64
 TOKEN_RE = re.compile(r"^[A-Za-z0-9+/=._:-]+$")
 NETWORK_ONLY_PATHS = {"/api/data", "/api/token", "/data.json", "/save.php"}
+WEAK_SETUP_SECRETS = {
+    "change_me",
+    "changeme",
+    "replace-with-a-long-random-secret",
+    "replace-with-at-least-32-random-characters",
+}
+AUTH_FAILURE_LIMIT = 5
+AUTH_FAILURE_WINDOW_SECONDS = 60
+REQUEST_TIMEOUT_SECONDS = 15
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",
@@ -64,10 +78,14 @@ class AppConfig:
     def validate(self) -> None:
         if not self.static_dir.exists():
             raise SystemExit(f"Static directory does not exist: {self.static_dir}")
-        if not self.secret and not self.dev_allow_weak_secret:
-            raise SystemExit("ISHIKU_SETUP_SECRET, ISHIKU_SETUP_SECRET_FILE, or DV2_SHARED_SECRET must be set.")
-        if self.secret == "CHANGE_ME" and not self.dev_allow_weak_secret:
-            raise SystemExit("Configured shared secret must not be CHANGE_ME.")
+        if not self.dev_allow_weak_secret:
+            if not self.secret:
+                raise SystemExit("ISHIKU_SETUP_SECRET, ISHIKU_SETUP_SECRET_FILE, or DV2_SHARED_SECRET must be set.")
+            if len(self.secret) < MIN_SETUP_SECRET_LENGTH or self.secret.lower() in WEAK_SETUP_SECRETS:
+                raise SystemExit(
+                    f"Configured setup secret must contain at least {MIN_SETUP_SECRET_LENGTH} characters "
+                    "and must not be a documented placeholder."
+                )
         self.data_file.parent.mkdir(parents=True, exist_ok=True)
         if not self.data_file.exists():
             try:
@@ -130,6 +148,34 @@ def configured_secret() -> str:
     )
 
 
+class FailedAuthLimiter:
+    def __init__(self) -> None:
+        self._failures: dict[str, deque[float]] = {}
+        self._lock = threading.Lock()
+
+    def _active(self, key: str, now: float) -> deque[float]:
+        attempts = self._failures.setdefault(key, deque())
+        cutoff = now - AUTH_FAILURE_WINDOW_SECONDS
+        while attempts and attempts[0] <= cutoff:
+            attempts.popleft()
+        return attempts
+
+    def limited(self, key: str) -> bool:
+        with self._lock:
+            return len(self._active(key, time.monotonic())) >= AUTH_FAILURE_LIMIT
+
+    def record_failure(self, key: str) -> None:
+        with self._lock:
+            self._active(key, time.monotonic()).append(time.monotonic())
+
+    def clear(self, key: str) -> None:
+        with self._lock:
+            self._failures.pop(key, None)
+
+
+AUTH_LIMITER = FailedAuthLimiter()
+
+
 class ContactCardHandler(BaseHTTPRequestHandler):
     server_version = "Meiku"
     sys_version = ""
@@ -137,6 +183,16 @@ class ContactCardHandler(BaseHTTPRequestHandler):
     @property
     def config(self) -> AppConfig:
         return self.server.config  # type: ignore[attr-defined]
+
+    @property
+    def request_id(self) -> str:
+        if not hasattr(self, "_request_id"):
+            self._request_id = uuid.uuid4().hex
+        return self._request_id
+
+    @property
+    def client_key(self) -> str:
+        return str(self.client_address[0])
 
     def log_message(self, fmt: str, *args: object) -> None:
         if os.environ.get("DV2_ACCESS_LOG", "").lower() in {"1", "true", "yes"}:
@@ -154,13 +210,14 @@ class ContactCardHandler(BaseHTTPRequestHandler):
         if self.path_no_query == "/readyz":
             self.respond_json({
                 "ok": True,
-                "dataFile": str(self.config.data_file),
-                "hasSecret": bool(self.config.secret),
                 "dataWritable": os.access(self.config.data_file.parent, os.W_OK),
             }, no_store=True)
             return
         if self.path_no_query in {"/api/data", "/data.json"}:
             self.respond_json(read_token_file(self.config.data_file), no_store=True)
+            return
+        if self.path_no_query in {"/api/token", "/save.php"}:
+            self.respond_error("METHOD_NOT_ALLOWED", "Request could not be processed.", HTTPStatus.METHOD_NOT_ALLOWED)
             return
         self.serve_static()
 
@@ -170,28 +227,46 @@ class ContactCardHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return
+        if self.path_no_query in {"/api/token", "/save.php"}:
+            self.send_response(HTTPStatus.METHOD_NOT_ALLOWED)
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return
         self.serve_static(head_only=True)
 
     def do_POST(self) -> None:
         if self.path_no_query not in {"/api/token", "/save.php"}:
-            self.respond_json({"ok": False, "error": "Not found."}, HTTPStatus.NOT_FOUND)
+            self.respond_error("NOT_FOUND", "Request could not be processed.", HTTPStatus.NOT_FOUND)
+            return
+        if AUTH_LIMITER.limited(self.client_key):
+            self.audit_auth("rate_limited")
+            self.respond_error(
+                "RATE_LIMITED",
+                "Request could not be authorized.",
+                HTTPStatus.TOO_MANY_REQUESTS,
+                {"Retry-After": str(AUTH_FAILURE_WINDOW_SECONDS)},
+            )
             return
         if not self.authorized():
-            self.respond_json({"ok": False, "error": "Invalid shared secret."}, HTTPStatus.FORBIDDEN)
+            AUTH_LIMITER.record_failure(self.client_key)
+            self.audit_auth("denied")
+            self.respond_error("AUTHORIZATION_FAILED", "Request could not be authorized.", HTTPStatus.FORBIDDEN)
             return
+        AUTH_LIMITER.clear(self.client_key)
         try:
             payload = self.read_json_body()
             token = payload.get("token", "")
             if not isinstance(token, str) or len(token) < MIN_TOKEN_LENGTH or not TOKEN_RE.fullmatch(token):
-                self.respond_json({"ok": False, "error": "Token is missing or too short."}, HTTPStatus.UNPROCESSABLE_ENTITY)
+                self.respond_error("INVALID_TOKEN", "Token is missing or invalid.", HTTPStatus.UNPROCESSABLE_ENTITY)
                 return
             updated = utc_now_iso()
             atomic_write_json(self.config.data_file, {"token": token, "updated": updated})
-            self.respond_json({"ok": True, "token": token, "updated": updated}, no_store=True)
-        except ValueError as exc:
-            self.respond_json({"ok": False, "error": str(exc)}, HTTPStatus.BAD_REQUEST)
+            self.audit_auth("stored")
+            self.respond_json({"ok": True, "updated": updated}, no_store=True)
+        except ValueError:
+            self.respond_error("INVALID_REQUEST", "Request could not be processed.", HTTPStatus.BAD_REQUEST)
         except OSError:
-            self.respond_json({"ok": False, "error": "Token could not be written."}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            self.respond_error("WRITE_FAILED", "Token could not be written.", HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @property
     def path_no_query(self) -> str:
@@ -201,7 +276,19 @@ class ContactCardHandler(BaseHTTPRequestHandler):
         provided = self.headers.get("X-Auth-Token", "")
         return bool(self.config.secret) and hmac.compare_digest(provided, self.config.secret)
 
+    def audit_auth(self, result: str) -> None:
+        event = {
+            "time": utc_now_iso(),
+            "event": "token.write",
+            "result": result,
+            "requestId": self.request_id,
+            "client": self.client_key,
+        }
+        print(json.dumps(event, separators=(",", ":")), flush=True)
+
     def read_json_body(self) -> dict:
+        if self.headers.get_content_type() != "application/json":
+            raise ValueError("JSON content type required.")
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError as exc:
@@ -217,12 +304,34 @@ class ContactCardHandler(BaseHTTPRequestHandler):
             raise ValueError("JSON object expected.")
         return data
 
-    def respond_json(self, payload: dict, status: HTTPStatus = HTTPStatus.OK, no_store: bool = False) -> None:
+    def respond_error(
+        self,
+        code: str,
+        message: str,
+        status: HTTPStatus,
+        headers: dict[str, str] | None = None,
+    ) -> None:
+        self.respond_json(
+            {"ok": False, "code": code, "error": message, "requestId": self.request_id},
+            status,
+            no_store=True,
+            headers=headers,
+        )
+
+    def respond_json(
+        self,
+        payload: dict,
+        status: HTTPStatus = HTTPStatus.OK,
+        no_store: bool = False,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store" if no_store else "private, max-age=0")
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
@@ -258,9 +367,16 @@ class ContactCardHandler(BaseHTTPRequestHandler):
 
 
 class ContactCardServer(ThreadingHTTPServer):
+    daemon_threads = True
+
     def __init__(self, server_address: tuple[str, int], config: AppConfig) -> None:
         super().__init__(server_address, ContactCardHandler)
         self.config = config
+
+    def get_request(self):
+        request, client_address = super().get_request()
+        request.settimeout(REQUEST_TIMEOUT_SECONDS)
+        return request, client_address
 
 
 def parse_args() -> argparse.Namespace:

@@ -2,6 +2,9 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 const TOKEN_VERSION = 2;
 const DEFAULT_ITERATIONS = 250000;
+const PIN_ITERATIONS = 1000000;
+const MIN_ITERATIONS = 100000;
+const MAX_ITERATIONS = 1000000;
 
 export function randomBytes(length) {
   const bytes = new Uint8Array(length);
@@ -30,6 +33,14 @@ function writeUint32(value) {
 
 function readUint32(bytes, offset) {
   return new DataView(bytes.buffer, bytes.byteOffset + offset, 4).getUint32(0, false);
+}
+
+function validatedIterations(value) {
+  const iterations = Number(value);
+  if (!Number.isSafeInteger(iterations) || iterations < MIN_ITERATIONS || iterations > MAX_ITERATIONS) {
+    throw new Error('Encryption parameters are outside the supported range.');
+  }
+  return iterations;
 }
 
 async function deriveAesKey(password, salt, iterations = DEFAULT_ITERATIONS, usages = ['encrypt', 'decrypt']) {
@@ -64,7 +75,7 @@ export async function decryptJson(token, masterPassword) {
   if (bytes.length < 1 + 4 + 16 + 12 + 17) throw new Error('Token is incomplete.');
   const version = bytes[0];
   if (version !== TOKEN_VERSION) throw new Error(`Unsupported token version: ${version}`);
-  const iterations = readUint32(bytes, 1);
+  const iterations = validatedIterations(readUint32(bytes, 1));
   const salt = bytes.slice(5, 21);
   const iv = bytes.slice(21, 33);
   const ciphertext = bytes.slice(33);
@@ -76,32 +87,19 @@ export async function decryptJson(token, masterPassword) {
 export async function encryptStringWithPin(secret, pin) {
   const salt = randomBytes(16);
   const iv = randomBytes(12);
-  const key = await deriveAesKey(pin, salt, DEFAULT_ITERATIONS);
+  const key = await deriveAesKey(pin, salt, PIN_ITERATIONS);
   const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(secret)));
-  return JSON.stringify({ v: TOKEN_VERSION, kdf: 'PBKDF2-SHA256', iter: DEFAULT_ITERATIONS, salt: bytesToBase64(salt), iv: bytesToBase64(iv), ct: bytesToBase64(ciphertext) });
+  return JSON.stringify({ v: TOKEN_VERSION, kdf: 'PBKDF2-SHA256', iter: PIN_ITERATIONS, salt: bytesToBase64(salt), iv: bytesToBase64(iv), ct: bytesToBase64(ciphertext) });
 }
 
 export async function decryptStringWithPin(blob, pin) {
   const box = JSON.parse(blob);
-  if (box.v !== TOKEN_VERSION) throw new Error('PIN blob version does not match.');
+  if (box.v !== TOKEN_VERSION || box.kdf !== 'PBKDF2-SHA256') throw new Error('PIN blob format does not match.');
   const salt = base64ToBytes(box.salt);
   const iv = base64ToBytes(box.iv);
   const ciphertext = base64ToBytes(box.ct);
-  const key = await deriveAesKey(pin, salt, Number(box.iter || DEFAULT_ITERATIONS));
+  if (salt.length !== 16 || iv.length !== 12 || ciphertext.length < 16) throw new Error('PIN blob is incomplete.');
+  const key = await deriveAesKey(pin, salt, validatedIterations(box.iter));
   const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
-  return dec.decode(plaintext);
-}
-
-export async function encryptStringWithRawKey(secret, rawKeyBytes) {
-  const iv = randomBytes(12);
-  const key = await crypto.subtle.importKey('raw', rawKeyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
-  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(secret)));
-  return JSON.stringify({ v: TOKEN_VERSION, alg: 'AES-GCM-PRF', iv: bytesToBase64(iv), ct: bytesToBase64(ciphertext) });
-}
-
-export async function decryptStringWithRawKey(blob, rawKeyBytes) {
-  const box = JSON.parse(blob);
-  const key = await crypto.subtle.importKey('raw', rawKeyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(box.iv) }, key, base64ToBytes(box.ct));
   return dec.decode(plaintext);
 }

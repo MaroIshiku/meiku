@@ -1,6 +1,15 @@
 const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+const MIN_SETUP_SECRET_LENGTH = 32;
 const MIN_TOKEN_LENGTH = 64;
 const TOKEN_RE = /^[A-Za-z0-9+/=._:-]+$/;
+const SESSION_SECRET_KEY = 'meiku.writeSecret';
+const LEGACY_LOCAL_SECRET_KEY = 'dv2.sharedSecret';
+const PLACEHOLDER_SECRETS = new Set([
+  'change_me',
+  'changeme',
+  'replace-with-a-long-random-secret',
+  'replace-with-at-least-32-random-characters'
+]);
 
 export const Store = {
   async loadData() {
@@ -15,8 +24,26 @@ export const Store = {
     }
   },
 
-  getSecret() { return localStorage.getItem('dv2.sharedSecret') || ''; },
-  setSecret(secret) { localStorage.setItem('dv2.sharedSecret', secret.trim()); },
+  migrateLegacySecret() {
+    const legacyValue = localStorage.getItem(LEGACY_LOCAL_SECRET_KEY) || '';
+    localStorage.removeItem(LEGACY_LOCAL_SECRET_KEY);
+    if (!legacyValue) return false;
+    Store.setSecret(legacyValue);
+    return true;
+  },
+
+  getSecret() { return sessionStorage.getItem(SESSION_SECRET_KEY) || ''; },
+  setSecret(secret) {
+    const value = String(secret || '').trim();
+    if (value.length < MIN_SETUP_SECRET_LENGTH || PLACEHOLDER_SECRETS.has(value.toLowerCase())) {
+      throw new Error(`Server secret must contain at least ${MIN_SETUP_SECRET_LENGTH} characters and must not be a placeholder.`);
+    }
+    sessionStorage.setItem(SESSION_SECRET_KEY, value);
+  },
+  clearSecret() {
+    sessionStorage.removeItem(SESSION_SECRET_KEY);
+    localStorage.removeItem(LEGACY_LOCAL_SECRET_KEY);
+  },
 
   async saveToken(token) {
     const secret = Store.getSecret();

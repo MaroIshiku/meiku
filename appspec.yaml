@@ -24,7 +24,10 @@
       "priority": "critical",
       "acceptance": [
         "Private profile data remains protected by the existing client-side encrypted vault.",
-        "No server account or alternative sign-in method is offered."
+        "No server account or server-side sign-in method is offered.",
+        "A six-digit PIN may unlock the existing client vault under the recorded time-bounded security override.",
+        "The server write secret is never persisted as plaintext in localStorage.",
+        "Passkey quick unlock is not offered."
       ],
       "security_critical": true
     },
@@ -44,6 +47,7 @@
       "priority": "high",
       "acceptance": [
         "A fresh clone can build, test, and run without the outer workspace.",
+        "The default published host port is 65003 while the container keeps its compatible internal port 8080.",
         "Health checks, persistent data, runtime secrets, backup, restore, and upgrade procedures are verifiable."
       ],
       "security_critical": true
