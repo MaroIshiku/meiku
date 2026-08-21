@@ -62,7 +62,7 @@
     ".ishiku/kit/scripts/compliance-test": "60ae15ce55597270ee588ab24918780b49032529b9a16b9496d9f0a1169c443b",
     ".ishiku/kit/scripts/design-system": "bd2aed9537085b4e8d389a8e220829dda7dab66b300b7a8b5dbe3e8f8b30207c",
     ".ishiku/kit/scripts/generate-traceability": "a92a44483fa326cc0b9189222e3fdee52919545a8ccf4355207966cb313a1c1a",
-    ".ishiku/kit/scripts/ishiku.mjs": "140a226fe57fe46ec891078925c1a41c406306302af842d25db651cd38167e3b",
+    ".ishiku/kit/scripts/ishiku.mjs": "39b73fc9f0facaf7c83e6a8d5c261cc5a41bed7a535e02d429b47ac11838f1d3",
     ".ishiku/kit/scripts/verify-app": "d9e838b9de14f441754e930055764036e29d68a8ff1cbb2889b2d778427e3814",
     ".ishiku/kit/version.yaml": "cbb810243aa3af1308511cebe50052d76c1f8e25d085dc7b25acc6f9b7773876"
   }

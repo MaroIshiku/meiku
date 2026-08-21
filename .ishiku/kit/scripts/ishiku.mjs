@@ -237,7 +237,7 @@ function verifyRepository(appRoot, options = {}) {
     check(project.platform?.authentication === expectedAuth, 'PROJECT-AUTH', 'authentication profile matches approved exceptions', checks);
   }
   const spec = validateAppSpec(repo, checks);
-  validateTraceability(repo, spec, checks, options.full);
+  validateTraceability(repo, spec, checks, options.full && !options.allowUnverifiedRequirements);
   boundaryAndSecretChecks(repo, checks);
   workflowChecks(repo, checks);
   designChecks(repo, checks);
@@ -397,10 +397,11 @@ function createApp(id, displayName) {
 
 if (!command) fail('Usage: ishiku.mjs <command> [path] [options]');
 const full = args.includes('--full');
+const allowUnverifiedRequirements = args.includes('--allow-unverified-requirements');
 const positionals = args.filter((arg) => !arg.startsWith('--'));
 switch (command) {
-  case 'verify-workspace': verifyWorkspace(positionals[0] ?? '.', { full }); break;
-  case 'verify-app': printReport(verifyRepository(resolve(positionals[0] ?? '.'), { full })); break;
+  case 'verify-workspace': verifyWorkspace(positionals[0] ?? '.', { full, allowUnverifiedRequirements }); break;
+  case 'verify-app': printReport(verifyRepository(resolve(positionals[0] ?? '.'), { full, allowUnverifiedRequirements })); break;
   case 'check-appspec':
   case 'check-requirements':
   case 'check-architecture':

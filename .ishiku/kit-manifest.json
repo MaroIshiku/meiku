@@ -232,7 +232,7 @@
     },
     {
       "path": ".ishiku/kit/scripts/ishiku.mjs",
-      "sha256": "140a226fe57fe46ec891078925c1a41c406306302af842d25db651cd38167e3b"
+      "sha256": "39b73fc9f0facaf7c83e6a8d5c261cc5a41bed7a535e02d429b47ac11838f1d3"
     },
     {
       "path": ".ishiku/kit/scripts/verify-app",
@@ -258,6 +258,7 @@
     ".ishiku/overrides/"
   ],
   "local_changes": [
-    ".github/workflows/ishiku-release-release.yml"
+    ".github/workflows/ishiku-release-release.yml",
+    ".ishiku/kit/scripts/ishiku.mjs"
   ]
 }
