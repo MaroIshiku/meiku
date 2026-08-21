@@ -46,7 +46,7 @@
     "github_owner": "MaroIshiku",
     "public_repository": true,
     "short_description": "Meiku is a self-hosted profile and contact card app in the ishiku design system.",
-    "docker_image": "ghcr.io/maroishiku/meiku:v0.2.6@sha256:49f4793a8f071e3fae235c9e1636d0178eca9ea6f6194772e7a4a362809fa4a0",
+    "docker_image": "ghcr.io/maroishiku/meiku:v0.2.7@sha256:a0eb4505ac896e1dfcf1b9ee5f18afc0d37519b10a15ab6da18bbe149fe15123",
     "codex_notice_enabled": true
   }
 }
