@@ -112,7 +112,7 @@
     },
     {
       "path": ".github/workflows/ishiku-pull-request-verify.yml",
-      "sha256": "87e0ea5002f38cc379e04e941dcdeb4a5e041f0d5eaddc906368ad40eb7c7912"
+      "sha256": "1f0c7ce8047665407513364126acc38c73023a3bedbe3a9033b181bfa4273076"
     },
     {
       "path": ".github/workflows/ishiku-release-release.yml",
@@ -258,6 +258,7 @@
     ".ishiku/overrides/"
   ],
   "local_changes": [
+    ".github/workflows/ishiku-pull-request-verify.yml",
     ".github/workflows/ishiku-release-release.yml",
     ".ishiku/kit/scripts/ishiku.mjs"
   ]
