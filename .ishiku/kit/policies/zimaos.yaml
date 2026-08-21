@@ -4,7 +4,8 @@
   "image": {
     "registry": "ghcr.io",
     "owner": "maroishiku",
-    "default_tag": "latest",
+    "release_reference": "immutable_tag_and_digest",
+    "floating_tag_allowed": false,
     "primary_compose_uses_direct_image": true
   },
   "ui_compatibility": {
@@ -15,7 +16,8 @@
     "external_env_is_alternative_only": true
   },
   "storage": {
-    "host_path_pattern": "/DATA/AppData/i_<app-id>/Data",
+    "new_app_host_path_pattern": "/DATA/AppData/i_<app-id>/Data",
+    "existing_app_path_policy": "preserve_recorded_path_without_an_approved_migration",
     "container_data_path": "/data",
     "migration_policy": "breaking-change-allowed",
     "requires_backup_before_update": true
@@ -29,21 +31,12 @@
     "must_not_ship_a_real_or_reusable_secret": true
   },
   "host_ports": {
-    "range": "8504-8550",
-    "iana_status_checked": "2026-08-10",
-    "iana_registry": "https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml",
-    "reserved_or_assigned_ports_avoided": [8500, 8501, 8502, 8503],
-    "applications": {
-      "dropiku": 8504,
-      "dyniku": 8505,
-      "keyku": 8506,
-      "libiku": 8507,
-      "meiku": 8508,
-      "nestiku": 8509,
-      "pingiku": 8510,
-      "pulliku": 8511,
-      "seediku": 8512,
-      "tuniku": 8513
-    }
+    "canonical_registry": "ports.yaml",
+    "registry_location": "workspace_root",
+    "range": "65000-65099",
+    "published_port_source": "explicit port_registry.ports entry matching application_id",
+    "container_port_source": "application compatibility contract",
+    "standalone_snapshot_required": true,
+    "runtime_workspace_dependency_forbidden": true
   }
 }

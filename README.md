@@ -75,6 +75,8 @@ docker compose pull
 docker compose up -d
 ```
 
+For direct ZimaOS/CasaOS import, use `Meiku - Profile Share.yaml`. That primary file contains the fixed published port `65003` and the immutable release image without Compose interpolation; set `ISHIKU_SETUP_SECRET` in the platform UI before starting it. The regular `docker-compose.yml` is the documented alternative when `.env` overrides are required.
+
 ### First Start
 
 On first start, Meiku shows the vault setup. Enter the profile name, a master password and the same secret configured server-side as `ISHIKU_SETUP_SECRET`, `ISHIKU_SETUP_SECRET_FILE` or the legacy variable `DV2_SHARED_SECRET`.
