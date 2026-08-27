@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "kit_version": "1.2.0",
-  "installed_at": "2026-08-21T16:30:17.518Z",
+  "kit_version": "1.2.1",
+  "installed_at": "2026-08-21T17:25:38.022Z",
   "source": "workspace:.ishiku",
-  "source_version": "2026-08-17",
+  "source_version": "2026-08-21",
   "checksums": {
     ".agents/skills/ishiku-design-review/agents/openai.yaml": "2db3cd631650f0f10dc66d549cb736c6a54bfd7663ab90e1ba60a57ad12f4a94",
     ".agents/skills/ishiku-design-review/SKILL.md": "5d9053049cf8c68bd49e20565162333a3a1a7978f74cc33b043be8b908f29800",
     ".agents/skills/ishiku-docker-review/agents/openai.yaml": "697aeaebb03daf9c9eaa502fff5c44a56840fa0756337044409f016d7e479d30",
-    ".agents/skills/ishiku-docker-review/SKILL.md": "c3be3260a0573d1bd2c0c73c2e7a5e1637d9da9edb482bb11de6192115ed2eae",
+    ".agents/skills/ishiku-docker-review/SKILL.md": "5735fe8a0690c9bb26888e41b265deb03b1dbf8fb2a5507a5b4a4ccc5a2d280a",
     ".agents/skills/ishiku-github-release/agents/openai.yaml": "79ac15f19af9fdb872514eaff671225bf1a098dd8fa280771addf3e3355d9d90",
     ".agents/skills/ishiku-github-release/SKILL.md": "c6968687a480d859c4bf67ad5a09e5f502d9074da2dc3d51925b36858ed8f16b",
     ".agents/skills/ishiku-icon-generator/agents/openai.yaml": "d92779e9e70e56fe4888a0b5e149b149d400201b45538047ddb1aa2ea12cdadc",
@@ -42,7 +42,7 @@
     ".ishiku/kit/policies/releases.md": "a8c2c34c27c367dd4b7e1aaccd55b1056d1d89c8d0ba0e7da5c93c1e8a15acd2",
     ".ishiku/kit/policies/security.md": "3ba0c36e5d9848dd3d4aac9e9e5dac4576de00309d1043418b65e82981da01b8",
     ".ishiku/kit/policies/testing.md": "1d34694dfbdbe51201c5a345760318124d72b0c3baa79fc80873c1c0defde1ac",
-    ".ishiku/kit/policies/zimaos.yaml": "5e47d10269b4c91923e1acc93d72a111513494f606fc49b5943ada717827176a",
+    ".ishiku/kit/policies/zimaos.yaml": "ee77e600fecb0224f9bfc9345db0c5bf1d4390bdc70a4791e578cdfc1e1e9140",
     ".ishiku/kit/schemas/appspec.schema.json": "700a25eb02ce8648dce9dfe0fcb837f593b90363de629d141ed8330e03178bfd",
     ".ishiku/kit/schemas/design-lock.schema.json": "6b7dbd6cf8416e82b7fdcebe9a02d79e09d94d57243e7c2e39f80698ee34319d",
     ".ishiku/kit/schemas/design-system.schema.json": "63affb949087e2cd801841efb225448a4c3a4d304fd2b9961ad151b9edfde42a",
@@ -64,6 +64,6 @@
     ".ishiku/kit/scripts/generate-traceability": "a92a44483fa326cc0b9189222e3fdee52919545a8ccf4355207966cb313a1c1a",
     ".ishiku/kit/scripts/ishiku.mjs": "39b73fc9f0facaf7c83e6a8d5c261cc5a41bed7a535e02d429b47ac11838f1d3",
     ".ishiku/kit/scripts/verify-app": "d9e838b9de14f441754e930055764036e29d68a8ff1cbb2889b2d778427e3814",
-    ".ishiku/kit/version.yaml": "cbb810243aa3af1308511cebe50052d76c1f8e25d085dc7b25acc6f9b7773876"
+    ".ishiku/kit/version.yaml": "17bccb16f95f08585e310dac30e61f694630563dffca4bac4d5d8ee88895cb25"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "kit_version": "1.2.0",
+  "kit_version": "1.2.1",
   "managed": [
     {
       "path": ".agents/skills/ishiku-design-review/agents/openai.yaml",
@@ -16,7 +16,7 @@
     },
     {
       "path": ".agents/skills/ishiku-docker-review/SKILL.md",
-      "sha256": "c3be3260a0573d1bd2c0c73c2e7a5e1637d9da9edb482bb11de6192115ed2eae"
+      "sha256": "5735fe8a0690c9bb26888e41b265deb03b1dbf8fb2a5507a5b4a4ccc5a2d280a"
     },
     {
       "path": ".agents/skills/ishiku-github-release/agents/openai.yaml",
@@ -152,7 +152,7 @@
     },
     {
       "path": ".ishiku/kit/policies/zimaos.yaml",
-      "sha256": "5e47d10269b4c91923e1acc93d72a111513494f606fc49b5943ada717827176a"
+      "sha256": "ee77e600fecb0224f9bfc9345db0c5bf1d4390bdc70a4791e578cdfc1e1e9140"
     },
     {
       "path": ".ishiku/kit/schemas/appspec.schema.json",
@@ -240,7 +240,7 @@
     },
     {
       "path": ".ishiku/kit/version.yaml",
-      "sha256": "cbb810243aa3af1308511cebe50052d76c1f8e25d085dc7b25acc6f9b7773876"
+      "sha256": "17bccb16f95f08585e310dac30e61f694630563dffca4bac4d5d8ee88895cb25"
     }
   ],
   "application_owned": [
