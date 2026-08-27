@@ -10,6 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN addgroup -S ishcontact && adduser -S -G ishcontact -u 10001 ishcontact \
+    && apk upgrade --no-cache libcrypto3 libssl3 \
     && apk add --no-cache su-exec \
     && rm -rf /usr/local/lib/python3.13/site-packages/pip /usr/local/lib/python3.13/site-packages/pip-* /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.13 \
     && mkdir -p /data \
