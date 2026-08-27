@@ -43,7 +43,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 10s
-    image: ghcr.io/maroishiku/meiku:v0.2.7@sha256:a0eb4505ac896e1dfcf1b9ee5f18afc0d37519b10a15ab6da18bbe149fe15123
+    image: ghcr.io/maroishiku/meiku:v0.2.8@sha256:be75ca5f3153d32cc4ad70d95052d41768449758af488d173e9f53d96b3ad923
     init: true
     labels:
       icon: https://raw.githubusercontent.com/MaroIshiku/meiku/main/assets/icons/icon-512.png
