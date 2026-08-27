@@ -7,7 +7,7 @@ Date: 2026-06-29
 - The Python server serves the Meiku PWA and stores only the encrypted token.
 - Client-side encryption stays entirely in the browser.
 - Dockerfile, environment-aware `docker-compose.yml`, and direct-import `Meiku - Profile Share.yaml` are available for ZimaOS/reverse-proxy operation.
-- The primary ZimaOS Compose uses port `65003` and the immutable GHCR release `ghcr.io/maroishiku/meiku:v0.2.7@sha256:a0eb4505ac896e1dfcf1b9ee5f18afc0d37519b10a15ab6da18bbe149fe15123` as direct scalars without interpolation.
+- The primary ZimaOS Compose uses port `65003` and the immutable GHCR release `ghcr.io/maroishiku/meiku:v0.2.8@sha256:be75ca5f3153d32cc4ad70d95052d41768449758af488d173e9f53d96b3ad923` as direct scalars without interpolation.
 - Persistence uses the bind mount `/DATA/AppData/meiku/data:/data`.
 - `x-casaos` metadata is available for ZimaOS/CasaOS app import.
 - AppMark, favicon and PWA icons are direct exports from the canonical Meiku icon source.
