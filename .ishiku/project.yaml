@@ -47,7 +47,7 @@
       },
       {
         "name": "container",
-        "command": "docker build -t meiku:verify .",
+        "command": "docker build --load -t meiku:verify .",
         "required_for_verified": true
       }
     ]
