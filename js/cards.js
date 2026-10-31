@@ -1,5 +1,5 @@
 import { $, $$, copyText, esc, stateView, toast } from './dom.js';
-import { icon } from './icons.js';
+import { icon, iconPath } from './icons.js';
 import { firstName, hasBank, hasBusiness, hasPayPal, initials, slug } from './profile.js';
 import { formatIban, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js';
 
@@ -15,8 +15,16 @@ export const CARDS = [
   { id: 'bank', nav: 'Bank', title: 'Bank transfer', iconName: 'bank', step: 3 }
 ];
 
-function qrOptions(size) {
-  return { size, style: 'soft', className: 'meiku-qr__canvas', light: '#ffffff', finderLight: '#ffffff', dark: '#111111', border: 4 };
+function qrOptions(size, card) {
+  return {
+    size,
+    style: 'fluid',
+    theme: document.documentElement.dataset.theme,
+    logoPath: iconPath(card.iconName),
+    label: `${card.title} QR code`,
+    className: 'meiku-qr__canvas',
+    border: 4
+  };
 }
 
 /**
@@ -177,7 +185,7 @@ export function createCards(ctx) {
     const target = $('[data-qr]', panel);
     if (!target) return;
     const payload = payloadFor(id);
-    if (payload) renderQr(target, payload, qrOptions(720));
+    if (payload) renderQr(target, payload, qrOptions(720, CARDS.find(c => c.id === id)));
   }
 
   function renderDeck() {
@@ -214,7 +222,7 @@ export function createCards(ctx) {
   function scrollToCard(id, smooth = true) {
     const panel = $(`#card-${id}`);
     if (!panel) return;
-    $('#deck').scrollTo({ left: panel.offsetLeft, behavior: smooth ? 'smooth' : 'instant' });
+    $('#deck').scrollTo({ left: panel.offsetLeft, behavior: smooth ? 'smooth' : 'auto' });
   }
 
   function setCard(id) {
@@ -262,7 +270,7 @@ export function createCards(ctx) {
     const caption = captionFor(card.id);
     $('#fsCaption').textContent = caption;
     $('#fsCaption').hidden = !caption;
-    renderQr($('#fsQr'), payloadFor(card.id), qrOptions(1080));
+    renderQr($('#fsQr'), payloadFor(card.id), qrOptions(1080, card));
     $('#fsPrev').disabled = index <= 0;
     $('#fsNext').disabled = index >= cards.length - 1;
     $('#fsPosition').textContent = `${index + 1} of ${cards.length}`;
@@ -312,6 +320,8 @@ export function createCards(ctx) {
       }, 80);
     }, { passive: true });
     window.addEventListener('resize', () => scrollToCard(state.card, false));
+    // QR colours follow the theme.
+    window.addEventListener('psu:themechange', () => { if (state.data && !$('#vaultScreen').hidden) renderDeck(); });
 
     deck.addEventListener('click', event => {
       const panel = event.target.closest('[data-card]');
@@ -364,7 +374,7 @@ export function createCards(ctx) {
       else if (event.key === 'Tab') {
         const items = $$('button:not([disabled])', overlay);
         const first = items[0];
-        const last = items.at(-1);
+        const last = items[items.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }

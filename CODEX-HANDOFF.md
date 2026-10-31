@@ -67,3 +67,11 @@ Branch `claude/mobile-ui-redesign`. Phone-only, QR-first UI on the shared design
 - Unchanged: vault format, crypto, PIN blob format, API, storage keys for vault data and all migrations from v0.3.0.
 - Not done: no desktop layout (not planned). Real-device checks of QR scanning on iOS Safari and Android Chrome are still open; Playwright covers layout and flows only.
 - Released as `v0.4.0` (run 41243530615): `ghcr.io/maroishiku/meiku:v0.4.0@sha256:433c30fc89691cd16343f955eed038ebed974df014a3b8cfd5dcccc1b5b3ddb7`. Trivy reports 0 HIGH/CRITICAL for amd64 and arm64. The published image passed the Compose runtime test with v0.2.8 data and `tests/e2e/migration.e2e.mjs`. The release notes were corrected to roll back to v0.3.0 (no data migration between the two). The digest is pinned in both Compose files and `app.manifest.json`.
+
+## v0.4.1 (2026-11-01, branch `claude/build-info`, PR #32)
+
+See `.ishiku/decisions/release-v0.4.1.json`. Contains: fluid QR codes, the start-up guard against blank screens (with "Repair app"), real build information under About, SIGTERM handling (Compose files drop `init: true`), quieter logs and `DV2_SHARED_SECRET` as a deprecated fallback.
+
+Field finding on the owner's ZimaOS: the stored app configuration had a memory reservation (256 MB) above the limit (128 MB), so Docker rejected the recreated container. The data volume there is `/media/ZimaOS-HD/AppData/i_meiku/data`, not `/DATA/AppData/meiku/data`. Both are documented in the README under "Updating on ZimaOS".
+
+Still open: verify on an iPhone (WebKit could not run locally); if a blank screen remains, the error card now shows the cause.

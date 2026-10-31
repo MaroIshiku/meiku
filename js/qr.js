@@ -1,6 +1,8 @@
 const RS_BLOCK_TABLE = [[1, 26, 19], [1, 26, 16], [1, 26, 13], [1, 26, 9], [1, 44, 34], [1, 44, 28], [1, 44, 22], [1, 44, 16], [1, 70, 55], [1, 70, 44], [2, 35, 17], [2, 35, 13], [1, 100, 80], [2, 50, 32], [2, 50, 24], [4, 25, 9], [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12], [2, 86, 68], [4, 43, 27], [4, 43, 19], [4, 43, 15], [2, 98, 78], [4, 49, 31], [2, 32, 14, 4, 33, 15], [4, 39, 13, 1, 40, 14], [2, 121, 97], [2, 60, 38, 2, 61, 39], [4, 40, 18, 2, 41, 19], [4, 40, 14, 2, 41, 15], [2, 146, 116], [3, 58, 36, 2, 59, 37], [4, 36, 16, 4, 37, 17], [4, 36, 12, 4, 37, 13], [2, 86, 68, 2, 87, 69], [4, 69, 43, 1, 70, 44], [6, 43, 19, 2, 44, 20], [6, 43, 15, 2, 44, 16], [4, 101, 81], [1, 80, 50, 4, 81, 51], [4, 50, 22, 4, 51, 23], [3, 36, 12, 8, 37, 13], [2, 116, 92, 2, 117, 93], [6, 58, 36, 2, 59, 37], [4, 46, 20, 6, 47, 21], [7, 42, 14, 4, 43, 15], [4, 133, 107], [8, 59, 37, 1, 60, 38], [8, 44, 20, 4, 45, 21], [12, 33, 11, 4, 34, 12], [3, 145, 115, 1, 146, 116], [4, 64, 40, 5, 65, 41], [11, 36, 16, 5, 37, 17], [11, 36, 12, 5, 37, 13], [5, 109, 87, 1, 110, 88], [5, 65, 41, 5, 66, 42], [5, 54, 24, 7, 55, 25], [11, 36, 12, 7, 37, 13], [5, 122, 98, 1, 123, 99], [7, 73, 45, 3, 74, 46], [15, 43, 19, 2, 44, 20], [3, 45, 15, 13, 46, 16], [1, 135, 107, 5, 136, 108], [10, 74, 46, 1, 75, 47], [1, 50, 22, 15, 51, 23], [2, 42, 14, 17, 43, 15], [5, 150, 120, 1, 151, 121], [9, 69, 43, 4, 70, 44], [17, 50, 22, 1, 51, 23], [2, 42, 14, 19, 43, 15], [3, 141, 113, 4, 142, 114], [3, 70, 44, 11, 71, 45], [17, 47, 21, 4, 48, 22], [9, 39, 13, 16, 40, 14], [3, 135, 107, 5, 136, 108], [3, 67, 41, 13, 68, 42], [15, 54, 24, 5, 55, 25], [15, 43, 15, 10, 44, 16], [4, 144, 116, 4, 145, 117], [17, 68, 42], [17, 50, 22, 6, 51, 23], [19, 46, 16, 6, 47, 17], [2, 139, 111, 7, 140, 112], [17, 74, 46], [7, 54, 24, 16, 55, 25], [34, 37, 13], [4, 151, 121, 5, 152, 122], [4, 75, 47, 14, 76, 48], [11, 54, 24, 14, 55, 25], [16, 45, 15, 14, 46, 16], [6, 147, 117, 4, 148, 118], [6, 73, 45, 14, 74, 46], [11, 54, 24, 16, 55, 25], [30, 46, 16, 2, 47, 17], [8, 132, 106, 4, 133, 107], [8, 75, 47, 13, 76, 48], [7, 54, 24, 22, 55, 25], [22, 45, 15, 13, 46, 16], [10, 142, 114, 2, 143, 115], [19, 74, 46, 4, 75, 47], [28, 50, 22, 6, 51, 23], [33, 46, 16, 4, 47, 17], [8, 152, 122, 4, 153, 123], [22, 73, 45, 3, 74, 46], [8, 53, 23, 26, 54, 24], [12, 45, 15, 28, 46, 16], [3, 147, 117, 10, 148, 118], [3, 73, 45, 23, 74, 46], [4, 54, 24, 31, 55, 25], [11, 45, 15, 31, 46, 16], [7, 146, 116, 7, 147, 117], [21, 73, 45, 7, 74, 46], [1, 53, 23, 37, 54, 24], [19, 45, 15, 26, 46, 16], [5, 145, 115, 10, 146, 116], [19, 75, 47, 10, 76, 48], [15, 54, 24, 25, 55, 25], [23, 45, 15, 25, 46, 16], [13, 145, 115, 3, 146, 116], [2, 74, 46, 29, 75, 47], [42, 54, 24, 1, 55, 25], [23, 45, 15, 28, 46, 16], [17, 145, 115], [10, 74, 46, 23, 75, 47], [10, 54, 24, 35, 55, 25], [19, 45, 15, 35, 46, 16], [17, 145, 115, 1, 146, 116], [14, 74, 46, 21, 75, 47], [29, 54, 24, 19, 55, 25], [11, 45, 15, 46, 46, 16], [13, 145, 115, 6, 146, 116], [14, 74, 46, 23, 75, 47], [44, 54, 24, 7, 55, 25], [59, 46, 16, 1, 47, 17], [12, 151, 121, 7, 152, 122], [12, 75, 47, 26, 76, 48], [39, 54, 24, 14, 55, 25], [22, 45, 15, 41, 46, 16], [6, 151, 121, 14, 152, 122], [6, 75, 47, 34, 76, 48], [46, 54, 24, 10, 55, 25], [2, 45, 15, 64, 46, 16], [17, 152, 122, 4, 153, 123], [29, 74, 46, 14, 75, 47], [49, 54, 24, 10, 55, 25], [24, 45, 15, 46, 46, 16], [4, 152, 122, 18, 153, 123], [13, 74, 46, 32, 75, 47], [48, 54, 24, 14, 55, 25], [42, 45, 15, 32, 46, 16], [20, 147, 117, 4, 148, 118], [40, 75, 47, 7, 76, 48], [43, 54, 24, 22, 55, 25], [10, 45, 15, 67, 46, 16], [19, 148, 118, 6, 149, 119], [18, 75, 47, 31, 76, 48], [34, 54, 24, 34, 55, 25], [20, 45, 15, 61, 46, 16]];
 const PATTERN_POSITION_TABLE = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50], [6, 30, 54], [6, 32, 58], [6, 34, 62], [6, 26, 46, 66], [6, 26, 48, 70], [6, 26, 50, 74], [6, 30, 54, 78], [6, 30, 56, 82], [6, 30, 58, 86], [6, 34, 62, 90], [6, 28, 50, 72, 94], [6, 26, 50, 74, 98], [6, 30, 54, 78, 102], [6, 28, 54, 80, 106], [6, 32, 58, 84, 110], [6, 30, 58, 86, 114], [6, 34, 62, 90, 118], [6, 26, 50, 74, 98, 122], [6, 30, 54, 78, 102, 126], [6, 26, 52, 78, 104, 130], [6, 30, 56, 82, 108, 134], [6, 34, 60, 86, 112, 138], [6, 30, 58, 86, 114, 142], [6, 34, 62, 90, 118, 146], [6, 30, 54, 78, 102, 126, 150], [6, 24, 50, 76, 102, 128, 154], [6, 28, 54, 80, 106, 132, 158], [6, 32, 58, 84, 110, 136, 162], [6, 26, 54, 82, 110, 138, 166], [6, 30, 58, 86, 114, 142, 170]];
 const ERROR_CORRECT_M = 0;
+/** Error correction levels with this encoder's internal codes (format bits: L=01, M=00, Q=11, H=10). */
+export const EC_LEVEL = { L: 1, M: 0, Q: 3, H: 2 };
 const MODE_8BIT_BYTE = 4;
 const G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | 1;
 const G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | 1;
@@ -29,11 +31,11 @@ function rsBlocks(version, errorCorrection = ERROR_CORRECT_M) {
   return blocks;
 }
 function lengthInBits(version) { return version < 10 ? 8 : 16; }
-function bitLimit(version) { return rsBlocks(version).reduce((sum, block) => sum + block.dataCount * 8, 0); }
-function chooseVersion(dataBytes) {
+function bitLimit(version, ec = ERROR_CORRECT_M) { return rsBlocks(version, ec).reduce((sum, block) => sum + block.dataCount * 8, 0); }
+function chooseVersion(dataBytes, ec = ERROR_CORRECT_M) {
   for (let version = 1; version <= 40; version++) {
     const needed = 4 + lengthInBits(version) + dataBytes.length * 8;
-    if (needed <= bitLimit(version)) return version;
+    if (needed <= bitLimit(version, ec)) return version;
   }
   throw new Error('QR data is too long.');
 }
@@ -70,18 +72,18 @@ function rsRemainder(data, ecCount) {
   return msg.slice(msg.length - ecCount);
 }
 
-function createData(version, dataBytes) {
+function createData(version, dataBytes, ec = ERROR_CORRECT_M) {
   const buffer = new BitBuffer();
   buffer.put(MODE_8BIT_BYTE, 4);
   buffer.put(dataBytes.length, lengthInBits(version));
   for (const byte of dataBytes) buffer.put(byte, 8);
-  const limit = bitLimit(version);
+  const limit = bitLimit(version, ec);
   for (let i = 0; i < Math.min(limit - buffer.length, 4); i++) buffer.putBit(false);
   const delimit = buffer.length % 8;
   if (delimit) for (let i = 0; i < 8 - delimit; i++) buffer.putBit(false);
   const bytesToFill = Math.floor((limit - buffer.length) / 8);
   for (let i = 0; i < bytesToFill; i++) buffer.put(i % 2 === 0 ? PAD0 : PAD1, 8);
-  return createBytes(buffer.buffer, rsBlocks(version));
+  return createBytes(buffer.buffer, rsBlocks(version, ec));
 }
 function createBytes(buffer, blocks) {
   let offset = 0;
@@ -162,9 +164,9 @@ function setupTiming(modules) {
   for (let r = 8; r < count - 8; r++) if (modules[r][6] === null) modules[r][6] = r % 2 === 0;
   for (let c = 8; c < count - 8; c++) if (modules[6][c] === null) modules[6][c] = c % 2 === 0;
 }
-function setupTypeInfo(modules, maskPattern, test) {
+function setupTypeInfo(modules, maskPattern, test, ec = ERROR_CORRECT_M) {
   const count = modules.length;
-  const data = (ERROR_CORRECT_M << 3) | maskPattern;
+  const data = (ec << 3) | maskPattern;
   const bits = BCHTypeInfo(data);
   for (let i = 0; i < 15; i++) {
     const mod = !test && ((bits >> i) & 1) === 1;
@@ -210,9 +212,9 @@ function mapData(modules, data, maskPattern) {
     }
   }
 }
-function makeImpl(version, data, maskPattern, test = false) {
+function makeImpl(version, data, maskPattern, test = false, ec = ERROR_CORRECT_M) {
   const modules = blankModules(version);
-  setupTypeInfo(modules, maskPattern, test);
+  setupTypeInfo(modules, maskPattern, test, ec);
   if (version >= 7) setupTypeNumber(modules, version, test);
   mapData(modules, data, maskPattern);
   return modules;
@@ -256,20 +258,21 @@ function lostPoint(modules) {
   return lost;
 }
 
-export function makeQrMatrix(text) {
+export function makeQrMatrix(text, ec = ERROR_CORRECT_M) {
   const bytes = enc.encode(String(text || ' '));
-  const version = chooseVersion(bytes);
-  const data = createData(version, bytes);
+  const version = chooseVersion(bytes, ec);
+  const data = createData(version, bytes, ec);
   let bestMask = 0;
   let bestScore = Infinity;
   for (let mask = 0; mask < 8; mask++) {
-    const score = lostPoint(makeImpl(version, data, mask, true));
+    const score = lostPoint(makeImpl(version, data, mask, true, ec));
     if (score < bestScore) { bestScore = score; bestMask = mask; }
   }
-  return makeImpl(version, data, bestMask, false);
+  return makeImpl(version, data, bestMask, false, ec);
 }
 
 export function renderQr(target, text, options = {}) {
+  if (options.style === 'fluid') return renderFluidQr(target, text, options);
   const modules = makeQrMatrix(text);
   const border = options.border ?? 4;
   const size = options.size ?? 512;
@@ -377,6 +380,168 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+// ---------------------------------------------------------------------------
+// "Fluid" style: connected rounded modules, rounded finder eyes, a dark
+// gradient and a centre logo. Error correction Q (25 %) carries the logo; the
+// logo covers about 4-6 % of the symbol. Every colour keeps at least 7:1
+// contrast against the white quiet zone (eyes 4.5:1), so cameras can binarise
+// it like a plain code. Verified with zxing-cpp and jsQR, see tests/e2e/qr-scan.e2e.mjs.
+// ---------------------------------------------------------------------------
+
+/** Light-mode primary colour of each theme (QR codes always sit on white). */
+export const QR_THEME_COLORS = {
+  lavender: '#6F55C8', mint: '#006C54', sky: '#3169C6', amber: '#8A5100', rose: '#9B4057', graphite: '#56616F'
+};
+
+function hexToRgb(hex) {
+  const v = hex.replace('#', '');
+  return [0, 2, 4].map(i => parseInt(v.slice(i, i + 2), 16));
+}
+function rgbToHex(rgb) { return `#${rgb.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('')}`; }
+function luminance(rgb) {
+  const [r, g, b] = rgb.map(v => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+/** Contrast ratio of a colour against white. */
+export function contrastOnWhite(hex) { return 1.05 / (luminance(hexToRgb(hex)) + 0.05); }
+function darken(hex, amount) { return rgbToHex(hexToRgb(hex).map(v => v * (1 - amount))); }
+/** Darkens a colour step by step until it reaches the requested contrast on white. */
+export function ensureContrast(hex, ratio) {
+  let color = hex;
+  for (let i = 0; i < 40 && contrastOnWhite(color) < ratio; i++) color = darken(color, 0.06);
+  return color;
+}
+
+/** Colour set for a theme: gradient stops for data modules, eye ring and eye centre. */
+export function qrPalette(theme = 'lavender') {
+  const primary = QR_THEME_COLORS[theme] || QR_THEME_COLORS.lavender;
+  return {
+    start: ensureContrast(darken(primary, 0.62), 7),
+    end: ensureContrast(darken(primary, 0.3), 7),
+    ring: ensureContrast(darken(primary, 0.55), 7),
+    eye: ensureContrast(primary, 4.5),
+    logo: ensureContrast(primary, 4.5)
+  };
+}
+
+/** Odd-sized centre square, in modules, reserved for the logo. */
+function logoBox(n) {
+  let size = Math.round(n * 0.2);
+  if (size % 2 === 0) size += 1;
+  size = Math.max(5, size);
+  const start = (n - size) / 2;
+  return { start, end: start + size, size };
+}
+
+function roundedRectPath(ctx, x, y, w, h, [tl, tr, br, bl]) {
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y); if (tr) ctx.arc(x + w - tr, y + tr, tr, -Math.PI / 2, 0);
+  ctx.lineTo(x + w, y + h - br); if (br) ctx.arc(x + w - br, y + h - br, br, 0, Math.PI / 2);
+  ctx.lineTo(x + bl, y + h); if (bl) ctx.arc(x + bl, y + h - bl, bl, Math.PI / 2, Math.PI);
+  ctx.lineTo(x, y + tl); if (tl) ctx.arc(x + tl, y + tl, tl, Math.PI, Math.PI * 1.5);
+  ctx.closePath();
+}
+
+/** Concave fillet in the corner (cx, cy) of a light module, bulging away from it. Always wound clockwise. */
+function filletPath(ctx, cx, cy, sx, sy, radius) {
+  const centre = [cx + sx * radius, cy + sy * radius];
+  let a = [cx + sx * radius, cy];
+  let b = [cx, cy + sy * radius];
+  if (sx * sy < 0) [a, b] = [b, a];
+  const angle = point => Math.atan2(point[1] - centre[1], point[0] - centre[0]);
+  const tau = Math.PI * 2;
+  const startAngle = angle(a);
+  const endAngle = angle(b);
+  const towardsCorner = ((angle([cx, cy]) - startAngle) % tau + tau) % tau;
+  const sweep = ((endAngle - startAngle) % tau + tau) % tau;
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(a[0], a[1]);
+  ctx.arc(centre[0], centre[1], radius, startAngle, endAngle, !(towardsCorner < sweep));
+  ctx.closePath();
+}
+
+function renderFluidQr(target, text, options) {
+  const ec = options.ec ?? EC_LEVEL.Q;
+  const modules = makeQrMatrix(text, ec);
+  const n = modules.length;
+  const border = options.border ?? 4;
+  const size = options.size ?? 720;
+  const palette = options.palette || qrPalette(options.theme);
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  canvas.className = options.className || 'qr-canvas';
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', options.label || 'QR code');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  const cell = size / (n + border * 2);
+  const off = border * cell;
+  const logo = options.logoPath ? logoBox(n) : null;
+  const inLogo = (r, c) => logo && r >= logo.start && r < logo.end && c >= logo.start && c < logo.end;
+  const dark = (r, c) => r >= 0 && c >= 0 && r < n && c < n && modules[r][c] && !isFinderZone(r, c, n) && !inLogo(r, c);
+  const radius = cell / 2;
+
+  // Data modules: one path, so neighbours merge without anti-aliasing seams.
+  const gradient = ctx.createLinearGradient(off, off, off + n * cell, off + n * cell);
+  gradient.addColorStop(0, palette.start);
+  gradient.addColorStop(1, palette.end);
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      const x = off + c * cell;
+      const y = off + r * cell;
+      if (dark(r, c)) {
+        const up = dark(r - 1, c), down = dark(r + 1, c), left = dark(r, c - 1), right = dark(r, c + 1);
+        roundedRectPath(ctx, x, y, cell, cell, [
+          !up && !left ? radius : 0, !up && !right ? radius : 0,
+          !down && !right ? radius : 0, !down && !left ? radius : 0
+        ]);
+      } else if (!isFinderZone(r, c, n) && !inLogo(r, c)) {
+        // Smooth inner corners where three dark neighbours surround a light corner.
+        if (dark(r - 1, c) && dark(r, c - 1) && dark(r - 1, c - 1)) filletPath(ctx, x, y, 1, 1, radius);
+        if (dark(r - 1, c) && dark(r, c + 1) && dark(r - 1, c + 1)) filletPath(ctx, x + cell, y, -1, 1, radius);
+        if (dark(r + 1, c) && dark(r, c + 1) && dark(r + 1, c + 1)) filletPath(ctx, x + cell, y + cell, -1, -1, radius);
+        if (dark(r + 1, c) && dark(r, c - 1) && dark(r + 1, c - 1)) filletPath(ctx, x, y + cell, 1, -1, radius);
+      }
+    }
+  }
+  ctx.fill();
+
+  // Finder eyes: rounded ring and a rounded centre in the theme colour.
+  for (const [row, col] of [[0, 0], [0, n - 7], [n - 7, 0]]) {
+    const x = off + col * cell;
+    const y = off + row * cell;
+    ctx.fillStyle = palette.ring;
+    ctx.beginPath(); roundedRectPath(ctx, x, y, cell * 7, cell * 7, Array(4).fill(cell * 2.3)); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); roundedRectPath(ctx, x + cell, y + cell, cell * 5, cell * 5, Array(4).fill(cell * 1.5)); ctx.fill();
+    ctx.fillStyle = palette.eye;
+    ctx.beginPath(); roundedRectPath(ctx, x + cell * 2, y + cell * 2, cell * 3, cell * 3, Array(4).fill(cell * 1.05)); ctx.fill();
+  }
+
+  // Centre logo: rounded tile in the theme colour with a white card icon.
+  if (logo) {
+    const inset = cell * 0.55;
+    const x = off + logo.start * cell + inset;
+    const w = logo.size * cell - inset * 2;
+    ctx.fillStyle = palette.logo;
+    ctx.beginPath(); roundedRectPath(ctx, x, x, w, w, Array(4).fill(w * 0.3)); ctx.fill();
+    if (typeof Path2D === 'function') {
+      const iconSize = w * 0.6;
+      ctx.save();
+      ctx.translate(x + (w - iconSize) / 2, x + (w - iconSize) / 2);
+      ctx.scale(iconSize / 24, iconSize / 24);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill(new Path2D(options.logoPath));
+      ctx.restore();
+    }
+  }
+  target.replaceChildren(canvas);
+  return canvas;
+}
+
 const CRLF = '\r\n';
 const EPC_MAX_NAME = 70;
 const EPC_MAX_REMITTANCE = 140;
@@ -474,7 +639,7 @@ export function isValidBic(value) {
 function vcardHeader(data) {
   const fullName = cleanLine(data.n);
   const parts = fullName.split(/\s+/).filter(Boolean);
-  const family = parts.length > 1 ? parts.at(-1) : fullName;
+  const family = parts.length > 1 ? parts[parts.length - 1] : fullName;
   const given = parts.length > 1 ? parts.slice(0, -1).join(' ') : '';
   return ['BEGIN:VCARD', 'VERSION:3.0', `N:${escapeVcard(family)};${escapeVcard(given)};;;`, `FN:${escapeVcard(fullName)}`];
 }

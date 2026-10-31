@@ -252,9 +252,14 @@ class RemovedEnvironmentTests(unittest.TestCase):
     def test_default_legacy_values_are_ignored(self):
         self.run_check({"DV2_PORT": "8080", "DV2_DATA_FILE": str(meiku_server.DEFAULT_DATA_DIR / "data.json"), "DV2_ACCESS_LOG": "false", "DV2_SHARED_SECRET": ""})
 
-    def test_legacy_secret_alone_stops_with_rename_hint(self):
-        with self.assertRaisesRegex(SystemExit, "Rename it to ISHIKU_SETUP_SECRET"):
-            self.run_check({"DV2_SHARED_SECRET": VALID_TEST_VALUE})
+    def test_legacy_secret_alone_is_accepted_with_a_warning(self):
+        self.run_check({"DV2_SHARED_SECRET": VALID_TEST_VALUE})
+        with mock.patch.dict(os.environ, {"DV2_SHARED_SECRET": VALID_TEST_VALUE}, clear=True), mock.patch.object(meiku_server, "DEFAULT_SETUP_SECRET_FILE", Path("/nonexistent/secret")):
+            self.assertEqual(meiku_server.configured_secret(), VALID_TEST_VALUE)
+
+    def test_new_secret_wins_over_legacy_secret(self):
+        with mock.patch.dict(os.environ, {"DV2_SHARED_SECRET": "x" * 40, "ISHIKU_SETUP_SECRET": "y" * 40}, clear=True), mock.patch.object(meiku_server, "DEFAULT_SETUP_SECRET_FILE", Path("/nonexistent/secret")):
+            self.assertEqual(meiku_server.configured_secret(), "y" * 40)
 
     def test_legacy_secret_next_to_new_secret_is_accepted(self):
         self.run_check({"DV2_SHARED_SECRET": VALID_TEST_VALUE, "ISHIKU_SETUP_SECRET": VALID_TEST_VALUE})
@@ -262,6 +267,30 @@ class RemovedEnvironmentTests(unittest.TestCase):
     def test_non_default_legacy_data_file_stops(self):
         with self.assertRaisesRegex(SystemExit, "MEIKU_DATA_FILE"):
             self.run_check({"DV2_DATA_FILE": "/elsewhere/data.json"})
+
+
+class ShutdownTests(unittest.TestCase):
+    def test_sigterm_stops_the_server_quickly(self):
+        import signal
+        import subprocess
+        import sys
+        import time as _time
+        with tempfile.TemporaryDirectory() as temp_dir:
+            env = {**os.environ, "ISHIKU_SETUP_SECRET": VALID_TEST_VALUE, "PYTHONDONTWRITEBYTECODE": "1"}
+            proc = subprocess.Popen(
+                [sys.executable, str(Path(meiku_server.__file__)), "--host", "127.0.0.1", "--port", "0", "--data-file", str(Path(temp_dir) / "data.json")],
+                env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            )
+            try:
+                self.assertIn("listening", proc.stdout.readline())
+                started = _time.monotonic()
+                proc.send_signal(signal.SIGTERM)
+                proc.wait(timeout=5)
+                self.assertLess(_time.monotonic() - started, 3)
+                self.assertEqual(proc.returncode, 0)
+            finally:
+                if proc.poll() is None:
+                    proc.kill()
 
 
 if __name__ == "__main__":

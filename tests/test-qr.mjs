@@ -63,4 +63,18 @@ assert.ok(company.includes('ADR;TYPE=WORK:;;Main St 1;Springfield;;;'));
 const matrix = q.makeQrMatrix(giro);
 assert.ok(matrix.length >= 21 && matrix.length % 4 === 1);
 
+// Error correction levels: higher levels need larger symbols for the same data.
+const sizes = Object.fromEntries(Object.entries(q.EC_LEVEL).map(([name, ec]) => [name, q.makeQrMatrix(giro, ec).length]));
+assert.ok(sizes.L <= sizes.M && sizes.M <= sizes.Q && sizes.Q <= sizes.H, JSON.stringify(sizes));
+assert.deepEqual(q.makeQrMatrix(giro), q.makeQrMatrix(giro, q.EC_LEVEL.M));
+
+// Fluid style colours stay scannable for every theme: data modules >= 7:1, eyes and logo >= 4.5:1 on white.
+for (const theme of Object.keys(q.QR_THEME_COLORS)) {
+  const palette = q.qrPalette(theme);
+  for (const key of ['start', 'end', 'ring']) assert.ok(q.contrastOnWhite(palette[key]) >= 7, `${theme}.${key}`);
+  for (const key of ['eye', 'logo']) assert.ok(q.contrastOnWhite(palette[key]) >= 4.5, `${theme}.${key}`);
+}
+assert.ok(q.contrastOnWhite(q.ensureContrast('#ffff00', 7)) >= 7);
+assert.equal(q.qrPalette('unknown').eye, q.qrPalette('lavender').eye);
+
 console.log('QR payload tests passed');

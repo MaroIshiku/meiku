@@ -60,7 +60,8 @@ Date: 2026-10-31 (updated for v0.3.0)
 - The server write secret is kept in session storage or inside the PIN-encrypted blob, never as plaintext persistent browser storage.
 - The unreliable Passkey/WebAuthn PRF quick unlock is not offered; obsolete passkey data is removed on startup.
 - Four share cards (Private, Business, PayPal, Bank) are reachable through the bottom navigation and by swiping; cards without data show an empty state with an action to add the details.
-- QR codes are generated locally.
+- QR codes are generated locally in the "fluid" style (error correction Q, centre card icon, theme gradient). Data modules keep at least 7:1 and eyes 4.5:1 contrast on white in every theme; `tests/e2e/qr-scan.e2e.mjs` decodes every card in every theme.
+- A failed or hanging start shows the error and a "Repair app" button instead of a blank screen; an unreachable server shows "Server not reachable" with a retry instead of the setup form.
 - The private vCard contains only private fields; vCards are 3.0 with `N`, `FN`, seven-part `ADR`, escaping and CRLF.
 - PayPal link contains no payment reference.
 - GiroCode follows EPC069-12 v002: payment reference in the unstructured remittance field, length limits, IBAN checksum validation; no code is shown without valid data.
@@ -74,6 +75,7 @@ Date: 2026-10-31 (updated for v0.3.0)
 
 - `docker compose pull && docker compose up -d` starts without a local build.
 - Health check verifies `GET /healthz`.
+- Meiku handles SIGTERM itself and stops in under a second; the Compose files no longer use `init: true` (Docker's init cannot forward signals with all capabilities dropped).
 - Readiness check verifies `GET /readyz`.
 - Reverse proxy must terminate HTTPS.
 - `.env` contains `WEBUI_PORT`, `TZ`, `ISHIKU_LOG_LEVEL`, `ISHIKU_SETUP_SECRET`, `MEIKU_ACCESS_LOG`, `MEIKU_TRUST_PROXY` and `MEIKU_DATA_PATH`; `.env` is not versioned.

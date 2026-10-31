@@ -38,6 +38,9 @@ const PATHS = {
 // Icons whose cut-outs rely on the even-odd fill rule.
 const EVEN_ODD = new Set(['settings', 'backspace']);
 
+/** Raw 24x24 SVG path data, e.g. for drawing an icon into a canvas. */
+export function iconPath(name) { return PATHS[name] || PATHS.info; }
+
 export function icon(name, className = '') {
   const path = PATHS[name] || PATHS.info;
   const rule = EVEN_ODD.has(name) ? ' fill-rule="evenodd"' : '';

@@ -1,0 +1,31 @@
+{
+  "id": "REL-20261101",
+  "date": "2026-11-01",
+  "risk_class": "C",
+  "requirements": [
+    "UI-001",
+    "QR-001",
+    "OPS-001",
+    "REL-001"
+  ],
+  "changes": [
+    "Fluid QR style (connected rounded modules, rounded eyes, theme gradient, centre card icon) with error correction Q; replaces the 'soft' style from DEC-005",
+    "Start-up guard js/boot.js: visible loading state, error card with the real error and a Repair app action instead of a blank screen; fetch timeouts; 'Server not reachable' state instead of the setup form when the server cannot be reached",
+    "Compatibility: no Array.prototype.at, scroll behaviour 'auto', vh fallbacks for dvh",
+    "Real build information under Settings -> About from the release build arguments",
+    "SIGTERM handling; Compose files drop init: true; broken pipes from cancelled downloads are no longer logged",
+    "DV2_SHARED_SECRET accepted again as a deprecated fallback with a warning"
+  ],
+  "field_report": "On the owner's ZimaOS the update failed because the stored app configuration had a memory reservation (256 MB) above the memory limit (128 MB); Docker rejects such containers, so 'Recreate' aborted and v0.2.7 kept running. Documented in the README. After the fix the update worked; the installed phone PWA then showed a blank screen, which the start-up guard now turns into a visible error with a repair action.",
+  "compatibility": "No data or API change from v0.4.0. Rollback: pin v0.4.0 or v0.3.0.",
+  "verification": [
+    "50 Python tests; crypto/store/auth/QR/profile Node suites",
+    "QR encoder verified for all four error correction levels: 20/20 codes decoded by zxing-cpp and jsQR",
+    "Fluid style: 30 codes (5 payloads x 6 themes) decoded in 9 variants each (original, 300/220/170 px, blur, 9 degree rotation, 35 % glare, dimmed, JPEG quality 30): 270/270 zxing-cpp, 30/30 jsQR; tests/e2e/qr-scan.e2e.mjs 48/48",
+    "Boot guard: injected syntax error, missing module, runtime exception and hanging server each show the expected screen",
+    "Upgrade simulation v0.2.7 -> current on mobile Chromium with the old service worker: unlock screen shown on first and second launch",
+    "Container stop: 0.6 s with exit code 0 without init; 10.1 s and exit code 137 with init: true",
+    "UI walkthrough, accessibility audit and migration e2e passed"
+  ],
+  "open": "WebKit (iOS Safari) could not be run locally (missing libicu 74); the start-up guard will show the real error on the device if one remains."
+}

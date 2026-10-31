@@ -9,7 +9,7 @@ import { icon } from './icons.js';
 import { FIELDS, firstName, LEGACY_AVATAR_KEY, normalizeData, readLegacyAvatar } from './profile.js';
 import { isValidIban } from './qr.js';
 import { bindStrength, checkNewPassword, collectForm, createSettings, MIN_NEW_PASSWORD_LENGTH, renderFields, strengthMeter } from './settings.js';
-import { Store, VersionConflictError } from './store.js';
+import { Store, timeoutSignal, VersionConflictError } from './store.js';
 import { initPixelSoftUtilityTheme } from '../design-system/theme-controller.js';
 
 const APP_ID = 'meiku';
@@ -38,7 +38,10 @@ const cards = createCards(ctx);
 const settings = createSettings(ctx);
 const pinPad = { value: '', busy: false };
 
-init();
+init().catch(error => {
+  console.error(error);
+  window.__meikuFail?.(error);
+});
 
 async function init() {
   migrateLocalStorage();
@@ -47,11 +50,31 @@ async function init() {
   cards.bind();
   bindGlobal();
   registerServiceWorker();
-  state.buildInfo = await loadBuildInfo();
+  state.buildInfo = (await Promise.all([loadBuildInfo(), loadVault()]))[0];
+  window.__meikuReady?.();
+}
+
+/** Loads the encrypted vault. Setup is only offered when the server answered that no vault exists. */
+async function loadVault() {
   const loaded = await Store.loadData();
   Object.assign(state, { token: loaded.token, updated: loaded.updated, revision: loaded.revision });
-  if (!loaded.token) showSetup(loaded.offlineError);
+  if (loaded.offlineError) showOffline();
+  else if (!loaded.token) showSetup();
   else showUnlock(Auth.hasPin() ? 'pin' : 'password');
+}
+
+function showOffline() {
+  showAuthScreen('Server not reachable', 'Meiku could not load your vault.');
+  $('#authBody').innerHTML = `
+    <div class="psu-form-stack">
+      <p class="meiku-banner" role="status">Check that this device is connected to the network that can reach your Meiku server, then try again.</p>
+      <button class="psu-button psu-button--filled psu-button--full" type="button" id="retryLoad">Try again</button>
+    </div>`;
+  $('#retryLoad').addEventListener('click', async event => {
+    event.currentTarget.disabled = true;
+    event.currentTarget.textContent = 'Connecting…';
+    await loadVault();
+  });
 }
 
 /** One-time clean-up of browser storage written by older releases. Never deletes vault data. */
@@ -99,10 +122,9 @@ function bindGlobal() {
 // ---------------------------------------------------------------------------
 // Setup
 // ---------------------------------------------------------------------------
-function showSetup(offlineError) {
+function showSetup() {
   showAuthScreen('Create your vault', 'Your profile is encrypted on this device before it is saved.');
   $('#authBody').innerHTML = `
-    ${offlineError ? '<p class="meiku-banner" role="status">The server could not be reached. Check the connection before creating a vault.</p>' : ''}
     <form id="setupForm" class="psu-form-stack" novalidate>
       <div id="setupFields" class="psu-form-stack"></div>
       <input type="text" name="username" autocomplete="username" value="Meiku vault" class="psu-visually-hidden" tabindex="-1" aria-hidden="true">
@@ -367,7 +389,7 @@ function rememberLoginName(name) {
 
 async function loadBuildInfo() {
   try {
-    const response = await fetch(`build-info.json?v=${Date.now()}`, { cache: 'no-store' });
+    const response = await fetch(`build-info.json?v=${Date.now()}`, { cache: 'no-store', signal: timeoutSignal(6000) });
     if (!response.ok) throw new Error('Build info is not available.');
     return await response.json();
   } catch {

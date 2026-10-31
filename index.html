@@ -17,14 +17,20 @@
   <noscript>Meiku needs JavaScript because encryption and QR codes run on this device.</noscript>
 
   <!-- Unlock and first-run setup -->
-  <div id="authScreen" class="psu-setup-screen meiku-auth" hidden>
+  <div id="authScreen" class="psu-setup-screen meiku-auth">
     <main class="psu-auth-window" aria-labelledby="authTitle">
       <div class="psu-setup-brand">
         <span class="psu-setup-logo" data-logo-frame><img src="assets/icons/icon-128.png" alt="" width="72" height="72" data-logo></span>
         <h1 class="psu-setup-title" id="authTitle">Meiku</h1>
         <p class="psu-setup-subtitle" id="authSubtitle">Loading…</p>
       </div>
-      <div id="authBody"></div>
+      <div id="authBody"><div class="meiku-loading" aria-hidden="true"><span></span><span></span><span></span></div></div>
+      <div id="bootError" class="meiku-boot-error" role="alert" hidden>
+        <p class="meiku-boot-error__text" id="bootErrorText"></p>
+        <p class="meiku-sheet-text">Your vault is safe on the server. “Repair app” removes the offline copy of Meiku on this device and loads it again. Your PIN stays set up.</p>
+        <button class="psu-button psu-button--filled psu-button--full" id="bootRepair" type="button">Repair app</button>
+        <button class="psu-button psu-button--text psu-button--full" id="bootReload" type="button">Reload</button>
+      </div>
     </main>
     <p class="psu-setup-footnote">Encryption runs on this device. The server only stores the encrypted vault.</p>
   </div>
@@ -99,6 +105,7 @@
 
   <div id="toastHost" class="meiku-toast" role="status" aria-live="polite" hidden></div>
 
+  <script src="js/boot.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Bump CACHE_NAME with every release that changes static assets.
-const CACHE_NAME = 'meiku-static-v0.4.0';
+const CACHE_NAME = 'meiku-static-v0.4.1';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
   './css/meiku.css',
   './js/app.js',
   './js/auth.js',
+  './js/boot.js',
   './js/cards.js',
   './js/crypto.js',
   './js/dom.js',
