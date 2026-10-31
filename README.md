@@ -211,6 +211,14 @@ node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.
 node .ishiku/kit/scripts/verify-app . --full
 ```
 
+Releases: before tagging `vX.Y.Z`, stamp the version into every asset URL and commit the result:
+
+```bash
+node scripts/stamp-version.mjs X.Y.Z
+```
+
+Every module, script and stylesheet URL carries `?v=X.Y.Z`, so a release always loads one consistent set of files, even when a browser, an old service worker or a reverse proxy still holds files from an older release. `tests/test-assets.mjs` fails when a URL is missing the current version.
+
 `tests/e2e/migration.e2e.mjs` is an optional Playwright browser test for the v0.2.x to v0.3.0 migration; see the header of the file.
 
 ## Created with ChatGPT Codex

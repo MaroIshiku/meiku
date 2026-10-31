@@ -1,0 +1,22 @@
+{
+  "id": "REL-20261101B",
+  "date": "2026-11-01",
+  "risk_class": "C",
+  "requirements": [
+    "REL-001",
+    "UI-001"
+  ],
+  "field_report": "The owner's phone PWA showed (via the v0.4.1 start-up guard): \"Uncaught SyntaxError: The requested module './crypto.js' does not provide an export named 'VAULT_VERSION' (settings.js:2)\". A new settings.js was combined with a v0.2.x crypto.js from a stale cache. v0.3.0 had removed the ?v= query strings, so the old file and the new file shared one URL; the v0.2.7 service worker had cached exactly that unversioned URL.",
+  "changes": [
+    "All local module, script and stylesheet URLs carry ?v=<release> (scripts/stamp-version.mjs); tests/test-assets.mjs enforces it",
+    "Server: versioned .js/.css are public, max-age one year, immutable; unversioned files stay no-cache",
+    "Service worker: versioned precache list, best-effort install (one failing asset no longer keeps an old worker in charge), cache-first for versioned URLs, network-first for the rest"
+  ],
+  "verification": [
+    "Reproduced: with a stale v0.2.7 crypto.js served for /js/crypto.js, v0.4.1 shows exactly the reported error; v0.4.2 starts normally",
+    "Application command incl. new tests/test-assets.mjs and server cache-header test",
+    "UI walkthrough, accessibility audit, migration e2e, QR scan e2e (48/48) and the v0.2.7 service-worker upgrade simulation passed"
+  ],
+  "compatibility": "No data or API change. Rollback: pin v0.4.1 or v0.4.0.",
+  "release_step": "Run node scripts/stamp-version.mjs <version> before every release tag."
+}

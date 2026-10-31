@@ -81,3 +81,9 @@ Released as `v0.4.1` (run 41250022434): `ghcr.io/maroishiku/meiku:v0.4.1@sha256:
 - The image carries real build information (version 0.4.1, commit `46ee2ed`).
 - The published image passed the Compose runtime test with v0.2.8 data, `tests/e2e/migration.e2e.mjs` and `tests/e2e/qr-scan.e2e.mjs` (48/48), and stopped in 0.7 s.
 - The release notes were corrected to roll back to v0.4.0.
+
+## v0.4.2 (2026-11-01, branch `claude/versioned-assets`)
+
+Fixes the phone PWA error "The requested module './crypto.js' does not provide an export named 'VAULT_VERSION'": a stale cache mixed a v0.2.x `crypto.js` with new modules. All asset URLs now carry the release version; see `.ishiku/decisions/release-v0.4.2.json`.
+
+**Release step from now on:** `node scripts/stamp-version.mjs X.Y.Z`, commit, then tag `vX.Y.Z`. `tests/test-assets.mjs` fails the CI if a URL is missing the version.

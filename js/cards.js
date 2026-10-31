@@ -1,7 +1,7 @@
-import { $, $$, copyText, esc, stateView, toast } from './dom.js';
-import { icon, iconPath } from './icons.js';
-import { firstName, hasBank, hasBusiness, hasPayPal, initials, slug } from './profile.js';
-import { formatIban, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js';
+import { $, $$, copyText, esc, stateView, toast } from './dom.js?v=0.4.2';
+import { icon, iconPath } from './icons.js?v=0.4.2';
+import { firstName, hasBank, hasBusiness, hasPayPal, initials, slug } from './profile.js?v=0.4.2';
+import { formatIban, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js?v=0.4.2';
 
 const AMOUNTS = ['5', '10', '20', '50', '100'];
 const AMOUNT_KEY = 'meiku.amount';

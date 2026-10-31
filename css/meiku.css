@@ -5,7 +5,7 @@
  * deck, QR presentation, PIN pad, settings rows and the fullscreen view.
  * Meiku is a phone app; wide screens keep the centred mobile column.
  */
-@import url("../design-system/components.css");
+@import url("../design-system/components.css?v=0.4.2");
 
 [hidden] { display: none !important; }
 

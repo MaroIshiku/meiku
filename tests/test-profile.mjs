@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
 const toUrl = source => `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 const qrUrl = toUrl(await readFile(new URL('../js/qr.js', import.meta.url), 'utf8'));
-const profileSource = (await readFile(new URL('../js/profile.js', import.meta.url), 'utf8')).replace("from './qr.js'", `from '${qrUrl}'`);
+const profileSource = (await readFile(new URL('../js/profile.js', import.meta.url), 'utf8')).replace(/from '\.\/qr\.js(?:\?v=[^']*)?'/, `from '${qrUrl}'`);
 const p = await import(toUrl(profileSource));
 
 // normalizeData keeps only known fields and cleans payment fields.
