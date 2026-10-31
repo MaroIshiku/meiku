@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "timestamp": "2026-10-31T21:10:00Z",
+  "timestamp": "2026-10-31T22:30:00Z",
   "application": "meiku",
   "requirement_id": "OPS-001",
   "status": "verified",
@@ -16,10 +16,10 @@
   "delivery": {
     "host_port": 65003,
     "container_port": 8080,
-    "default_image": "ghcr.io/maroishiku/meiku:v0.3.0@sha256:cda86bb824761565306d545a6093da5747544962e998b1b7d470c1673a5a9561",
+    "default_image": "ghcr.io/maroishiku/meiku:v0.4.0@sha256:433c30fc89691cd16343f955eed038ebed974df014a3b8cfd5dcccc1b5b3ddb7",
     "base_image": "python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72",
-    "verified_local_image_digest": "sha256:cda86bb824761565306d545a6093da5747544962e998b1b7d470c1673a5a9561 (pulled from GHCR)",
-    "release_run": "https://github.com/MaroIshiku/meiku/actions/runs/41240868393"
+    "verified_local_image_digest": "sha256:433c30fc89691cd16343f955eed038ebed974df014a3b8cfd5dcccc1b5b3ddb7 (pulled from GHCR)",
+    "release_run": "https://github.com/MaroIshiku/meiku/actions/runs/41243530615"
   },
   "runtime": {
     "health": true,
