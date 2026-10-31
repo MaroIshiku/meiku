@@ -3,7 +3,6 @@ name: meiku
 services:
   meiku:
     image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:v0.2.8@sha256:be75ca5f3153d32cc4ad70d95052d41768449758af488d173e9f53d96b3ad923}
-    pull_policy: always
     container_name: meiku
     hostname: meiku
     restart: unless-stopped
@@ -15,13 +14,14 @@ services:
       TZ: ${TZ:-Europe/Berlin}
       ISHIKU_DATA_DIR: /data
       ISHIKU_LOG_LEVEL: ${ISHIKU_LOG_LEVEL:-info}
-      ISHIKU_SETUP_SECRET: ${ISHIKU_SETUP_SECRET:-${DV2_SHARED_SECRET:-}}
       MEIKU_UID: "10001"
       MEIKU_GID: "10001"
-      DV2_PORT: "8080"
-      DV2_DATA_FILE: /data/data.json
-      DV2_SHARED_SECRET: ${DV2_SHARED_SECRET:-${ISHIKU_SETUP_SECRET:-}}
-      DV2_ACCESS_LOG: ${DV2_ACCESS_LOG:-false}
+      MEIKU_PORT: "8080"
+      MEIKU_ACCESS_LOG: ${MEIKU_ACCESS_LOG:-false}
+      MEIKU_TRUST_PROXY: ${MEIKU_TRUST_PROXY:-false}
+      # Required. To keep it out of `docker inspect`, mount a secret file at
+      # /run/secrets/ishiku_setup_secret instead (see README, "Docker Secrets").
+      ISHIKU_SETUP_SECRET: ${ISHIKU_SETUP_SECRET:-}
 
     ports:
       - target: 8080
@@ -30,7 +30,7 @@ services:
 
     volumes:
       - type: bind
-        source: ${MEIKU_DATA_PATH:-${DATELLO_DATA_PATH:-/DATA/AppData/meiku/data}}
+        source: ${MEIKU_DATA_PATH:-/DATA/AppData/meiku/data}
         target: /data
 
     read_only: true
@@ -100,14 +100,14 @@ x-casaos:
   tips:
     before_install:
       en_us: |
-        Required: set ISHIKU_SETUP_SECRET to a long random value before starting. DV2_SHARED_SECRET remains supported as a legacy alias.
+        Required: set ISHIKU_SETUP_SECRET to a random value with at least 32 characters before starting.
 
-        Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
+        Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. Previous encrypted tokens are kept in /data/history (last 10 versions). On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
 
         Publish the WebUI through HTTPS if you want full PWA, Web Crypto and Service Worker support.
       de_de: |
-        Required: set ISHIKU_SETUP_SECRET to a long random value before starting. DV2_SHARED_SECRET remains supported as a legacy alias.
+        Required: set ISHIKU_SETUP_SECRET to a random value with at least 32 characters before starting.
 
-        Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
+        Persistent data is stored on the ZimaOS host at /DATA/AppData/meiku/data and mounted into the container at /data. Previous encrypted tokens are kept in /data/history (last 10 versions). On startup Meiku fixes the directory owner to UID/GID 10001 when Docker permits CHOWN.
 
         Publish the WebUI through HTTPS if you want full PWA, Web Crypto and Service Worker support.

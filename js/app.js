@@ -1,7 +1,7 @@
-import { Auth } from './auth.js?v=meiku-20260821c';
-import { decryptJson, encryptJson } from './crypto.js?v=meiku-20260821c';
-import { formatIban, formatIbanRaw, normalizeAmount, QrPayload, renderQr } from './qr.js?v=meiku-20260821c';
-import { Store } from './store.js?v=meiku-20260821c';
+import { Auth } from './auth.js';
+import { createVault, openVault, openVaultWithKey, sealVault, tokenKeyId, tokenVersion, VAULT_VERSION } from './crypto.js';
+import { formatIban, formatIbanRaw, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js';
+import { Store, VersionConflictError } from './store.js';
 
 const FIELDS = [
   ['n', 'Full Name', 'text', true], ['m', 'Private Mobile', 'tel'], ['e1', 'Private Email', 'email'],
@@ -28,19 +28,31 @@ const MODE_KEY = `${APP_ID}-mode`;
 const LOGIN_NAME_KEY = `${APP_ID}-login-name`;
 const LEGACY_THEME_KEY = 'dv2.theme';
 const LEGACY_MODE_KEY = 'dv2.mode';
+const LEGACY_AVATAR_KEY = 'dv2.avatar';
+const AMOUNT_KEY = 'meiku.amount';
+const PURPOSE_KEY = 'meiku.purpose';
+const PAYMENT_MODE_KEY = 'meiku.paymentMode';
+const MIN_NEW_PASSWORD_LENGTH = 12;
+const MAX_AVATAR_CHARS = 200000;
+const AVATAR_RE = /^data:image\/(?:webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/;
 const THEMES = ['lavender', 'mint', 'sky', 'amber', 'rose', 'graphite'];
 const MODES = ['system', 'light', 'dark'];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-const state = { token: '', updated: null, data: null, masterPassword: '', activeTab: 'privat', paymentMode: sessionStorage.getItem('meiku.paymentMode') || 'paypal', amount: sessionStorage.getItem('dv2.amount') || '', purpose: sessionStorage.getItem('dv2.purpose') || '', wakeLock: null, buildInfo: null };
+const state = {
+  token: '', updated: null, revision: null, data: null, session: null, needsUpgrade: false,
+  activeTab: 'privat', paymentMode: sessionStorage.getItem(PAYMENT_MODE_KEY) || 'paypal',
+  amount: sessionStorage.getItem(AMOUNT_KEY) || '', purpose: sessionStorage.getItem(PURPOSE_KEY) || '',
+  wakeLock: null, buildInfo: null
+};
+const pinPad = { value: '', handler: null };
 
 init();
 
 async function init() {
-  try { Store.migrateLegacySecret(); } catch { Store.clearSecret(); }
-  Auth.clearDeprecatedPasskey();
   applyTheme();
+  migrateLocalStorage();
   bindThemeMode();
   renderSetupFields($('#setupFields'), {}, SETUP_FIELDS);
   buildPinPad();
@@ -51,6 +63,7 @@ async function init() {
   const loaded = await Store.loadData();
   state.token = loaded.token;
   state.updated = loaded.updated;
+  state.revision = loaded.revision;
   if (!loaded.token) showSetup(loaded.offlineError);
   else showLogin();
 }
@@ -89,41 +102,61 @@ function bindAuth() {
     event.preventDefault();
     await unlockWithPassword($('#masterPassword').value);
   });
-  $('#masterPasswordToggle')?.addEventListener('click', () => {
-    const input = $('#masterPassword');
-    const toggle = $('#masterPasswordToggle');
-    const show = input.type === 'password';
-    input.type = show ? 'text' : 'password';
-    toggle.setAttribute('aria-pressed', String(show));
-    toggle.setAttribute('aria-label', show ? 'Hide master password' : 'Show master password');
-  });
   $('#setupForm').addEventListener('submit', async event => {
     event.preventDefault();
     const data = collectForm(event.currentTarget);
     if (!data.n) return toast('Name is required.');
     const password = $('#setupPassword').value;
-    const secret = $('#setupSecret').value;
-    if (password.length < 8) return toast('Password must be at least 8 characters.');
+    const passwordProblem = checkNewPassword(password, $('#setupPasswordConfirm').value);
+    if (passwordProblem) return toast(passwordProblem);
     try {
-      Store.setSecret(secret);
-      const token = await encryptJson(normalizeData(data), password);
-      const saved = await Store.saveToken(token);
-      Object.assign(state, { token: saved.token, updated: saved.updated, data: normalizeData(data), masterPassword: password });
+      Store.setSecret($('#setupSecret').value);
+      const session = await createVault(password);
+      const vaultData = normalizeData(data);
+      const token = await sealVault(session, vaultData);
+      const saved = await Store.saveToken(token, state.revision);
+      Object.assign(state, { token: saved.token, updated: saved.updated, revision: saved.revision, data: vaultData, session, needsUpgrade: false });
       rememberLoginName(state.data.n);
       showVault();
       openProfileProgress(0, true);
       toast('Vault saved.');
     } catch (error) { toast(error.message); }
   });
-  $('#pinOpen').addEventListener('click', () => openPinPad(async pin => {
-    try {
-      const credentials = await Auth.credentialsFromPin(pin);
-      if (credentials.writeSecret) Store.setSecret(credentials.writeSecret);
-      const unlocked = await unlockWithPassword(credentials.masterPassword);
-      if (unlocked && credentials.legacy) toast('PIN unlocked. Set a new 6-digit PIN to upgrade local protection.');
+  $('#pinOpen').addEventListener('click', () => openPinPad(unlockWithPin));
+}
+
+async function unlockWithPin(pin) {
+  let credentials;
+  try { credentials = await Auth.credentialsFromPin(pin); }
+  catch (error) {
+    toast(error.name === 'OperationError' ? 'PIN is wrong.' : error.message);
+    return;
+  }
+  if (credentials.writeSecret) {
+    try { Store.setSecret(credentials.writeSecret); } catch {}
+  }
+  if (credentials.kind === 'password') {
+    // Legacy PIN blob that still contains the master password.
+    const unlocked = await unlockWithPassword(credentials.masterPassword);
+    if (!unlocked) return;
+    if (/^\d{6}$/.test(pin) && !state.needsUpgrade) {
+      try { await Auth.savePin(pin, state.session, Store.getSecret()); } catch (error) { console.warn(error); }
+    } else if (!/^\d{6}$/.test(pin)) {
+      toast('PIN unlocked. Set a new 6-digit PIN in settings to upgrade local protection.');
     }
-    catch (error) { toast(error.message); }
-  }));
+    return;
+  }
+  if (credentials.keyId && tokenVersion(state.token) === VAULT_VERSION && credentials.keyId !== tokenKeyId(state.token)) {
+    toast('The vault password was changed on another device. Unlock with your password and set up the PIN again.');
+    return;
+  }
+  try {
+    const opened = await openVaultWithKey(state.token, credentials.dataKeyRaw);
+    await enterVault(opened);
+  } catch (error) {
+    console.error(error);
+    toast('PIN unlock failed. Unlock with your password and set up the PIN again.');
+  }
 }
 
 function bindGlobal() {
@@ -169,17 +202,44 @@ function showLogin() {
 }
 
 async function unlockWithPassword(password) {
+  let opened;
   try {
-    const data = await decryptJson(state.token, password);
-    state.data = normalizeData(data);
-    state.masterPassword = password;
-    rememberLoginName(state.data.n);
-    showVault();
-    return true;
+    opened = await openVault(state.token, password);
   } catch (error) {
     console.error(error);
-    toast('Password/PIN is wrong or the token is corrupted.');
+    toast('Password is wrong or the token is corrupted.');
     return false;
+  }
+  await enterVault(opened);
+  return true;
+}
+
+async function enterVault({ session, data, upgraded }) {
+  state.session = session;
+  state.data = normalizeData(data);
+  state.needsUpgrade = upgraded;
+  const legacyAvatar = readLegacyAvatar();
+  if (legacyAvatar && !state.data.av) state.data.av = legacyAvatar;
+  rememberLoginName(state.data.n);
+  showVault();
+  await upgradeStoredVault();
+}
+
+/**
+ * Re-seals a legacy v2 vault as v3 and moves a legacy plaintext profile picture
+ * into the encrypted vault. Needs the server write secret; without it the
+ * upgrade simply happens on the next regular save. No data is ever discarded.
+ */
+async function upgradeStoredVault() {
+  const legacyAvatar = readLegacyAvatar();
+  if (!state.needsUpgrade && !legacyAvatar) return;
+  if (!Store.getSecret()) return;
+  try {
+    await saveCurrentData(state.data, false);
+    toast('Vault upgraded to the current encryption format.');
+  } catch (error) {
+    console.warn(error);
+    if (error instanceof VersionConflictError) toast(error.message);
   }
 }
 
@@ -189,7 +249,7 @@ function showVault() {
   $('#vaultScreen').classList.remove('hidden');
   updateVaultHeader();
   setTab(state.activeTab);
-  Auth.startAutoLock(() => location.reload());
+  Auth.startAutoLock(lockVault);
 }
 
 function updateVaultHeader() {
@@ -245,7 +305,7 @@ function renderContactTab(root, title, subtitle, rows, qrPayload, qrLabel) {
 function renderPaymentTab(root) {
   const kind = state.paymentMode === 'bank' ? 'bank' : 'paypal';
   state.paymentMode = kind;
-  sessionStorage.setItem('meiku.paymentMode', kind);
+  sessionStorage.setItem(PAYMENT_MODE_KEY, kind);
   root.className = `content-card tab-payment payment-${kind} has-qr`;
   const isPayPal = kind === 'paypal';
   const title = 'Payments';
@@ -261,13 +321,13 @@ function renderPaymentTab(root) {
   const box = document.createElement('div');
   box.className = 'amount-card';
   box.innerHTML = `
-    <label class="field"><span>Amount</span><input id="amountInput" inputmode="decimal" autocomplete="off" value="${esc(state.amount)}" placeholder="e.g. 12.50"></label>
+    <label class="field"><span>Amount</span><input id="amountInput" inputmode="decimal" autocomplete="off" maxlength="15" value="${esc(state.amount)}" placeholder="e.g. 12.50"></label>
     <div class="chips">${AMOUNTS.map(v => `<button class="chip ${normalizeAmount(state.amount) === Number(v).toFixed(2) ? 'active' : ''}" data-amount="${v}" type="button">${v} €</button>`).join('')}</div>
-    ${isPayPal ? '' : `<label class="field"><span>Payment reference</span><input id="purposeInput" autocomplete="off" value="${esc(state.purpose)}" placeholder="Optional"></label>`}`;
+    ${isPayPal ? '' : `<label class="field"><span>Payment reference</span><input id="purposeInput" autocomplete="off" maxlength="140" value="${esc(state.purpose)}" placeholder="Optional"></label>`}`;
   root.append(box);
   const info = document.createElement('div');
   info.className = 'qr-caption';
-  const qrWrap = qrCard(payload, isPayPal ? 'PayPal.me Link' : 'SEPA / EPC QR Code', info);
+  const qrWrap = qrCard(payload, isPayPal ? 'PayPal.me Link' : 'SEPA / EPC QR Code', info, true);
   root.append(qrWrap);
   $$('.payment-switch button', root).forEach(button => button.addEventListener('click', () => {
     state.paymentMode = button.dataset.paymentMode;
@@ -277,18 +337,18 @@ function renderPaymentTab(root) {
   const refreshPreview = () => updatePaymentPreview(box, qrWrap, info);
   $('#amountInput', box).addEventListener('input', e => {
     state.amount = e.target.value;
-    sessionStorage.setItem('dv2.amount', state.amount);
+    sessionStorage.setItem(AMOUNT_KEY, state.amount);
   });
   $('#amountInput', box).addEventListener('blur', refreshPreview);
   $$('.chip', box).forEach(chip => chip.addEventListener('click', () => {
     state.amount = Number(chip.dataset.amount).toFixed(2);
-    sessionStorage.setItem('dv2.amount', state.amount);
+    sessionStorage.setItem(AMOUNT_KEY, state.amount);
     $('#amountInput', box).value = state.amount;
     refreshPreview();
   }));
   $('#purposeInput', box)?.addEventListener('input', e => {
     state.purpose = e.target.value;
-    sessionStorage.setItem('dv2.purpose', state.purpose);
+    sessionStorage.setItem(PURPOSE_KEY, state.purpose);
   });
   $('#purposeInput', box)?.addEventListener('blur', refreshPreview);
   refreshPreview();
@@ -300,11 +360,13 @@ function updatePaymentPreview(box, qrWrap, info) {
   const link = QrPayload.paypal(state.data, state.amount);
   $$('.chip', box).forEach(chip => chip.classList.toggle('active', normalizeAmount(state.amount) === Number(chip.dataset.amount).toFixed(2)));
   const target = $('.qr-target', qrWrap);
-  target.dataset.payload = payload;
-  renderQr(target, payload, qrRenderOptions(false, 512));
+  setQrTarget(target, payload, isPayPal
+    ? 'Add your PayPal username in Edit data to show a payment QR code.'
+    : (state.data.ib && !isValidIban(state.data.ib) ? 'The IBAN is not valid. Check it in Edit data.' : 'Add your name and IBAN in Edit data to show a GiroCode.'));
+  $$('.qr-icon-action', qrWrap).forEach(button => { button.disabled = !payload; });
   info.innerHTML = isPayPal
-    ? `<b>Recipient:</b> ${esc(state.data.n || '—')}<br><span class="link-line">${esc(link)}</span>`
-    : `<b>Recipient:</b> ${esc(state.data.n || '—')}<br><b>IBAN:</b> ${esc(formatIban(state.data.ib))}<br><b>BIC:</b> ${esc((state.data.bic || '').toUpperCase())}`;
+    ? `<b>Recipient:</b> ${esc(state.data.n || '—')}${link ? `<br><span class="link-line">${esc(link)}</span>` : ''}`
+    : `<b>Recipient:</b> ${esc(state.data.n || '—')}<br><b>IBAN:</b> ${esc(formatIban(state.data.ib) || '—')}<br><b>BIC:</b> ${esc((state.data.bic || '').toUpperCase() || '—')}`;
 }
 
 function contactRow({ icon, label, value, href }) {
@@ -316,7 +378,19 @@ function contactRow({ icon, label, value, href }) {
   return node;
 }
 
-function qrCard(payload, label, extraNode) {
+function setQrTarget(target, payload, emptyMessage) {
+  target.dataset.payload = payload || '';
+  if (payload) {
+    renderQr(target, payload, qrRenderOptions(false, 512));
+    return;
+  }
+  const empty = document.createElement('div');
+  empty.className = 'empty';
+  empty.textContent = emptyMessage;
+  target.replaceChildren(empty);
+}
+
+function qrCard(payload, label, extraNode, deferRender = false) {
   const wrap = document.createElement('div');
   wrap.className = 'qr-card qr-share-card';
   wrap.insertAdjacentHTML('beforeend', `<div class="qr-card-head"><h3>${esc(label)}</h3></div>`);
@@ -325,8 +399,8 @@ function qrCard(payload, label, extraNode) {
   const qr = document.createElement('div');
   qr.className = 'qr-target';
   qr.dataset.payload = payload;
-  renderQr(qr, payload, qrRenderOptions(false, 512));
-  qr.addEventListener('click', () => openQrOverlay(qr.dataset.payload || payload));
+  if (!deferRender) renderQr(qr, payload, qrRenderOptions(false, 512));
+  qr.addEventListener('click', () => { if (qr.dataset.payload) openQrOverlay(qr.dataset.payload); });
   qrFrame.append(qr);
   wrap.append(qrFrame);
   if (extraNode) wrap.append(extraNode); else wrap.insertAdjacentHTML('beforeend', '<div class="qr-caption" aria-hidden="true"></div>');
@@ -338,7 +412,7 @@ function qrCard(payload, label, extraNode) {
   open.setAttribute('aria-label', 'Open QR code');
   open.title = 'Open QR code';
   open.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6v2H8.4l3.7 3.7-1.4 1.4L7 7.4V10H5V4Zm8 0h6v6h-2V7.4l-3.7 3.7-1.4-1.4L15.6 6H13V4ZM5 14h2v2.6l3.7-3.7 1.4 1.4L8.4 18H11v2H5v-6Zm12 0h2v6h-6v-2h2.6l-3.7-3.7 1.4-1.4 3.7 3.7V14Z"/></svg>';
-  open.addEventListener('click', () => openQrOverlay(qr.dataset.payload || payload));
+  open.addEventListener('click', () => { if (qr.dataset.payload) openQrOverlay(qr.dataset.payload); });
   const share = document.createElement('button');
   share.className = 'qr-icon-action qr-share-action';
   share.type = 'button';
@@ -386,7 +460,7 @@ function companyRows() {
 async function shareCurrentTab() {
   const text = buildShareText();
   try {
-  if (navigator.share) await navigator.share({ title: APP_NAME, text });
+    if (navigator.share) await navigator.share({ title: APP_NAME, text });
     else await copyText(text);
   } catch (error) { if (error.name !== 'AbortError') toast(error.message); }
 }
@@ -405,12 +479,11 @@ function buildShareText() {
 }
 
 function openSettings() {
-  const avatar = localStorage.getItem('dv2.avatar');
+  const avatar = state.data?.av || '';
   const avatarNode = avatar
     ? `<img src="${esc(avatar)}" alt="">`
     : `<span>${esc(initials(state.data?.n))}</span>`;
   openProfileMenu(avatar, avatarNode);
-  return;
 }
 
 function openProfileMenu(avatar, avatarNode) {
@@ -431,8 +504,8 @@ function openProfileMenu(avatar, avatarNode) {
       <div class="profile-actions">
         ${profileMenuRowClean('edit', 'Edit data', 'Maintain contact and payment details', 'edit')}
         ${profileMenuRowClean('palette', 'Appearance', 'Theme and color mode', 'appearance')}
-        ${profileMenuRowClean('image', 'Profile picture', 'Crop and store locally', 'avatar-pick')}
-        ${avatar ? profileMenuRowClean('trash', 'Remove profile picture', 'Delete the local profile picture', 'avatar-remove') : ''}
+        ${profileMenuRowClean('image', 'Profile picture', 'Crop and store encrypted in the vault', 'avatar-pick')}
+        ${avatar ? profileMenuRowClean('trash', 'Remove profile picture', 'Delete the profile picture from the vault', 'avatar-remove') : ''}
         ${profileMenuRowClean('info', 'About', 'Build and repository information', 'debug')}
       </div>
       <section class="settings-section compact-settings" data-appearance-panel hidden>
@@ -448,12 +521,12 @@ function openProfileMenu(avatar, avatarNode) {
         <h3>Backup & Server</h3>
         <button class="profile-row-button" data-action="export" type="button"><span>${menuIcon('download')}</span><b>Export Token</b></button>
         <label class="profile-row-button"><span>${menuIcon('upload')}</span><b>Import Token</b><input id="importFile" type="file" accept="application/json,.json,.txt" hidden></label>
-        <label class="field"><span>Server Secret</span><input id="secretInput" type="password" value="${esc(Store.getSecret())}"></label>
+        <label class="field"><span>Server Secret</span><input id="secretInput" type="password" autocomplete="off" value="${esc(Store.getSecret())}"></label>
         <button class="btn tonal" data-action="secret" type="button">Save Secret</button>
       </section>
       <section class="profile-actions session-actions">
         ${profileMenuRowClean('lock', 'Lock Vault', 'Return to unlock', 'lock')}
-        ${profileMenuRowClean('logout', 'Sign Out', 'Remove secret and quick logins locally', 'logout')}
+        ${profileMenuRowClean('logout', 'Sign Out', 'Remove secret, PIN and remembered name on this device', 'logout')}
       </section>
     </div>`);
   $('#sheet').classList.add('profile-menu');
@@ -494,14 +567,6 @@ function menuIcon(name) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.info}"/></svg>`;
 }
 
-function profileMenuRow(icon, title, subtitle, action) {
-  return `
-    <button class="profile-menu-row" data-action="${action}" type="button">
-      <span class="profile-row-icon" aria-hidden="true">${icon}</span>
-      <span><b>${esc(title)}</b><small>${esc(subtitle)}</small></span>
-    </button>`;
-}
-
 async function settingsClick(e) {
   if (e.target.closest('[data-close-sheet]')) { closeSheet(); return; }
   const action = e.target.closest('[data-action]')?.dataset.action;
@@ -521,11 +586,26 @@ async function settingsClick(e) {
   if (action === 'pin') openPinSetup(false);
   if (action === 'debug') openDebugInfo();
   if (action === 'export') { Store.exportToken({ token: state.token, updated: state.updated }); toast('Export started.'); }
-  if (action === 'lock') location.reload();
-  if (action === 'logout') { Auth.clearPin(); Auth.clearDeprecatedPasskey(); Store.clearSecret(); location.reload(); }
-  if (action === 'avatar-remove') { localStorage.removeItem('dv2.avatar'); updateAvatar(); toast('Profile picture removed.'); }
+  if (action === 'lock') lockVault();
+  if (action === 'logout') {
+    Auth.clearPin(); Auth.clearDeprecatedPasskey(); Store.clearSecret();
+    localStorage.removeItem(LOGIN_NAME_KEY);
+    lockVault();
+  }
+  if (action === 'avatar-remove') {
+    try {
+      await saveCurrentData({ ...state.data, av: '' }, false);
+      localStorage.removeItem(LEGACY_AVATAR_KEY);
+      closeSheet();
+      toast('Profile picture removed.');
+    } catch (error) { toast(error.message); }
+  }
   if (action === 'secret') {
-    try { Store.setSecret($('#secretInput').value); toast('Secret saved.'); }
+    try {
+      Store.setSecret($('#secretInput').value);
+      toast('Secret saved.');
+      upgradeStoredVault();
+    }
     catch (error) { toast(error.message); }
   }
 }
@@ -538,12 +618,41 @@ async function settingsChange(e) {
     return;
   }
   if (e.target.id !== 'importFile' || !e.target.files[0]) return;
+  const file = e.target.files[0];
+  e.target.value = '';
   try {
-    const imported = await Store.importToken(e.target.files[0]);
-    const saved = await Store.saveToken(imported.token);
-    state.token = saved.token; state.updated = saved.updated;
-    closeSheet(); showLogin(); toast('Token imported. Please unlock.');
+    const imported = await Store.importToken(file);
+    if (![2, VAULT_VERSION].includes(tokenVersion(imported.token))) throw new Error('Import does not contain a supported Meiku vault.');
+    openConfirmSheet(
+      'Replace Vault?',
+      'Importing replaces the vault stored on the server with the imported token. Export the current token first if you may need it again. You will need the password of the imported vault to unlock it.',
+      'Replace and Import',
+      async () => {
+        const saved = await Store.saveToken(imported.token, state.revision);
+        Object.assign(state, { token: saved.token, updated: saved.updated, revision: saved.revision, data: null, session: null, needsUpgrade: false });
+        closeSheet(); showLogin(); toast('Token imported. Please unlock.');
+      }
+    );
   } catch (error) { toast(error.message); }
+}
+
+function openConfirmSheet(title, message, confirmLabel, onConfirm) {
+  openSheet(title, `
+    <div class="stack">
+      <p class="muted">${esc(message)}</p>
+      <div class="inline-actions">
+        <button class="btn tonal" type="button" data-close-sheet>Cancel</button>
+        <button class="btn primary" type="button" data-confirm>${esc(confirmLabel)}</button>
+      </div>
+    </div>`);
+  $('#sheetBody').onclick = async e => {
+    if (e.target.closest('[data-close-sheet]')) { closeSheet(); return; }
+    const button = e.target.closest('[data-confirm]');
+    if (!button) return;
+    button.disabled = true;
+    try { await onConfirm(); } catch (error) { button.disabled = false; toast(error.message); }
+  };
+  $('#sheetBody').onchange = null;
 }
 
 function openDebugInfo() {
@@ -589,16 +698,17 @@ async function openAvatarCrop(file) {
     </form>`);
 
   const preview = $('#avatarPreview');
-  const drawPreview = () => drawAvatarCanvas(preview, image, crop, 280, 0.9, false);
+  const drawPreview = () => drawAvatarCanvas(preview, image, crop, 280, false);
   $('#avatarZoom').addEventListener('input', e => { crop.zoom = Number(e.target.value); drawPreview(); });
   $('#avatarX').addEventListener('input', e => { crop.x = Number(e.target.value); drawPreview(); });
   $('#avatarY').addEventListener('input', e => { crop.y = Number(e.target.value); drawPreview(); });
   $('[data-close-sheet]', $('#avatarCropForm')).addEventListener('click', closeSheet);
-  $('#avatarCropForm').addEventListener('submit', e => {
+  $('#avatarCropForm').addEventListener('submit', async e => {
     e.preventDefault();
     try {
-      saveAvatarCrop(image, crop);
-      updateAvatar();
+      const avatar = renderAvatarDataUrl(image, crop);
+      await saveCurrentData({ ...state.data, av: avatar }, false);
+      localStorage.removeItem(LEGACY_AVATAR_KEY);
       closeSheet();
       toast('Profile picture saved.');
     } catch (error) {
@@ -606,10 +716,6 @@ async function openAvatarCrop(file) {
     }
   });
   drawPreview();
-}
-
-function openEditSheet() {
-  openProfileProgress(0, false);
 }
 
 function openProfileProgress(stepIndex = 0, firstRun = false) {
@@ -685,34 +791,56 @@ function openProfileProgress(stepIndex = 0, firstRun = false) {
 }
 
 function openPasswordSheet() {
-  openSheet('Change Password', `<form id="passwordChange" class="stack"><label class="field"><span>New Master Password</span><input id="newPassword" type="password" minlength="8" required></label><button class="btn primary" type="submit">Re-encrypt</button></form>`);
+  openSheet('Change Password', `<form id="passwordChange" class="stack">
+    <p class="muted">The vault is re-encrypted with a new key. Other devices and the PIN on this device need the new password afterwards.</p>
+    <label class="field"><span>New Master Password</span><input id="newPassword" type="password" autocomplete="new-password" minlength="${MIN_NEW_PASSWORD_LENGTH}" required></label>
+    <label class="field"><span>Repeat New Master Password</span><input id="newPasswordConfirm" type="password" autocomplete="new-password" minlength="${MIN_NEW_PASSWORD_LENGTH}" required></label>
+    <button class="btn primary" type="submit">Re-encrypt</button>
+  </form>`);
   $('#passwordChange').addEventListener('submit', async e => {
     e.preventDefault();
     const newPassword = $('#newPassword').value;
-    if (newPassword.length < 8) return toast('Password must be at least 8 characters.');
+    const problem = checkNewPassword(newPassword, $('#newPasswordConfirm').value);
+    if (problem) return toast(problem);
     try {
-      state.masterPassword = newPassword;
-      await saveCurrentData(state.data);
+      const session = await createVault(newPassword);
+      await saveCurrentData(state.data, true, session);
       Auth.clearPin(); Auth.clearDeprecatedPasskey();
       closeSheet(); toast('Password changed. Please set up your PIN again.');
     } catch (error) { toast(error.message); }
   });
 }
 
+function checkNewPassword(password, confirmation) {
+  if (password.length < MIN_NEW_PASSWORD_LENGTH) return `Password must be at least ${MIN_NEW_PASSWORD_LENGTH} characters.`;
+  if (password !== confirmation) return 'The passwords do not match.';
+  return '';
+}
+
 function openPinSetup(firstRun) {
   openSheet('Set Up PIN', `<p class="muted">The 6-digit PIN encrypts your master password and current server write secret locally with one million PBKDF2 iterations. Plaintext credentials are never persisted.</p><form id="pinSetupForm" class="stack"><label class="field"><span>New PIN (6 digits)</span><input id="newPin" inputmode="numeric" pattern="\\d{6}" minlength="6" maxlength="6" autocomplete="off" required></label><button class="btn primary" type="submit">Save PIN</button>${firstRun ? '<button class="btn ghost" type="button" data-close-sheet>Later</button>' : ''}</form>`);
   $('#pinSetupForm').addEventListener('submit', async e => {
     e.preventDefault();
-    try { await Auth.savePin($('#newPin').value, state.masterPassword, Store.getSecret()); closeSheet(); toast('PIN saved.'); }
+    try {
+      if (state.needsUpgrade || tokenVersion(state.token) !== VAULT_VERSION) {
+        if (!Store.getSecret()) throw new Error('Save the server secret first so the vault can be upgraded before setting up a PIN.');
+        await saveCurrentData(state.data, false);
+      }
+      await Auth.savePin($('#newPin').value, state.session, Store.getSecret());
+      closeSheet(); toast('PIN saved.');
+    }
     catch (error) { toast(error.message); }
   });
   $$('[data-close-sheet]', $('#sheet')).forEach(n => n.addEventListener('click', closeSheet));
 }
 
-async function saveCurrentData(data, refresh = true) {
-  const token = await encryptJson(data, state.masterPassword);
-  const saved = await Store.saveToken(token);
-  state.data = data; state.token = saved.token; state.updated = saved.updated;
+async function saveCurrentData(data, refresh = true, session = state.session) {
+  if (!session) throw new Error('Vault is locked.');
+  const vaultData = normalizeData(data);
+  const token = await sealVault(session, vaultData);
+  const saved = await Store.saveToken(token, state.revision);
+  Object.assign(state, { data: vaultData, session, token: saved.token, updated: saved.updated, revision: saved.revision, needsUpgrade: false });
+  if (readLegacyAvatar() && vaultData.av) localStorage.removeItem(LEGACY_AVATAR_KEY);
   rememberLoginName(state.data.n);
   if (refresh) showVault();
   else {
@@ -757,14 +885,40 @@ function normalizeData(data) {
   out.ib = formatIbanRaw(out.ib);
   out.bic = out.bic.toUpperCase();
   out.pp = out.pp.replace(/^@/, '');
+  const avatar = String(data.av || '');
+  out.av = avatar.length <= MAX_AVATAR_CHARS && AVATAR_RE.test(avatar) ? avatar : '';
   return out;
+}
+
+function readLegacyAvatar() {
+  const avatar = localStorage.getItem(LEGACY_AVATAR_KEY) || '';
+  return avatar.length <= MAX_AVATAR_CHARS && AVATAR_RE.test(avatar) ? avatar : '';
+}
+
+function lockVault() {
+  state.session = null;
+  state.data = null;
+  location.reload();
+}
+
+/** One-time clean-up of browser storage written by older releases. Never deletes vault data. */
+function migrateLocalStorage() {
+  try { Store.migrateLegacySecret(); } catch { Store.clearSecret(); }
+  Auth.clearDeprecatedPasskey();
+  for (const key of ['dv2.amount', 'dv2.purpose']) {
+    const value = sessionStorage.getItem(key);
+    if (value !== null && sessionStorage.getItem(key.replace('dv2.', 'meiku.')) === null) sessionStorage.setItem(key.replace('dv2.', 'meiku.'), value);
+    sessionStorage.removeItem(key);
+  }
+  localStorage.removeItem(LEGACY_THEME_KEY);
+  localStorage.removeItem(LEGACY_MODE_KEY);
 }
 
 function updateAvatar() {
   const wrap = $('#heroAvatarWrap');
   const img = $('#heroAvatar');
   const initialsNode = $('#heroInitials');
-  const avatar = localStorage.getItem('dv2.avatar') || '';
+  const avatar = state.data?.av || '';
   initialsNode.textContent = initials(state.data?.n);
   initialsNode.hidden = false;
   if (!avatar) {
@@ -825,25 +979,18 @@ function loadImageFromFile(file) {
   });
 }
 
-function saveAvatarCrop(image, crop) {
-  const sizes = [384, 320, 256, 192];
-  let lastError;
-  for (const size of sizes) {
-    try {
-      const canvas = document.createElement('canvas');
-      drawAvatarCanvas(canvas, image, crop, size, size >= 320 ? 0.84 : 0.78, true);
-      const dataUrl = canvas.toDataURL('image/webp', size >= 320 ? 0.84 : 0.78);
-      const fallback = dataUrl.startsWith('data:image/webp') ? dataUrl : canvas.toDataURL('image/jpeg', 0.82);
-      localStorage.setItem('dv2.avatar', fallback);
-      return;
-    } catch (error) {
-      lastError = error;
-    }
+function renderAvatarDataUrl(image, crop) {
+  for (const [size, quality] of [[384, 0.84], [320, 0.8], [256, 0.78], [192, 0.72]]) {
+    const canvas = document.createElement('canvas');
+    drawAvatarCanvas(canvas, image, crop, size, true);
+    const webp = canvas.toDataURL('image/webp', quality);
+    const dataUrl = webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', quality);
+    if (dataUrl.length <= MAX_AVATAR_CHARS) return dataUrl;
   }
-  throw new Error(lastError?.name === 'QuotaExceededError' ? 'Profile picture is still too large for this browser storage.' : 'Profile picture could not be saved.');
+  throw new Error('Profile picture is too large. Try a smaller image.');
 }
 
-function drawAvatarCanvas(canvas, image, crop, size, quality = 0.84, final = false) {
+function drawAvatarCanvas(canvas, image, crop, size, final = false) {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
@@ -862,26 +1009,57 @@ function drawAvatarCanvas(canvas, image, crop, size, quality = 0.84, final = fal
 
 function buildPinPad() {
   const grid = $('.pin-grid');
-  const chars = ['1','2','3','4','5','6','7','8','9','←','0','OK'];
-  let value = '';
-  let handler = null;
-  const paint = () => $('#pinDots').innerHTML = Array.from({ length: 6 }, (_, i) => `<span class="${i < value.length ? 'filled' : ''}"></span>`).join('');
-  for (const ch of chars) {
+  const keys = [['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['back', '←', 'Delete last digit'], ['0', '0'], ['ok', 'OK', 'Unlock']];
+  for (const [key, text, label] of keys) {
     const btn = document.createElement('button');
-    btn.type = 'button'; btn.textContent = ch;
-    btn.addEventListener('click', async () => {
-      vibrate();
-      if (/\d/.test(ch) && value.length < 6) value += ch;
-      if (ch === '←') value = value.slice(0, -1);
-      if (ch === 'OK' && handler) { const pin = value; value = ''; paint(); $('#pinPad').classList.add('hidden'); document.body.classList.remove('pin-active'); await handler(pin); }
-      paint();
-    });
+    btn.type = 'button';
+    btn.textContent = text;
+    if (label) btn.setAttribute('aria-label', label);
+    btn.addEventListener('click', () => { vibrate(); pinPadInput(key); });
     grid.append(btn);
   }
-  $('#pinCancel').addEventListener('click', () => { value = ''; $('#pinPad').classList.add('hidden'); document.body.classList.remove('pin-active'); paint(); });
-  window.openPinPad = cb => { handler = cb; value = ''; paint(); document.body.classList.add('pin-active'); $('#pinPad').classList.remove('hidden'); };
+  $('#pinCancel').addEventListener('click', closePinPad);
+  document.addEventListener('keydown', event => {
+    if ($('#pinPad').classList.contains('hidden')) return;
+    if (/^\d$/.test(event.key)) pinPadInput(event.key);
+    else if (event.key === 'Backspace') pinPadInput('back');
+    else if (event.key === 'Enter') pinPadInput('ok');
+    else if (event.key === 'Escape') closePinPad();
+    else return;
+    event.preventDefault();
+  });
 }
-function openPinPad(callback) { window.openPinPad(callback); }
+function paintPinPad() {
+  $('#pinDots').innerHTML = Array.from({ length: 6 }, (_, i) => `<span class="${i < pinPad.value.length ? 'filled' : ''}"></span>`).join('');
+  $('#pinPad').setAttribute('aria-label', `PIN pad, ${pinPad.value.length} of 6 digits entered`);
+}
+async function pinPadInput(key) {
+  if (/^\d$/.test(key) && pinPad.value.length < 6) pinPad.value += key;
+  if (key === 'back') pinPad.value = pinPad.value.slice(0, -1);
+  if (key === 'ok' && pinPad.handler) {
+    const pin = pinPad.value;
+    const handler = pinPad.handler;
+    closePinPad();
+    await handler(pin);
+    return;
+  }
+  paintPinPad();
+}
+function openPinPad(callback) {
+  pinPad.handler = callback;
+  pinPad.value = '';
+  paintPinPad();
+  document.body.classList.add('pin-active');
+  $('#pinPad').classList.remove('hidden');
+  $('#pinPad button')?.focus();
+}
+function closePinPad() {
+  pinPad.value = '';
+  pinPad.handler = null;
+  paintPinPad();
+  $('#pinPad').classList.add('hidden');
+  document.body.classList.remove('pin-active');
+}
 
 function bindLongPress(node, callback) {
   let timer;
@@ -892,16 +1070,10 @@ async function copyText(text) { await navigator.clipboard.writeText(text); toast
 function toast(message) { const el = $('#psu-toast-host'); el.textContent = message; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add('hidden'), 2600); }
 function vibrate() { if (navigator.vibrate) navigator.vibrate(8); }
 function applyTheme() {
-  const legacyTheme = normalizeTheme(
-    localStorage.getItem(THEME_KEY) ||
-    localStorage.getItem(LEGACY_THEME_KEY)
-  );
-  const legacyMode = normalizeMode(
-    localStorage.getItem(MODE_KEY) ||
-    localStorage.getItem(LEGACY_MODE_KEY)
-  );
-  const theme = THEMES.includes(legacyTheme) ? legacyTheme : 'lavender';
-  const mode = MODES.includes(legacyMode) ? legacyMode : 'system';
+  const storedTheme = normalizeTheme(localStorage.getItem(THEME_KEY) || localStorage.getItem(LEGACY_THEME_KEY));
+  const storedMode = normalizeMode(localStorage.getItem(MODE_KEY) || localStorage.getItem(LEGACY_MODE_KEY));
+  const theme = THEMES.includes(storedTheme) ? storedTheme : 'lavender';
+  const mode = MODES.includes(storedMode) ? storedMode : 'system';
   const resolvedMode = mode === 'system'
     ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
     : mode;
@@ -942,5 +1114,4 @@ function normalizeMode(mode) {
 function labelTheme(t) { return ({ lavender: 'Lavender', mint: 'Mint', sky: 'Sky', amber: 'Amber', rose: 'Rose', graphite: 'Graphite' })[t] || t; }
 function labelMode(m) { return ({ system: 'System', light: 'Light', dark: 'Dark' })[m] || m; }
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
-function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
 function esc(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch]); }

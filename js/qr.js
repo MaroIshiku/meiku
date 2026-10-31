@@ -362,58 +362,116 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
-function circle(ctx, x, y, radius) {
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.closePath();
-}
+const CRLF = '\r\n';
+const EPC_MAX_NAME = 70;
+const EPC_MAX_REMITTANCE = 140;
+const EPC_MAX_AMOUNT = 999999999.99;
 
 export const QrPayload = {
   vcard(data) {
-    const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${escapeVcard(data.n)}`];
+    const lines = vcardHeader(data);
     if (data.m) lines.push(`TEL;TYPE=CELL:${sanitizePhone(data.m)}`);
-    if (data.e1) lines.push(`EMAIL;TYPE=HOME:${data.e1}`);
-    const adr = [data.s, data.z].filter(Boolean).join(' ');
-    if (adr) lines.push(`ADR;TYPE=HOME:;;${escapeVcard(data.s)};${escapeVcard(data.z)};;;;`);
+    if (data.e1) lines.push(`EMAIL;TYPE=HOME:${escapeVcard(data.e1)}`);
+    if (data.s || data.z) lines.push(`ADR;TYPE=HOME:${vcardAddress(data.s, data.z)}`);
     lines.push('END:VCARD');
-    return lines.join('\n');
+    return lines.join(CRLF);
   },
   vcardCompany(data) {
-    const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${escapeVcard(data.n)}`];
+    const lines = vcardHeader(data);
     if (data.c) lines.push(`ORG:${escapeVcard(data.c)}`);
     if (data.j) lines.push(`TITLE:${escapeVcard(data.j)}`);
     if (data.cp) lines.push(`TEL;TYPE=WORK,VOICE:${sanitizePhone(data.cp)}`);
     if (data.cm) lines.push(`TEL;TYPE=WORK,CELL:${sanitizePhone(data.cm)}`);
-    if (data.ce) lines.push(`EMAIL;TYPE=WORK:${data.ce}`);
-    if (data.w) lines.push(`URL:${normalizeUrl(data.w)}`);
-    const adr = [data.cs, data.cz].filter(Boolean).join(' ');
-    if (adr) lines.push(`ADR;TYPE=WORK:;;${escapeVcard(data.cs)};${escapeVcard(data.cz)};;;;`);
+    if (data.ce) lines.push(`EMAIL;TYPE=WORK:${escapeVcard(data.ce)}`);
+    if (data.w) lines.push(`URL:${escapeVcard(normalizeUrl(data.w))}`);
+    if (data.cs || data.cz) lines.push(`ADR;TYPE=WORK:${vcardAddress(data.cs, data.cz)}`);
     lines.push('END:VCARD');
-    return lines.join('\n');
+    return lines.join(CRLF);
   },
+  /** Returns a paypal.me link, or '' when no PayPal username is configured. */
   paypal(data, amount) {
     const user = String(data.pp || '').replace(/^@/, '').trim();
-    if (!user) return 'https://paypal.me/';
+    if (!user) return '';
     const cleanAmount = normalizeAmount(amount);
     return `https://paypal.me/${encodeURIComponent(user)}${cleanAmount ? '/' + cleanAmount : ''}`;
   },
+  /**
+   * EPC069-12 (version 002) SEPA credit transfer QR code.
+   * Line order: service tag, version, charset (1 = UTF-8), identification,
+   * BIC, beneficiary name, IBAN, amount, purpose code, structured creditor
+   * reference, unstructured remittance information. Returns '' when the
+   * recipient name or IBAN is missing/invalid so no unusable code is shown.
+   */
   girocode(data, amount, purpose) {
+    const name = truncate(cleanLine(data.n), EPC_MAX_NAME);
+    const iban = formatIbanRaw(data.ib);
+    if (!name || !isValidIban(iban)) return '';
+    const bic = String(data.bic || '').replace(/\s+/g, '').toUpperCase();
     const cleanAmount = normalizeAmount(amount);
-    return [
-      'BCD', '002', '1', 'SCT', (data.bic || '').trim().toUpperCase(), (data.n || '').trim(), formatIbanRaw(data.ib), cleanAmount ? `EUR${cleanAmount}` : '', '', (purpose || '').trim()
-    ].join('\n');
+    const lines = [
+      'BCD', '002', '1', 'SCT',
+      isValidBic(bic) ? bic : '',
+      name,
+      iban,
+      cleanAmount ? `EUR${cleanAmount}` : '',
+      '',
+      '',
+      truncate(cleanLine(purpose), EPC_MAX_REMITTANCE)
+    ];
+    while (lines.length > 7 && lines[lines.length - 1] === '') lines.pop();
+    return lines.join('\n');
   }
 };
 
+/** Parses user-entered amounts such as "12,50", "1.234,56" or "1,234.56". */
 export function normalizeAmount(value) {
-  const raw = String(value || '').replace(/[^0-9,.]/g, '').replace(',', '.');
+  let raw = String(value || '').replace(/[^0-9,.]/g, '');
   if (!raw) return '';
+  const lastSeparator = Math.max(raw.lastIndexOf(','), raw.lastIndexOf('.'));
+  if (lastSeparator >= 0) {
+    const decimals = raw.length - lastSeparator - 1;
+    const integerPart = raw.slice(0, lastSeparator).replace(/[,.]/g, '');
+    raw = decimals > 0 && decimals <= 2 ? `${integerPart}.${raw.slice(lastSeparator + 1)}` : raw.replace(/[,.]/g, '');
+  }
   const num = Number(raw);
-  if (!Number.isFinite(num) || num <= 0) return '';
+  if (!Number.isFinite(num) || num < 0.01 || num > EPC_MAX_AMOUNT) return '';
   return num.toFixed(2);
 }
 export function formatIbanRaw(iban) { return String(iban || '').replace(/\s+/g, '').toUpperCase(); }
 export function formatIban(iban) { return formatIbanRaw(iban).replace(/(.{4})/g, '$1 ').trim(); }
+
+/** ISO 13616 IBAN check (structure plus mod-97 checksum). */
+export function isValidIban(value) {
+  const iban = formatIbanRaw(value);
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(iban)) return false;
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+  let remainder = 0;
+  for (const ch of rearranged) {
+    const digits = /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55);
+    for (const digit of digits) remainder = (remainder * 10 + Number(digit)) % 97;
+  }
+  return remainder === 1;
+}
+export function isValidBic(value) {
+  return /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(String(value || '').toUpperCase());
+}
+
+function vcardHeader(data) {
+  const fullName = cleanLine(data.n);
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  const family = parts.length > 1 ? parts.at(-1) : fullName;
+  const given = parts.length > 1 ? parts.slice(0, -1).join(' ') : '';
+  return ['BEGIN:VCARD', 'VERSION:3.0', `N:${escapeVcard(family)};${escapeVcard(given)};;;`, `FN:${escapeVcard(fullName)}`];
+}
+/** ADR has seven components: PO box; extended; street; locality; region; postal code; country. */
+function vcardAddress(street, zipCity) {
+  const match = cleanLine(zipCity).match(/^(\d{4,5})\s+(.+)$/);
+  const postal = match ? match[1] : '';
+  const locality = match ? match[2] : cleanLine(zipCity);
+  return ['', '', escapeVcard(cleanLine(street)), escapeVcard(locality), '', escapeVcard(postal), ''].join(';');
+}
+function cleanLine(value) { return String(value || '').replace(/[\r\n]+/g, ' ').trim(); }
+function truncate(value, max) { return Array.from(value).slice(0, max).join(''); }
 function sanitizePhone(phone) { return String(phone || '').replace(/[^+0-9]/g, ''); }
 function normalizeUrl(url) { return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
-function escapeVcard(value = '') { return String(value).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function escapeVcard(value = '') { return String(value).replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }

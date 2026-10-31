@@ -34,6 +34,8 @@ source-assets
 AGENTS.md
 appspec.yaml
 CHECKLIST.md
+CODEX-HANDOFF.md
+tests
 README.md
 
 # Source and legacy icons are retained in Git but are not runtime assets

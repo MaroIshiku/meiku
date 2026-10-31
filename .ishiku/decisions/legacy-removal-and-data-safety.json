@@ -1,0 +1,14 @@
+{
+  "id": "DEC-004",
+  "date": "2026-10-31",
+  "decision": "Remove interfaces the current release no longer uses and add server-side data safety: optimistic revision checks, a rolling token history and confirmed imports. Profile picture moves into the encrypted vault; the remembered login display name stays local.",
+  "rationale": "Product owner instruction (2026-10-31): unused legacy points may be removed, existing data must be preserved without re-entry, optimistic locking is wanted, and the locally remembered name and picture should be kept in whatever form is safest.",
+  "consequences": [
+    "Removed: save.php, repository data.json, GET /data.json and POST /save.php routes, client fallbacks to them, DV2_* and DATELLO_DATA_PATH variables, ?v= cache-busting query strings.",
+    "Leftover DV2_* variables with default values are ignored with a warning so existing ZimaOS installations keep starting; non-default values stop startup with a rename hint.",
+    "data.json gains an integer revision; files without one are read as revision 0. Writes without expectedRevision stay accepted for older clients.",
+    "The last 10 previous tokens are kept in <data dir>/history/.",
+    "The profile picture is encrypted inside the vault (synced with it). A legacy plaintext dv2.avatar is migrated on the next save and then removed.",
+    "The login display name remains in localStorage (meiku-login-name) to keep the personalised login screen; Sign Out removes it."
+  ]
+}

@@ -37,7 +37,7 @@
       },
       {
         "name": "application",
-        "command": "python -m compileall -q server.py tests && python -m unittest discover -s tests && node --check js/app.js && node --check js/auth.js && node --check js/crypto.js && node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs",
+        "command": "python -m compileall -q server.py tests && python -m unittest discover -s tests && node --check js/app.js && node --check js/auth.js && node --check js/crypto.js && node --check js/qr.js && node --check js/store.js && node --check sw.js && node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs && node tests/test-qr.mjs && sh -n docker-entrypoint.sh",
         "required_for_verified": true
       },
       {

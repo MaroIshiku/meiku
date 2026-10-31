@@ -14,14 +14,16 @@
           "tests/test_server.py",
           "tests/test-crypto.mjs",
           "tests/test-store.mjs",
-          "tests/test-auth.mjs"
+          "tests/test-auth.mjs",
+          "tests/test-qr.mjs"
         ],
         "integration": [
           ".ishiku/kit/scripts/compliance-test",
           "https://github.com/MaroIshiku/meiku/actions/runs/32505306399"
         ],
         "e2e": [
-          "https://github.com/MaroIshiku/meiku/actions/runs/32505306399"
+          "tests/e2e/migration.e2e.mjs",
+          ".ishiku/decisions/review-remediation-20261031.json"
         ],
         "security": [
           ".ishiku/kit/scripts/compliance-test"
@@ -35,7 +37,9 @@
         "js/auth.js",
         "js/crypto.js",
         "js/store.js",
+        "js/app.js",
         ".ishiku/decisions/single-vault-authentication.json",
+        ".ishiku/decisions/vault-v3-key-wrapping.json",
         ".ishiku/overrides/OVR-001.json"
       ],
       "tests": {
@@ -49,9 +53,13 @@
           ".ishiku/kit/scripts/compliance-test"
         ],
         "e2e": [
-          ".ishiku/reports/ops-001-verification.json"
+          "tests/e2e/migration.e2e.mjs",
+          ".ishiku/decisions/review-remediation-20261031.json"
         ],
         "security": [
+          "tests/test-crypto.mjs",
+          "tests/test-auth.mjs",
+          "tests/test-store.mjs",
           ".ishiku/kit/scripts/compliance-test"
         ]
       },
@@ -76,7 +84,9 @@
           ".ishiku/kit/scripts/compliance-test",
           ".ishiku/kit/scripts/check-design"
         ],
-        "e2e": [],
+        "e2e": [
+          "tests/e2e/migration.e2e.mjs"
+        ],
         "security": [
           ".ishiku/kit/scripts/compliance-test"
         ]
@@ -89,16 +99,25 @@
         ".env.example",
         "docker-compose.yml",
         "Meiku - Profile Share.yaml",
+        "Dockerfile",
+        "docker-entrypoint.sh",
+        "server.py",
         "README.md"
       ],
       "tests": {
-        "unit": [],
+        "unit": [
+          "tests/test_server.py",
+          "tests/test_compose.py"
+        ],
         "integration": [
+          ".ishiku/decisions/review-remediation-20261031.json",
           ".ishiku/reports/ops-001-verification.json",
           ".ishiku/kit/scripts/compliance-test"
         ],
         "e2e": [],
         "security": [
+          "tests/test_server.py",
+          "tests/test_compose.py",
           ".ishiku/kit/scripts/compliance-test"
         ]
       },
@@ -107,6 +126,7 @@
     {
       "id": "REL-001",
       "implementation": [
+        ".github/workflows/publish-ghcr.yml",
         ".github/workflows/ishiku-pull-request-verify.yml",
         ".github/workflows/ishiku-release-release.yml",
         ".ishiku/kit/scripts/check-release"
@@ -120,6 +140,50 @@
         "security": [
           ".ishiku/kit/scripts/compliance-test"
         ]
+      },
+      "status": "verified"
+    },
+    {
+      "id": "DATA-001",
+      "implementation": [
+        "server.py",
+        "js/store.js",
+        "js/app.js",
+        ".ishiku/decisions/legacy-removal-and-data-safety.json"
+      ],
+      "tests": {
+        "unit": [
+          "tests/test_server.py",
+          "tests/test-store.mjs"
+        ],
+        "integration": [
+          ".ishiku/decisions/review-remediation-20261031.json"
+        ],
+        "e2e": [
+          "tests/e2e/migration.e2e.mjs"
+        ],
+        "security": [
+          "tests/test_server.py",
+          "tests/test-store.mjs"
+        ]
+      },
+      "status": "verified"
+    },
+    {
+      "id": "QR-001",
+      "implementation": [
+        "js/qr.js",
+        "js/app.js"
+      ],
+      "tests": {
+        "unit": [
+          "tests/test-qr.mjs"
+        ],
+        "integration": [],
+        "e2e": [
+          "tests/e2e/migration.e2e.mjs"
+        ],
+        "security": []
       },
       "status": "verified"
     }

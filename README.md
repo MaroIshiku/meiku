@@ -15,16 +15,20 @@ The interface uses the shared AppHeader, local logo assets, shared design tokens
 ## Features
 
 - Setup, vault unlock and editing directly in the PWA
-- Web Crypto API: AES-GCM-256 plus PBKDF2-SHA-256
-- Six-digit PIN quick unlock with locally encrypted credentials and one million PBKDF2 iterations
+- Web Crypto API: vault format v3 with a random AES-GCM-256 data key wrapped by a PBKDF2-SHA-256 key (600,000 iterations); existing v2 vaults open unchanged and are upgraded automatically
+- Six-digit PIN quick unlock that wraps the vault key (never the master password) with one million PBKDF2 iterations
 - Tabs: Private, Company and Payments
 - Guided profile progress for Private, Business, PayPal and Bank
 - Separate private and business addresses
 - Local QR generation without a third-party API
 - Separate vCard QRs for Private and Company
 - Payments tab with PayPal and bank transfer switch
-- PayPal QR and GiroCode/EPC QR with synchronized amount
-- Export/import for the encrypted token
+- PayPal QR and GiroCode/EPC QR (EPC069-12 v002, IBAN checksum validation) with synchronized amount
+- vCard 3.0 QR codes with structured name and address
+- Profile picture stored inside the encrypted vault
+- Conflict protection: a save from an outdated device is rejected instead of overwriting newer data
+- Server-side history of the last 10 encrypted tokens for restore and rollback
+- Export/import for the encrypted token (import asks for confirmation)
 - PWA manifest, service worker and Meiku PWA icons
 - Python API for token I/O with `X-Auth-Token`
 
@@ -75,11 +79,11 @@ docker compose pull
 docker compose up -d
 ```
 
-For direct ZimaOS/CasaOS import, use `Meiku - Profile Share.yaml`. That primary file contains the fixed published port `65003` and the immutable release image without Compose interpolation; set `ISHIKU_SETUP_SECRET` in the platform UI before starting it. The regular `docker-compose.yml` is the documented alternative when `.env` overrides are required.
+For direct ZimaOS/CasaOS import, use `Meiku - Profile Share.yaml`. That file contains the fixed published port `65003` and the immutable release image without Compose interpolation; set `ISHIKU_SETUP_SECRET` in the platform UI before starting it. The regular `docker-compose.yml` is the alternative when `.env` overrides are required. Both files are kept aligned by `tests/test_compose.py`.
 
 ### First Start
 
-On first start, Meiku shows the vault setup. Enter the profile name, a master password and the same secret configured server-side as `ISHIKU_SETUP_SECRET`, `ISHIKU_SETUP_SECRET_FILE` or the legacy variable `DV2_SHARED_SECRET`.
+On first start, Meiku shows the vault setup. Enter the profile name, a master password (at least 12 characters, entered twice) and the same secret configured server-side as `ISHIKU_SETUP_SECRET` or `ISHIKU_SETUP_SECRET_FILE`.
 
 ### Admin Account
 
@@ -97,19 +101,23 @@ Meiku does not create a server admin account and does not store user password ha
 | `ISHIKU_LOG_LEVEL` | Shared runtime log level, default `info`. |
 | `ISHIKU_SETUP_SECRET` | Preferred secret for setup and token write access; at least 32 characters. |
 | `ISHIKU_SETUP_SECRET_FILE` | Optional path to a secret file, preferred over environment secrets. |
-| `DV2_SHARED_SECRET` | Legacy alias for existing installations. |
-| `DV2_ACCESS_LOG` | Enables simple access logs with `true`, `1` or `yes`. |
+| `MEIKU_ACCESS_LOG` | Enables simple access logs with `true`, `1` or `yes`. |
+| `MEIKU_TRUST_PROXY` | `true` only when Meiku is reachable exclusively through one reverse proxy that appends the client address to `X-Forwarded-For`; the write rate limit then applies per real client instead of per proxy. |
 | `MEIKU_DATA_PATH` | Host bind mount for persistent data. |
+
+Removed in v0.3.0: `DV2_SHARED_SECRET`, `DV2_DATA_FILE`, `DV2_HOST`, `DV2_PORT`, `DV2_STATIC_DIR`, `DV2_ACCESS_LOG`, `DATELLO_DATA_PATH`. Leftover entries with the old default values are ignored with a warning. A leftover value that would change behaviour (for example `DV2_SHARED_SECRET` without `ISHIKU_SETUP_SECRET`) stops the container with a rename hint.
 
 ### Docker Secrets
 
-When a secret file is used, the server reads `ISHIKU_SETUP_SECRET_FILE` first. Without an explicit variable, it checks `/run/secrets/ishiku_setup_secret`. If no file exists, it falls back to `ISHIKU_SETUP_SECRET` and then `DV2_SHARED_SECRET`.
+When a secret file is used, the server reads `ISHIKU_SETUP_SECRET_FILE` first. Without an explicit variable, it checks `/run/secrets/ishiku_setup_secret`. If no file exists, it falls back to `ISHIKU_SETUP_SECRET`.
 
-Secret values are not logged and are not delivered to client-side JavaScript.
+A secret file keeps the value out of `docker inspect`. Create a host file readable by UID 10001 and add it as a file-based Compose secret (`secrets: ishiku_setup_secret: file: ./setup-secret.txt` plus `secrets: [ishiku_setup_secret]` on the service), then remove `ISHIKU_SETUP_SECRET`. Environment-sourced Compose secrets are not possible because the container file system is read-only.
+
+The server never logs the secret and never sends it to the browser. Users type it once per browser session; it is kept in session storage and, when a PIN is set, inside the PIN-encrypted blob.
 
 ### Persistent Data
 
-Inside the container, the encrypted token is stored at `/data/data.json` by default. On ZimaOS, this path is recommended:
+Inside the container, the encrypted token is stored at `/data/data.json` by default, together with a revision number. The previous 10 tokens are kept in `/data/history/`. On ZimaOS, this path is recommended:
 
 ```text
 /DATA/AppData/meiku/data
@@ -119,13 +127,14 @@ Inside the container, the encrypted token is stored at `/data/data.json` by defa
 
 - Plaintext data never leaves the browser.
 - The master password is never sent to the server.
-- The server stores only the AES-GCM token.
-- The setup/shared secret is only intended for write access to the encrypted token.
-- The write secret exists in plaintext only for the current browser session. PIN quick unlock persists only an AES-GCM-encrypted credential blob.
-- Legacy plaintext write secrets are migrated out of `localStorage` on startup; deprecated passkey quick-unlock data is removed.
-- Meiku stores no plaintext passwords and no reversibly encrypted server passwords.
+- The server stores only the AES-GCM token. The token is publicly readable by design (the browser needs it before unlocking), so use a strong master password; new passwords need at least 12 characters.
+- The setup secret is only intended for write access to the encrypted token. Failed attempts are rate limited.
+- The write secret exists in plaintext only for the current browser session. PIN quick unlock persists one AES-GCM blob that contains the vault data key and the write secret; it never contains the master password. This accepted trade-off is recorded in `.ishiku/overrides/OVR-001.json`.
+- The remembered display name for the login screen is the only profile value kept unencrypted in the browser; Sign Out removes it.
+- Legacy plaintext write secrets and profile pictures are migrated out of `localStorage`; deprecated passkey quick-unlock data is removed.
 - There is no public server registration.
-- `data.json`, `/api/data`, `/api/token` and `save.php` are not cached by the service worker.
+- Only the PWA files are served; server code and repository files are not reachable over HTTP.
+- `/api/data`, `/api/token` and `build-info.json` are never cached by the service worker.
 - The container starts briefly with root privileges, fixes the `/data` bind mount when needed and then runs as UID/GID `10001:10001`, read-only, with a `/data` bind mount and `/tmp` tmpfs.
 
 ## Updates and Backup
@@ -139,16 +148,22 @@ docker compose up -d
 
 Backup:
 
-- Back up the host folder configured through `MEIKU_DATA_PATH`.
+- Back up the host folder configured through `MEIKU_DATA_PATH` (includes `history/`).
 - Optionally export the encrypted token in the app.
 - Store the master password and server-side secret separately and securely.
+
+Restore an earlier token: stop the container, copy the wanted file from `history/` over `data.json`, start the container. Clients that are open at that time get a conflict message on their next save and must reload.
+
+Upgrade to v0.3.0: no action is required. The first unlock with password or PIN re-encrypts the existing vault in the v3 format (the server secret must be known in that browser session; otherwise this happens on the next save). The v2 token stays in `history/`.
+
+Rollback below v0.3.0: older releases cannot open a v3 vault. Before starting an older image, restore the last v2 token from `history/` (the file written before the upgrade, normally the oldest `data-r000000-*.json` or the one before the first v3 save). Changes saved after the upgrade are then lost unless you re-enter them. The history holds only the last 10 saves, so copy `data.json` before upgrading if a rollback might be needed.
 
 ## Development
 
 Local start:
 
 ```bash
-ISHIKU_SETUP_SECRET=development-only-secret-at-least-32-characters DV2_DATA_FILE=./data/data.json python server.py --host 127.0.0.1 --port 8080
+ISHIKU_SETUP_SECRET=development-only-secret-at-least-32-characters MEIKU_DATA_FILE=./data/data.json python server.py --host 127.0.0.1 --port 8080
 ```
 
 Health checks:
@@ -161,16 +176,23 @@ GET /readyz
 Token endpoints:
 
 ```text
-GET /api/data
-POST /api/token
+GET  /api/data    -> {"token": "...", "updated": "...", "revision": 3}
+POST /api/token   <- {"token": "...", "expectedRevision": 3}   (X-Auth-Token header)
+                  -> 200 {"ok": true, "updated": "...", "revision": 4}
+                  -> 409 {"code": "VERSION_CONFLICT", "revision": 5, ...}
 ```
 
-Legacy endpoints remain compatible:
+`expectedRevision` is optional for compatibility; `null` means "create only if no vault exists". The legacy endpoints `/data.json` and `/save.php` were removed in v0.3.0.
 
-```text
-GET /data.json
-POST /save.php
+Tests:
+
+```bash
+python -m unittest discover -s tests
+node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs && node tests/test-qr.mjs
+node .ishiku/kit/scripts/verify-app . --full
 ```
+
+`tests/e2e/migration.e2e.mjs` is an optional Playwright browser test for the v0.2.x to v0.3.0 migration; see the header of the file.
 
 ## Created with ChatGPT Codex
 
