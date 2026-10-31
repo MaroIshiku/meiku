@@ -1,10 +1,10 @@
-import { Auth } from './auth.js?v=0.4.2';
-import { createVault, tokenVersion, VAULT_VERSION } from './crypto.js?v=0.4.2';
-import { $, $$, esc, menuRow, Sheet, toast } from './dom.js?v=0.4.2';
-import { icon } from './icons.js?v=0.4.2';
-import { fieldDefs, FIELD_KEYS, initials, LEGACY_AVATAR_KEY, MAX_AVATAR_CHARS, normalizeData, passwordStrength, PROFILE_STEPS, stepCount } from './profile.js?v=0.4.2';
-import { Store } from './store.js?v=0.4.2';
-import { PSU_MODES, PSU_THEMES, setPixelSoftUtilityMode, setPixelSoftUtilityTheme } from '../design-system/theme-controller.js?v=0.4.2';
+import { Auth } from './auth.js?v=0.4.3';
+import { createVault, tokenVersion, VAULT_VERSION } from './crypto.js?v=0.4.3';
+import { $, $$, esc, menuRow, Sheet, toast } from './dom.js?v=0.4.3';
+import { icon } from './icons.js?v=0.4.3';
+import { fieldDefs, FIELD_KEYS, initials, LEGACY_AVATAR_KEY, MAX_AVATAR_CHARS, normalizeData, passwordStrength, PROFILE_STEPS, stepCount } from './profile.js?v=0.4.3';
+import { Store } from './store.js?v=0.4.3';
+import { PSU_MODES, PSU_THEMES, setPixelSoftUtilityMode, setPixelSoftUtilityTheme } from '../design-system/theme-controller.js?v=0.4.3';
 
 export const MIN_NEW_PASSWORD_LENGTH = 12;
 const THEME_LABELS = { lavender: 'Lavender', mint: 'Mint', sky: 'Sky', amber: 'Amber', rose: 'Rose', graphite: 'Graphite' };

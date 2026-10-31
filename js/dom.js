@@ -1,4 +1,4 @@
-import { icon } from './icons.js?v=0.4.2';
+import { icon } from './icons.js?v=0.4.3';
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];

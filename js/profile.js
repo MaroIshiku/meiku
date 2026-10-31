@@ -1,4 +1,4 @@
-import { formatIbanRaw, isValidIban } from './qr.js?v=0.4.2';
+import { formatIbanRaw, isValidIban } from './qr.js?v=0.4.3';
 
 // [key, label, input type, required, autocomplete, inputmode]
 // The website uses type=text with inputmode=url so entries without https:// stay valid.

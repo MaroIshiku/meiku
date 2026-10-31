@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64, decryptStringWithPin, encryptStringWithPin } from './crypto.js?v=0.4.2';
+import { base64ToBytes, bytesToBase64, decryptStringWithPin, encryptStringWithPin } from './crypto.js?v=0.4.3';
 
 // PIN quick unlock stores one AES-GCM blob (PBKDF2-SHA-256, 1,000,000 iterations).
 // Current blobs wrap the vault data key and the server write secret, never the

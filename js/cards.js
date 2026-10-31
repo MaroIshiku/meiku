@@ -1,7 +1,7 @@
-import { $, $$, copyText, esc, stateView, toast } from './dom.js?v=0.4.2';
-import { icon, iconPath } from './icons.js?v=0.4.2';
-import { firstName, hasBank, hasBusiness, hasPayPal, initials, slug } from './profile.js?v=0.4.2';
-import { formatIban, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js?v=0.4.2';
+import { $, $$, copyText, esc, stateView, toast } from './dom.js?v=0.4.3';
+import { icon, iconPath } from './icons.js?v=0.4.3';
+import { firstName, hasBank, hasBusiness, hasPayPal, initials, slug } from './profile.js?v=0.4.3';
+import { formatIban, isValidIban, normalizeAmount, QrPayload, renderQr } from './qr.js?v=0.4.3';
 
 const AMOUNTS = ['5', '10', '20', '50', '100'];
 const AMOUNT_KEY = 'meiku.amount';
@@ -193,7 +193,7 @@ export function createCards(ctx) {
     deck.innerHTML = CARDS.map(panelMarkup).join('');
     for (const card of CARDS) renderQrInto($(`#card-${card.id}`), card.id);
     updateNav();
-    requestAnimationFrame(() => scrollToCard(state.card, false));
+    requestAnimationFrame(() => scrollToCard(state.card));
   }
 
   function refreshPayment(id) {
@@ -219,15 +219,19 @@ export function createCards(ctx) {
     });
   }
 
-  function scrollToCard(id, smooth = true) {
+  /** Jumps to a card without animation; the card always starts at the top. */
+  function scrollToCard(id) {
     const panel = $(`#card-${id}`);
     if (!panel) return;
-    $('#deck').scrollTo({ left: panel.offsetLeft, behavior: smooth ? 'smooth' : 'auto' });
+    panel.scrollTop = 0;
+    $('#deck').scrollLeft = panel.offsetLeft;
   }
 
+  /** Marks a card as current. Every other card goes back to its top, so switching never resumes a scroll position. */
   function setCard(id) {
     state.card = id;
     sessionStorage.setItem(CARD_KEY, id);
+    $$('.meiku-panel').forEach(panel => { if (panel.dataset.card !== id) panel.scrollTop = 0; });
     updateNav();
   }
 
@@ -296,7 +300,7 @@ export function createCards(ctx) {
     try { await wakeLock?.release(); } catch {}
     wakeLock = null;
     setCard(fullscreenId);
-    scrollToCard(fullscreenId, false);
+    scrollToCard(fullscreenId);
     ctx.fullscreenReturn?.focus?.({ preventScroll: true });
   }
 
@@ -319,7 +323,7 @@ export function createCards(ctx) {
         if (card && card.id !== state.card) setCard(card.id);
       }, 80);
     }, { passive: true });
-    window.addEventListener('resize', () => scrollToCard(state.card, false));
+    window.addEventListener('resize', () => { $('#deck').scrollLeft = $(`#card-${state.card}`)?.offsetLeft || 0; });
     // QR colours follow the theme.
     window.addEventListener('psu:themechange', () => { if (state.data && !$('#vaultScreen').hidden) renderDeck(); });
 

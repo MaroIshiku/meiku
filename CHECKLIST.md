@@ -59,6 +59,7 @@ Date: 2026-10-31 (updated for v0.3.0)
 - New PINs use exactly six digits and wrap the vault data key plus write secret (never the master password) with one million PBKDF2 iterations plus AES-GCM. Legacy PIN blobs keep working and are replaced after unlock. The PIN pad accepts keyboard input.
 - The server write secret is kept in session storage or inside the PIN-encrypted blob, never as plaintext persistent browser storage.
 - The unreliable Passkey/WebAuthn PRF quick unlock is not offered; obsolete passkey data is removed on startup.
+- Switching cards jumps instantly (no scroll animation) and every card starts at the top; scroll positions are not remembered (`tests/e2e/cards.e2e.mjs`).
 - Four share cards (Private, Business, PayPal, Bank) are reachable through the bottom navigation and by swiping; cards without data show an empty state with an action to add the details.
 - QR codes are generated locally in the "fluid" style (error correction Q, centre card icon, theme gradient). Data modules keep at least 7:1 and eyes 4.5:1 contrast on white in every theme; `tests/e2e/qr-scan.e2e.mjs` decodes every card in every theme.
 - A failed or hanging start shows the error and a "Repair app" button instead of a blank screen; an unreachable server shows "Server not reachable" with a retry instead of the setup form.
