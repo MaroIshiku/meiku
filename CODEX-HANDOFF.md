@@ -96,3 +96,8 @@ Released as `v0.4.2` (run 41251628114): `ghcr.io/maroishiku/meiku:v0.4.2@sha256:
 ## v0.4.3 (2026-11-01, branch `claude/no-animations`)
 
 Owner request: switching cards must not animate, and every card starts at the top (no remembered scroll position). The other animations stay. Changed `js/cards.js` only (plus the version stamp); covered by `tests/e2e/cards.e2e.mjs`.
+
+Released as `v0.4.3` (run 41253607981): `ghcr.io/maroishiku/meiku:v0.4.3@sha256:21fa94dd147c8ce9bd8e508258a9f158217c198f7212039753ff815a2f579136`.
+- Trivy (from the registry): linux/amd64 and linux/arm64, 0 HIGH/CRITICAL.
+- The published image passed the Compose runtime test, `tests/e2e/migration.e2e.mjs` and `tests/e2e/cards.e2e.mjs` (6/6).
+- The release notes were corrected to roll back to v0.4.2.
