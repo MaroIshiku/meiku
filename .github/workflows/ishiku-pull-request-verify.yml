@@ -32,13 +32,16 @@ jobs:
         with:
           node-version: 24
       - name: Verify independently cloned app
+        # Strict by default. `inputs` is empty for pull_request/push/dispatch, and
+        # github.event_name is the caller's event inside a reusable workflow, so
+        # only an explicit `require_all_verified: false` from a caller relaxes it.
         env:
-          REQUIRE_ALL_VERIFIED: ${{ inputs.require_all_verified }}
+          REQUIRE_ALL_VERIFIED: ${{ format('{0}', inputs.require_all_verified) }}
         run: |
-          if [ "$REQUIRE_ALL_VERIFIED" = "true" ]; then
-            node .ishiku/kit/scripts/verify-app . --full
-          else
+          if [ "$REQUIRE_ALL_VERIFIED" = "false" ]; then
             node .ishiku/kit/scripts/verify-app . --full --allow-unverified-requirements
+          else
+            node .ishiku/kit/scripts/verify-app . --full
           fi
       - name: Upload verification evidence
         if: always()

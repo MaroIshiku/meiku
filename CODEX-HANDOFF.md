@@ -7,7 +7,7 @@ Decisions: `DEC-003` (`vault-v3-key-wrapping.json`), `DEC-004` (`legacy-removal-
 
 ## Status
 
-`IMPLEMENTED_BUT_NOT_VERIFIED` in CI. All local checks passed (see the change record). GitHub Actions has not run on these changes yet; publishing and the release are still to do.
+Merged as #27 (`d0a3d12`). The follow-up work was done on 2026-10-31 by Claude Code, not Codex; see "Follow-up status" below.
 
 ## What was done
 
@@ -26,23 +26,18 @@ Decisions: `DEC-003` (`vault-v3-key-wrapping.json`), `DEC-004` (`legacy-removal-
 | Tests | New `tests/test-qr.mjs` and `tests/test_compose.py`; extended server/crypto/auth/store tests; optional Playwright test `tests/e2e/migration.e2e.mjs`. The verification command in `.ishiku/project.yaml` was extended. | `tests/` |
 | Docs | README (variables, endpoints, upgrade, restore, rollback), CHECKLIST, AppSpec (`DATA-001`, `QR-001`, new AUTH/OPS acceptance), traceability. | |
 
-## What Codex must do
+## Follow-up status (2026-10-31)
 
-1. **Review and commit** the working tree on `claude/review-remediation-20261031`. Suggested commit title: `feat: vault v3 key wrapping, conflict-safe storage and QR fixes (v0.3.0)`. Open the PR and let `ishiku verify` run.
-2. **Check the first `publish-ghcr.yml` run on `main`.** The Trivy steps rely on the `TRIVY_PLATFORM` environment variable to pick the platform out of the multi-arch digest. If Trivy ignores it, pass `--platform` through the action's `trivy-config` or call trivy directly. The old workflow produced short `sha-<7>` tags; the new one produces `sha-<40>` tags.
-3. **Release `v0.3.0`.** This is a new minor version because of the vault format. Tag it and let `ishiku-release-release.yml` publish it. In a follow-up PR, pin the new digest (as in #25) in:
-   - `docker-compose.yml`
-   - `Meiku - Profile Share.yaml` (`tests/test_compose.py` checks that both match)
-   - `app.manifest.json` → `readme_profile.docker_image`
-   - Then update `.ishiku/reports/ops-001-verification.json` with the new image and runtime evidence.
-   - This also delivers the Python 3.14 and libuuid fix from #26 that is still missing in v0.2.8.
-4. **Kit fixes (cross-app, outside this repo).** `.github/workflows/ishiku-pull-request-verify.yml` and `ishiku-release-release.yml` are kit-managed (checksum in `.ishiku/kit-manifest.json`), so they were **not** edited here. Change them in the central workspace kit and run `sync-kit`:
-   - **Verify gate:** on `pull_request`/`push`, `inputs.require_all_verified` is empty, so the job runs with `--allow-unverified-requirements`. Use `${{ inputs.require_all_verified != false }}`.
-   - **Release scan:** the scan builds amd64 only and the published multi-arch image is a separate build. Apply the same push → scan digest per platform → promote pattern as in `publish-ghcr.yml`.
-5. **Git housekeeping.** Ask the owner first; this was not done:
-   - Delete merged local branches: `codex/finalize-v0.2.7`, `codex/fix-v0.2.6-publish`, `codex/pin-v0.2.7-delivery`, `codex/release-v0.2.6`, `codex/remediate-container-cves`, `codex/standardize-readmes-compose`, `codex/dependency-maintenance-20261011` (still checked out in a worktree under `Meiku/repository/.git/maintenance-20261011`).
-   - Many `origin/codex/*` branches, including ones from other apps (`datello-*`, `sharely-*`).
-   - Dependabot branches for actions and the base image that #26 already superseded.
+1. **Done.** Committed, PR #27 opened, CI `ishiku verify` passed, squash-merged as `d0a3d12`.
+2. **Done.** The first `publish-ghcr.yml` run on `main` passed (run 41240273548). Local `trivy` against the pushed digest `sha256:18c7e93d…` confirmed that `TRIVY_PLATFORM` selects the platform: amd64 and arm64 each have 0 HIGH/CRITICAL. Tags are now `sha-<40>`.
+3. **Release `v0.3.0`.** Tagged after the kit PR below; the digest pin follows in a separate PR (see git history).
+4. **Kit (central `.ishiku/`, not a Git repository).**
+   - Changed: `workflows/pull-request/verify.yml` (strict by default via `format('{0}', inputs.require_all_verified)`; the old `github.event_name == 'workflow_call'` check was always false inside reusable workflows; action pins updated to the #26 releases), `workflows/release/release.yml` (pins updated; Trivy scans the pushed digest per platform before promotion) and `scripts/ishiku.mjs` (honours `--allow-unverified-requirements`, as the app copies already did).
+   - Originals are backed up in `.ishiku/reports/kit-backup-20261031/`.
+   - Distributed **only to meiku**, by copying the two workflow files and updating `kit-manifest.json` and `kit-version.lock`. A full `sync-kit` was deliberately not run: the central policies, schemas and scripts differ from the app copies at the same version 1.2.1, and `schemas/` contains a sync-conflict copy (`project.schema-Marlo_Desktop.json`) that would be copied into every app.
+   - Each other app has its own customised "managed" release workflow (8 variants; some with extra release workflows such as `playiku-promote-release.yml` and `vertiku-publish-appliance-tag.yml`). Rolling the central version out to them changes their release behaviour and needs a per-app review.
+   - The new release workflow has no `workflow_dispatch` re-publish input any more (the central version is tag-driven) and creates the GitHub release with the SBOM attached.
+5. **Done.** Deleted 8 merged local branches and the extra worktree `maintenance-20261011`. Deleted 14 merged remote branches. Closed Dependabot PRs #11–#16 as superseded by #26 (their branches were deleted too). Only `main` remains on GitHub.
 
 ## Known open items (not done on purpose)
 
