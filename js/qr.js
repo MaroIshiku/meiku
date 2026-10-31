@@ -293,7 +293,8 @@ export function renderQr(target, text, options = {}) {
     light: options.light || 'transparent',
     finderLight: options.finderLight || options.light || '#ffffff',
     dense: modules.length >= 45,
-    classic: options.style === 'classic'
+    classic: options.style === 'classic',
+    soft: options.style === 'soft'
   });
   target.replaceChildren(canvas);
   return canvas;
@@ -312,6 +313,20 @@ function renderStyledModules(ctx, modules, cell, border, palette) {
   }
 
   const n = modules.length;
+  if (palette.soft) {
+    // Scan-first style: square data modules in one colour (maximum contrast),
+    // rounded finder patterns for the Meiku look. Modules overlap by a hair to
+    // avoid anti-aliasing seams between neighbours.
+    ctx.fillStyle = palette.dark;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (!modules[r][c] || isFinderZone(r, c, n)) continue;
+        ctx.fillRect((c + border) * cell, (r + border) * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+    for (const [row, col] of [[0, 0], [0, n - 7], [n - 7, 0]]) drawFinder(ctx, row, col, cell, border, palette);
+    return;
+  }
   const radius = cell * (palette.dense ? 0.43 : 0.46);
   const finderZones = [[0, 0], [0, n - 7], [n - 7, 0]];
   for (let r = 0; r < n; r++) {

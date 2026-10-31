@@ -29,19 +29,16 @@ const page = await browser.newPage();
 const problems = [];
 page.on('console', msg => { if (msg.type() === 'error' && !/Password is wrong|OperationError|status of 409/.test(msg.text())) problems.push(msg.text()); });
 page.on('pageerror', err => problems.push(err.message));
-const toastText = () => page.locator('#psu-toast-host').textContent();
 
 await page.goto(base);
 await page.evaluate(([blob, av]) => { localStorage.clear(); localStorage.setItem('dv2.pinWrappedPassword', blob); localStorage.setItem('dv2.avatar', av); localStorage.setItem('dv2.theme', 'mint'); localStorage.setItem('meiku-login-name', 'Erika Mustermann'); }, [legacyPinBlob, avatar]);
 await page.reload();
-await page.waitForSelector('#pinOpen:not(.hidden)');
+await page.waitForSelector('#pinDots');
 
 // Legacy PIN unlock via physical keyboard.
-await page.click('#pinOpen');
 await page.keyboard.type('123456');
-await page.keyboard.press('Enter');
-await page.waitForSelector('#vaultScreen:not(.hidden)');
-await page.waitForFunction(() => document.querySelector('#psu-toast-host').textContent.includes('upgraded'));
+await page.waitForSelector('#vaultScreen:not([hidden])');
+await page.waitForFunction(() => document.querySelector('#toastHost').textContent.includes('upgraded'));
 const server1 = await (await fetch(`${base}/api/data`)).json();
 assert.equal(c.tokenVersion(server1.token), 3, 'vault re-sealed as v3');
 assert.deepEqual({ ...(await c.openVault(server1.token, legacyPassword)).data, av: undefined }, { ...profile, cp: '', cm: '', ce: '', c: '', j: '', w: '', cs: '', cz: '', av: undefined });
@@ -53,58 +50,58 @@ assert.equal(storage['dv2.avatar'], undefined);
 assert.equal(storage['dv2.theme'], undefined);
 assert.equal(storage['meiku-theme'], 'mint');
 assert.ok(!storage['meiku.pin'].includes(legacyPassword));
-assert.equal(await page.locator('#heroAvatar').getAttribute('src'), avatar);
+assert.equal(await page.locator('#card-private .meiku-avatar img').getAttribute('src'), avatar);
 
 // Payments: GiroCode renders for the valid IBAN.
-await page.click('[data-tab="payment"]');
-await page.click('[data-payment-mode="bank"]');
-await page.fill('#amountInput', '12,50');
-await page.locator('#amountInput').blur();
-await page.waitForSelector('.qr-target canvas');
+await page.click('#cardNav [data-card="bank"]');
+await page.fill('#card-bank [data-amount-input]', '12,50');
+await page.waitForFunction(() => document.querySelector('#card-bank [data-caption]')?.textContent.includes('12.50'));
+await page.waitForSelector('#card-bank [data-qr] canvas');
 
 // New-format PIN unlock after reload.
 await page.reload();
-await page.click('#pinOpen');
-for (const d of '123456') await page.click(`.pin-grid button:text-is("${d}")`);
-await page.click('.pin-grid button[aria-label="Unlock"]');
-await page.waitForSelector('#vaultScreen:not(.hidden)');
+await page.waitForSelector('#pinDots');
+for (const d of '123456') await page.click(`.meiku-pin__grid [data-key="${d}"]`);
+await page.waitForSelector('#vaultScreen:not([hidden])');
 
 // Conflict: another device saves meanwhile; this device must not overwrite.
 const other = await c.openVault(server1.token, legacyPassword);
 assert.equal((await post(await c.sealVault(other.session, { ...other.data, n: 'Other Device' }))).status, 200);
-await page.click('#heroAvatarWrap');
-await page.click('.profile-menu-row[data-action="edit"]');
-await page.click('#profileStepForm button[type="submit"]');
-await page.waitForFunction(() => document.querySelector('#psu-toast-host').textContent.includes('another device'));
+await page.click('#settingsButton');
+await page.click('#sheetBody [data-action="edit"]');
+await page.click('#editorForm button[type="submit"]');
+await page.waitForFunction(() => document.querySelector('#editorError')?.textContent.includes('another device'));
+await page.keyboard.press('Escape');
 const server2 = await (await fetch(`${base}/api/data`)).json();
 assert.equal((await c.openVault(server2.token, legacyPassword)).data.n, 'Other Device', 'conflicting save did not overwrite');
 
 // Password change: mismatch rejected, then success; old password stops working.
 await page.reload();
-await page.fill('#masterPassword', legacyPassword);
-await page.click('#passwordLogin button[type="submit"]');
-await page.waitForSelector('#vaultScreen:not(.hidden)');
-await page.click('#heroAvatarWrap');
-await page.click('.profile-menu-row[data-action="password"]');
+await page.click('#usePassword');
+await page.fill('#unlockPassword', legacyPassword);
+await page.click('#unlockForm button[type="submit"]');
+await page.waitForSelector('#vaultScreen:not([hidden])');
+await page.click('#settingsButton');
+await page.click('#sheetBody [data-action="password"]');
 await page.fill('#newPassword', 'new-password-123');
 await page.fill('#newPasswordConfirm', 'new-password-124');
-await page.click('#passwordChange button[type="submit"]');
-assert.match(await toastText(), /do not match/);
+await page.click('#passwordForm button[type="submit"]');
+assert.match(await page.locator('#passwordError').textContent(), /do not match/);
 await page.fill('#newPasswordConfirm', 'new-password-123');
-await page.click('#passwordChange button[type="submit"]');
-await page.waitForFunction(() => document.querySelector('#psu-toast-host').textContent.includes('Password changed'));
+await page.click('#passwordForm button[type="submit"]');
+await page.waitForFunction(() => document.querySelector('#toastHost').textContent.includes('Password changed'));
 const server3 = await (await fetch(`${base}/api/data`)).json();
 await assert.rejects(c.openVault(server3.token, legacyPassword));
 assert.equal((await c.openVault(server3.token, 'new-password-123')).data.n, 'Other Device');
 assert.equal(await page.evaluate(() => localStorage.getItem('meiku.pin')), null);
 
 // Import asks for confirmation before replacing the vault.
-await page.click('#heroAvatarWrap');
+await page.click('#settingsButton');
 await page.setInputFiles('#importFile', { name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ token: legacyToken })) });
 await page.waitForSelector('[data-confirm]');
 assert.equal((await (await fetch(`${base}/api/data`)).json()).token, server3.token, 'nothing replaced before confirmation');
 await page.click('[data-confirm]');
-await page.waitForSelector('#passwordLogin:not(.hidden)');
+await page.waitForSelector('#unlockPassword');
 assert.equal((await (await fetch(`${base}/api/data`)).json()).token, legacyToken);
 
 assert.deepEqual(problems, [], 'no console errors or CSP violations');

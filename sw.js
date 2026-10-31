@@ -1,14 +1,22 @@
 // Bump CACHE_NAME with every release that changes static assets.
-const CACHE_NAME = 'meiku-static-v0.3.0';
+const CACHE_NAME = 'meiku-static-v0.4.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './design-system/tokens.css',
+  './design-system/base.css',
+  './design-system/components.css',
+  './design-system/theme-controller.js',
   './css/meiku.css',
   './js/app.js',
   './js/auth.js',
+  './js/cards.js',
   './js/crypto.js',
+  './js/dom.js',
+  './js/icons.js',
+  './js/profile.js',
   './js/qr.js',
+  './js/settings.js',
   './js/store.js',
   './manifest.json',
   './app.manifest.json',
@@ -29,10 +37,6 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
-});
-
-self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {

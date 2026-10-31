@@ -10,19 +10,22 @@ Meiku is a mobile-first PWA for encrypted private and business profile cards wit
 
 Meiku follows the shared Pixel Soft Utility design system for calm, rounded and self-hosted utility interfaces. The app uses the same six themes as the other ishiku apps: Lavender, Mint, Sky, Amber, Rose and Graphite. System, light and dark modes are implemented through shared theme tokens.
 
-The interface uses the shared AppHeader, local logo assets, shared design tokens and technical information only in the settings/debug area. Meiku is not a server admin system with a user database; first run creates a client-side encrypted profile vault instead.
+Meiku is built for phones. The interface uses the shared design-system components (AppHeader, bottom navigation, sheets, segmented control, chips, buttons) and shows technical information only under Settings → About. Meiku is not a server admin system with a user database; first run creates a client-side encrypted profile vault instead.
 
 ## Features
 
 - Setup, vault unlock and editing directly in the PWA
 - Web Crypto API: vault format v3 with a random AES-GCM-256 data key wrapped by a PBKDF2-SHA-256 key (600,000 iterations); existing v2 vaults open unchanged and are upgraded automatically
 - Six-digit PIN quick unlock that wraps the vault key (never the master password) with one million PBKDF2 iterations
-- Tabs: Private, Company and Payments
-- Guided profile progress for Private, Business, PayPal and Bank
+- Four swipeable share cards: Private, Business, PayPal and Bank, each with a large QR code and the share actions within thumb reach
+- Fullscreen QR view with card title, amount, brightness hint and swiping between cards (screen stays awake)
+- Share a contact as a `.vcf` file through the system share sheet; copy any detail with one tap
+- Unlock with a PIN pad (shown directly when a PIN is set) or the master password
+- Settings grouped into Profile, Appearance, Vault and About
+- Step-by-step profile editor for Private, Business, PayPal and Bank
 - Separate private and business addresses
 - Local QR generation without a third-party API
-- Separate vCard QRs for Private and Company
-- Payments tab with PayPal and bank transfer switch
+- Separate vCard QRs for Private and Business
 - PayPal QR and GiroCode/EPC QR (EPC069-12 v002, IBAN checksum validation) with synchronized amount
 - vCard 3.0 QR codes with structured name and address
 - Profile picture stored inside the encrypted vault

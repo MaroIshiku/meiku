@@ -1,0 +1,22 @@
+{
+  "id": "DEC-005",
+  "date": "2026-10-31",
+  "decision": "Redesign the Meiku interface as a phone-only, QR-first app built on the shared ishiku design-system components.",
+  "rationale": "The product owner approved the UI review (2026-10-31) and stated that Meiku is not used on desktop. Showing a QR code to someone in person is the core task, so the code, the share action and one-handed use come first.",
+  "consequences": [
+    "Four swipeable share cards (Private, Business, PayPal, Bank) replace the three tabs with an inner PayPal/Bank switch.",
+    "QR codes use the scan-first 'soft' style: square single-colour modules with rounded finder patterns.",
+    "Unlock shows the PIN pad directly when a PIN is set; six digits submit automatically, OK submits legacy 4–5 digit PINs.",
+    "The header has a settings button (meiku-client-vault profile); settings are grouped into Profile, Appearance, Vault and About with sub-sheets.",
+    "design-system/components.css and theme-controller.js are now loaded; css/meiku.css shrank from about 1,700 to about 630 lines of Meiku-specific styles.",
+    "app.js was split into app.js (controller), cards.js, settings.js, profile.js, dom.js and icons.js. Crypto, auth, store and QR payload logic are unchanged.",
+    "The service worker no longer triggers a page reload on activation, which previously cleared the setup form on the first visit.",
+    "No desktop layout is provided; wide screens keep the centred mobile column."
+  ],
+  "verification": [
+    "Application command: 47 Python tests, crypto/store/auth/QR/profile Node suites, node --check for every module",
+    "Playwright walkthrough at 390x844 and 320x640 in light and dark mode: no console errors, no horizontal overflow at 320 px, setup input survives service worker activation, swipe updates the navigation",
+    "Accessibility audit of 14 screens and sheets: every visible control named, touch targets at least 44 px, inputs labelled, no duplicate ids",
+    "tests/e2e/migration.e2e.mjs (v0.2.x vault, legacy PIN and avatar migration, conflict, password change, import) passed against the new UI"
+  ]
+}

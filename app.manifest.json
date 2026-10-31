@@ -22,11 +22,33 @@
   "default_theme": "lavender",
   "default_mode": "system",
   "has_account": false,
-  "user_identity_fields": ["avatar", "initials", "display_name", "email"],
+  "user_identity_fields": [
+    "avatar",
+    "initials",
+    "display_name",
+    "email"
+  ],
   "main_sections": [
-    { "id": "privat", "label": "Private", "icon": "account_circle" },
-    { "id": "firma", "label": "Company", "icon": "badge" },
-    { "id": "payment", "label": "Payments", "icon": "account_balance_wallet" }
+    {
+      "id": "private",
+      "label": "Private",
+      "icon": "account_circle"
+    },
+    {
+      "id": "business",
+      "label": "Business",
+      "icon": "badge"
+    },
+    {
+      "id": "paypal",
+      "label": "PayPal",
+      "icon": "account_balance_wallet"
+    },
+    {
+      "id": "bank",
+      "label": "Bank",
+      "icon": "account_balance"
+    }
   ],
   "first_run_setup": {
     "enabled": false,
@@ -37,8 +59,14 @@
     "setup_secret_file_default": "/run/secrets/ishiku_setup_secret"
   },
   "technical_info": {
-    "allowed_locations": ["Settings", "Debug"],
-    "disallowed_locations": ["AppHeader", "main footer"]
+    "allowed_locations": [
+      "Settings",
+      "Debug"
+    ],
+    "disallowed_locations": [
+      "AppHeader",
+      "main footer"
+    ]
   },
   "navigation_complexity": "few_sections",
   "readme_profile": {
@@ -48,5 +76,8 @@
     "short_description": "Meiku is a self-hosted profile and contact card app in the ishiku design system.",
     "docker_image": "ghcr.io/maroishiku/meiku:v0.3.0@sha256:cda86bb824761565306d545a6093da5747544962e998b1b7d470c1673a5a9561",
     "codex_notice_enabled": true
-  }
+  },
+  "target_devices": [
+    "phone"
+  ]
 }

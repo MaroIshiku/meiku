@@ -18,12 +18,15 @@ Date: 2026-10-31 (updated for v0.3.0)
 - `.ishiku/design-system.lock` binds the implementation to the single workspace contract without copying the full specification.
 - `app.manifest.json` contains Meiku identity and behavior metadata only; it does not define a separate design language.
 - The app name is `Meiku - Profile Share`.
-- The header uses the shared AppLogo/AppName/AppSubtitle pattern.
+- The header uses the shared AppLogo/AppName/AppSubtitle pattern with a settings button on the right (meiku-client-vault profile).
+- The UI is built on `design-system/components.css`; `css/meiku.css` only adds Meiku-specific parts.
+- Meiku targets phones only (320–460 px); wider screens keep the centred mobile column.
 - Theme attributes live on `document.documentElement`: `data-theme`, `data-mode`, `data-resolved-mode`.
 - Theme and mode persistence uses `meiku-theme` and `meiku-mode`.
 - Six themes are available: Lavender, Mint, Sky, Amber, Rose, Graphite.
 - Modes are available: System, Light, Dark.
-- Technical build information appears only in the debug/settings sheet.
+- Technical build information appears only under Settings → About.
+- Sheets trap focus, close with Escape and return focus; the fullscreen QR view does the same.
 
 ## Security
 
@@ -48,7 +51,7 @@ Date: 2026-10-31 (updated for v0.3.0)
 
 - Setup saves encrypted data through the Python API.
 - First run asks for full name, master password and server secret.
-- After first run, a guided profile progress flow opens.
+- After first run, the step-by-step profile editor opens.
 - Private and business address are separate fields.
 - Login with master password remains available.
 - Vault format v3: random data key wrapped with PBKDF2-SHA-256 (600,000 iterations); headers are authenticated. v2 vaults open with the existing password and are re-sealed automatically.
@@ -56,13 +59,14 @@ Date: 2026-10-31 (updated for v0.3.0)
 - New PINs use exactly six digits and wrap the vault data key plus write secret (never the master password) with one million PBKDF2 iterations plus AES-GCM. Legacy PIN blobs keep working and are replaced after unlock. The PIN pad accepts keyboard input.
 - The server write secret is kept in session storage or inside the PIN-encrypted blob, never as plaintext persistent browser storage.
 - The unreliable Passkey/WebAuthn PRF quick unlock is not offered; obsolete passkey data is removed on startup.
-- Private, Company and Payments tabs remain available.
+- Four share cards (Private, Business, PayPal, Bank) are reachable through the bottom navigation and by swiping; cards without data show an empty state with an action to add the details.
 - QR codes are generated locally.
 - The private vCard contains only private fields; vCards are 3.0 with `N`, `FN`, seven-part `ADR`, escaping and CRLF.
 - PayPal link contains no payment reference.
 - GiroCode follows EPC069-12 v002: payment reference in the unstructured remittance field, length limits, IBAN checksum validation; no code is shown without valid data.
-- Amount is synchronized between PayPal and Bank.
-- The Payments tab switches between PayPal and bank transfer mode.
+- The amount is synchronized between the PayPal and Bank cards and updates the QR code while typing.
+- Contacts can be shared as a `.vcf` file; every detail has a copy button.
+- The page never reloads itself when the service worker updates (this previously cleared the setup form on the first visit).
 - Export/import of the token remains available; import asks for confirmation before replacing the stored vault.
 - The profile picture is stored inside the encrypted vault; legacy plaintext copies are migrated and removed.
 
