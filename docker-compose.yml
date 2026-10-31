@@ -6,7 +6,6 @@ services:
     container_name: meiku
     hostname: meiku
     restart: unless-stopped
-    init: true
     stop_signal: SIGTERM
     stop_grace_period: 10s
 

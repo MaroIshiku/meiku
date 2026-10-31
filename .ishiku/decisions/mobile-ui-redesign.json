@@ -5,7 +5,7 @@
   "rationale": "The product owner approved the UI review (2026-10-31) and stated that Meiku is not used on desktop. Showing a QR code to someone in person is the core task, so the code, the share action and one-handed use come first.",
   "consequences": [
     "Four swipeable share cards (Private, Business, PayPal, Bank) replace the three tabs with an inner PayPal/Bank switch.",
-    "QR codes use the scan-first 'soft' style: square single-colour modules with rounded finder patterns.",
+    "QR codes use the scan-first 'soft' style: square single-colour modules with rounded finder patterns. Superseded in v0.4.1 by the 'fluid' style (REL-20261101).",
     "Unlock shows the PIN pad directly when a PIN is set; six digits submit automatically, OK submits legacy 4–5 digit PINs.",
     "The header has a settings button (meiku-client-vault profile); settings are grouped into Profile, Appearance, Vault and About with sub-sheets.",
     "design-system/components.css and theme-controller.js are now loaded; css/meiku.css shrank from about 1,700 to about 630 lines of Meiku-specific styles.",

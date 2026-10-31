@@ -69,19 +69,20 @@
     {
       "id": "UI-001",
       "implementation": [
-        "index.html",
+        ".ishiku/decisions/mobile-ui-redesign.json",
+        "app.manifest.json",
+        "assets/icons/",
         "css/meiku.css",
+        "index.html",
         "js/app.js",
+        "js/boot.js",
         "js/cards.js",
-        "js/settings.js",
         "js/dom.js",
         "js/icons.js",
         "js/profile.js",
-        "sw.js",
-        "app.manifest.json",
+        "js/settings.js",
         "manifest.json",
-        ".ishiku/decisions/mobile-ui-redesign.json",
-        "assets/icons/"
+        "sw.js"
       ],
       "tests": {
         "unit": [
@@ -116,8 +117,8 @@
       ],
       "tests": {
         "unit": [
-          "tests/test_server.py",
-          "tests/test_compose.py"
+          "tests/test_compose.py",
+          "tests/test_server.py"
         ],
         "integration": [
           ".ishiku/decisions/review-remediation-20261031.json",
@@ -191,7 +192,8 @@
         ],
         "integration": [],
         "e2e": [
-          "tests/e2e/migration.e2e.mjs"
+          "tests/e2e/migration.e2e.mjs",
+          "tests/e2e/qr-scan.e2e.mjs"
         ],
         "security": []
       },

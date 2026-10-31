@@ -26,6 +26,8 @@ Meiku is built for phones. The interface uses the shared design-system component
 - Separate private and business addresses
 - Local QR generation without a third-party API
 - Separate vCard QRs for Private and Business
+- Modern "fluid" QR codes: connected rounded modules, rounded finder eyes, a theme-coloured gradient and the card icon in the centre (error correction Q, checked with zxing-cpp and jsQR)
+- Start-up guard: instead of a blank screen, a failed start shows the error and a "Repair app" button
 - PayPal QR and GiroCode/EPC QR (EPC069-12 v002, IBAN checksum validation) with synchronized amount
 - vCard 3.0 QR codes with structured name and address
 - Profile picture stored inside the encrypted vault
@@ -108,7 +110,7 @@ Meiku does not create a server admin account and does not store user password ha
 | `MEIKU_TRUST_PROXY` | `true` only when Meiku is reachable exclusively through one reverse proxy that appends the client address to `X-Forwarded-For`; the write rate limit then applies per real client instead of per proxy. |
 | `MEIKU_DATA_PATH` | Host bind mount for persistent data. |
 
-Removed in v0.3.0: `DV2_SHARED_SECRET`, `DV2_DATA_FILE`, `DV2_HOST`, `DV2_PORT`, `DV2_STATIC_DIR`, `DV2_ACCESS_LOG`, `DATELLO_DATA_PATH`. Leftover entries with the old default values are ignored with a warning. A leftover value that would change behaviour (for example `DV2_SHARED_SECRET` without `ISHIKU_SETUP_SECRET`) stops the container with a rename hint.
+Removed in v0.3.0: `DV2_DATA_FILE`, `DV2_HOST`, `DV2_PORT`, `DV2_STATIC_DIR`, `DV2_ACCESS_LOG`, `DATELLO_DATA_PATH`. Leftover entries with the old default values are ignored with a warning; a leftover value that would change behaviour stops the container with a rename hint. `DV2_SHARED_SECRET` is deprecated but still accepted as a fallback when `ISHIKU_SETUP_SECRET` is empty (with a warning), so older installations keep starting.
 
 ### Docker Secrets
 
@@ -142,7 +144,21 @@ Inside the container, the encrypted token is stored at `/data/data.json` by defa
 
 ## Updates and Backup
 
-Updates:
+### Updating on ZimaOS
+
+Update the **existing** Meiku app instead of importing it again. Importing a second copy fails while the first one runs, because the container name, the `meiku` network and port 65003 are taken.
+
+1. Open Meiku in the ZimaOS dashboard and go to its settings.
+2. Change only the image tag, for example to `ghcr.io/maroishiku/meiku:v0.4.1`.
+3. Keep the volume source exactly as it is. Older installations often use a path like `/media/<disk>/AppData/i_meiku/data` instead of `/DATA/AppData/meiku/data`. Pointing Meiku at an empty folder would show the setup screen as if no vault existed (the real data stays untouched in the old folder).
+4. If saving reports "The modified configuration did not take effect", check the memory settings. ZimaOS can store a memory **reservation** that is larger than the memory **limit** (for example 256 MB reserved with a 128 MB limit). Docker rejects such a container, so the update never starts and the old container keeps running. Raise the limit to at least the reservation (512 MB is plenty), or lower the reservation.
+5. Optional: remove `init: true` if your stored configuration still has it. With all capabilities dropped, Docker's init process cannot forward the stop signal, so every stop waits 10 seconds and ends with a forced kill (`[FATAL tini] ... Operation not permitted` in the log). Meiku handles SIGTERM itself since v0.4.1.
+
+If the installed PWA on a phone stays blank or shows an error, use **Repair app** on the error screen. It removes the offline copy of Meiku from that device (service worker and cache) and loads it again; the vault, the PIN and the remembered name are kept.
+
+### Docker Compose
+
+With Docker Compose:
 
 ```bash
 docker compose pull

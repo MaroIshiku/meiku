@@ -17,6 +17,7 @@ import mimetypes
 import os
 import re
 import shutil
+import signal
 import tempfile
 import threading
 import time
@@ -203,11 +204,10 @@ def reject_removed_environment() -> None:
         if not value or os.environ.get(new, "").strip():
             continue
         if old == "DV2_SHARED_SECRET":
-            if os.environ.get("ISHIKU_SETUP_SECRET_FILE") or DEFAULT_SETUP_SECRET_FILE.exists():
-                continue
-            if os.environ.get("ISHIKU_SETUP_SECRET", "").strip() == value:
-                continue
-        elif value.lower() in {defaults[old], "false", "0", "no"} or value == defaults[old]:
+            # Still accepted as a fallback (see configured_secret) so old installations keep starting.
+            print("Meiku warning: DV2_SHARED_SECRET is deprecated. Rename it to ISHIKU_SETUP_SECRET.", flush=True)
+            continue
+        if value.lower() in {defaults[old], "false", "0", "no"} or value == defaults[old]:
             print(f"Meiku warning: {old} is no longer used and is ignored. Use {new} instead.", flush=True)
             continue
         raise SystemExit(f"{old} is no longer supported. Rename it to {new}.")
@@ -221,7 +221,7 @@ def configured_secret() -> str:
     if DEFAULT_SETUP_SECRET_FILE.exists():
         return read_secret_file(DEFAULT_SETUP_SECRET_FILE)
 
-    return os.environ.get("ISHIKU_SETUP_SECRET", "").strip()
+    return os.environ.get("ISHIKU_SETUP_SECRET", "").strip() or os.environ.get("DV2_SHARED_SECRET", "").strip()
 
 
 def env_flag(name: str) -> bool:
@@ -491,7 +491,10 @@ class ContactCardHandler(BaseHTTPRequestHandler):
             self.send_header(name, value)
         self.end_headers()
         if self.command != "HEAD":
-            self.wfile.write(body)
+            try:
+                self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # The client went away; nothing to report.
 
     def serve_static(self, head_only: bool = False) -> None:
         requested = unquote(self.path_no_query)
@@ -515,8 +518,11 @@ class ContactCardHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "public, max-age=31536000, immutable")
         self.end_headers()
         if not head_only:
-            with target.open("rb") as handle:
-                shutil.copyfileobj(handle, self.wfile)
+            try:
+                with target.open("rb") as handle:
+                    shutil.copyfileobj(handle, self.wfile)
+            except (BrokenPipeError, ConnectionResetError):
+                self.close_connection = True  # Browser cancelled the download (e.g. page closed).
 
     def is_public_static(self, target: Path) -> bool:
         """Only the PWA files are public; server code, tests and repository files are not."""
@@ -564,8 +570,25 @@ def main() -> None:
     )
     config.validate()
     httpd = ContactCardServer((args.host, args.port), config)
+    install_shutdown_handlers(httpd)
     print(f"Meiku listening on http://{args.host}:{args.port}", flush=True)
-    httpd.serve_forever()
+    try:
+        httpd.serve_forever()
+    finally:
+        httpd.server_close()
+        print("Meiku stopped.", flush=True)
+
+
+def install_shutdown_handlers(httpd: ContactCardServer) -> None:
+    """Stop cleanly on SIGTERM/SIGINT. Meiku runs as PID 1 in the container,
+    where signals without a handler are ignored, so Docker would otherwise wait
+    for the stop timeout and kill it."""
+    def stop(signum: int, _frame: object) -> None:
+        print(f"Meiku received {signal.Signals(signum).name}, shutting down.", flush=True)
+        threading.Thread(target=httpd.shutdown, daemon=True).start()
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
 
 
 if __name__ == "__main__":

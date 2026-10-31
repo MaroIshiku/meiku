@@ -22,7 +22,7 @@ export class VersionConflictError extends Error {
 export const Store = {
   async loadData() {
     try {
-      const response = await fetch('api/data', { cache: 'no-store' });
+      const response = await fetch('api/data', { cache: 'no-store', signal: timeoutSignal(10000) });
       if (!response.ok) throw new Error(`Token load HTTP ${response.status}`);
       const data = await response.json();
       return { token: data.token || '', updated: data.updated || null, revision: normalizeRevision(data.revision) };
@@ -106,6 +106,14 @@ export const Store = {
     });
   }
 };
+
+/** AbortSignal that fires after ms (AbortSignal.timeout is missing in older Safari). */
+export function timeoutSignal(ms) {
+  if (typeof AbortController !== 'function') return undefined;
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
 
 export function parseImport(text) {
   const parsed = JSON.parse(text);

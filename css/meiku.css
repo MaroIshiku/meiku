@@ -133,6 +133,7 @@ code {
 
 /* ---- Vault shell and card deck ----------------------------------------- */
 .meiku-shell {
+  block-size: 100vh;
   block-size: 100dvh;
   min-block-size: 0;
   display: grid;
@@ -372,6 +373,7 @@ a.meiku-detail__main:active { background: var(--color-surface-soft); }
 .meiku-fullscreen__head h2 { margin: 0; font-size: var(--type-headline-medium-size); line-height: var(--type-headline-medium-line); overflow-wrap: anywhere; }
 .meiku-fullscreen__head .meiku-caption { margin: var(--space-1) 0 0; }
 .meiku-fullscreen__qr {
+  inline-size: min(100%, 64vh, 520px);
   inline-size: min(100%, 64dvh, 520px);
   aspect-ratio: 1;
   padding: var(--space-4);
@@ -406,6 +408,7 @@ a.meiku-detail__main:active { background: var(--color-surface-soft); }
 /* ---- Sheets --------------------------------------------------------------- */
 .meiku-backdrop { padding: 0; place-items: end center; }
 .meiku-sheet {
+  max-block-size: min(92vh, 900px);
   max-block-size: min(92dvh, 900px);
   display: flex;
   flex-direction: column;
@@ -631,4 +634,29 @@ input[type="range"] { inline-size: 100%; min-block-size: var(--touch-target-min)
 
 @media (prefers-reduced-motion: reduce) {
   .meiku-deck { scroll-behavior: auto; }
+}
+
+/* Start-up: loading indicator and the boot guard's error card */
+.meiku-loading { display: flex; justify-content: center; gap: var(--space-2); padding: var(--space-6) 0; }
+.meiku-loading span {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  animation: meiku-pulse 1s var(--ease-standard) infinite;
+}
+.meiku-loading span:nth-child(2) { animation-delay: 0.15s; }
+.meiku-loading span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes meiku-pulse { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+.meiku-boot-error { display: grid; gap: var(--space-3); }
+.meiku-boot-error__text {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-container);
+  color: var(--color-on-danger-container);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-medium-size);
+  line-height: var(--type-label-medium-line);
+  overflow-wrap: anywhere;
 }

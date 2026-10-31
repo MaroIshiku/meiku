@@ -88,7 +88,7 @@ export const Sheet = {
       const items = $$(FOCUSABLE, $('#sheetPanel')).filter(node => node.offsetParent !== null);
       if (!items.length) return;
       const first = items[0];
-      const last = items.at(-1);
+      const last = items[items.length - 1];
       if (!$('#sheetPanel').contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
