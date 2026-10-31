@@ -75,3 +75,9 @@ See `.ishiku/decisions/release-v0.4.1.json`. Contains: fluid QR codes, the start
 Field finding on the owner's ZimaOS: the stored app configuration had a memory reservation (256 MB) above the limit (128 MB), so Docker rejected the recreated container. The data volume there is `/media/ZimaOS-HD/AppData/i_meiku/data`, not `/DATA/AppData/meiku/data`. Both are documented in the README under "Updating on ZimaOS".
 
 Still open: verify on an iPhone (WebKit could not run locally); if a blank screen remains, the error card now shows the cause.
+
+Released as `v0.4.1` (run 41250022434): `ghcr.io/maroishiku/meiku:v0.4.1@sha256:70e177ac05b286d567b1d05790890e6a19287aadf7bc5a1d14d86d75362e364a`.
+- Trivy scanned from the registry (`--image-src remote`; a locally pulled copy otherwise hides the arm64 variant): linux/amd64 and linux/arm64, 0 HIGH/CRITICAL.
+- The image carries real build information (version 0.4.1, commit `46ee2ed`).
+- The published image passed the Compose runtime test with v0.2.8 data, `tests/e2e/migration.e2e.mjs` and `tests/e2e/qr-scan.e2e.mjs` (48/48), and stopped in 0.7 s.
+- The release notes were corrected to roll back to v0.4.0.

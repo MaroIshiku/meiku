@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "timestamp": "2026-10-31T22:30:00Z",
+  "timestamp": "2026-11-01T00:10:00Z",
   "application": "meiku",
   "requirement_id": "OPS-001",
   "status": "verified",
@@ -16,10 +16,10 @@
   "delivery": {
     "host_port": 65003,
     "container_port": 8080,
-    "default_image": "ghcr.io/maroishiku/meiku:v0.4.0@sha256:433c30fc89691cd16343f955eed038ebed974df014a3b8cfd5dcccc1b5b3ddb7",
+    "default_image": "ghcr.io/maroishiku/meiku:v0.4.1@sha256:70e177ac05b286d567b1d05790890e6a19287aadf7bc5a1d14d86d75362e364a",
     "base_image": "python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72",
-    "verified_local_image_digest": "sha256:433c30fc89691cd16343f955eed038ebed974df014a3b8cfd5dcccc1b5b3ddb7 (pulled from GHCR)",
-    "release_run": "https://github.com/MaroIshiku/meiku/actions/runs/41243530615"
+    "verified_local_image_digest": "sha256:70e177ac05b286d567b1d05790890e6a19287aadf7bc5a1d14d86d75362e364a (pulled from GHCR)",
+    "release_run": "https://github.com/MaroIshiku/meiku/actions/runs/41250022434"
   },
   "runtime": {
     "health": true,
@@ -38,7 +38,8 @@
     "secret_in_logs": false,
     "legacy_v028_data_adopted": true,
     "browser_migration_e2e": true,
-    "vulnerability_gate": "Trivy HIGH/CRITICAL 0 for linux/amd64 and linux/arm64 of the published digest"
+    "vulnerability_gate": "Trivy HIGH/CRITICAL 0 for linux/amd64 and linux/arm64 of the published digest",
+    "clean_sigterm_stop_seconds": 0.7
   },
   "security": {
     "negative_server_tests": 47,
