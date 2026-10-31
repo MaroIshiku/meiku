@@ -13,7 +13,7 @@ const cryptoSource = await readFile(new URL('../js/crypto.js', import.meta.url),
 const cryptoUrl = `data:text/javascript;base64,${Buffer.from(cryptoSource).toString('base64')}`;
 const c = await import(cryptoUrl);
 const authSource = (await readFile(new URL('../js/auth.js', import.meta.url), 'utf8'))
-  .replace("from './crypto.js'", `from '${cryptoUrl}'`);
+  .replace(/from '\.\/crypto\.js(?:\?v=[^']*)?'/, `from '${cryptoUrl}'`);
 const { Auth } = await import(`data:text/javascript;base64,${Buffer.from(authSource).toString('base64')}`);
 
 const writeSecret = 'write-value-with-at-least-32-characters';

@@ -67,6 +67,7 @@ Date: 2026-10-31 (updated for v0.3.0)
 - GiroCode follows EPC069-12 v002: payment reference in the unstructured remittance field, length limits, IBAN checksum validation; no code is shown without valid data.
 - The amount is synchronized between the PayPal and Bank cards and updates the QR code while typing.
 - Contacts can be shared as a `.vcf` file; every detail has a copy button.
+- Every module, script and stylesheet URL carries the release version (`?v=X.Y.Z`, `scripts/stamp-version.mjs`, checked by `tests/test-assets.mjs`); versioned files are served as immutable and cached first by the service worker, so stale caches cannot mix releases.
 - The page never reloads itself when the service worker updates (this previously cleared the setup form on the first visit).
 - Export/import of the token remains available; import asks for confirmation before replacing the stored vault.
 - The profile picture is stored inside the encrypted vault; legacy plaintext copies are migrated and removed.

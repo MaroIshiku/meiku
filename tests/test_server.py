@@ -155,6 +155,16 @@ class ServerSecurityTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertEqual(payload["code"], "INVALID_REQUEST")
 
+    def test_versioned_assets_are_immutable_and_others_revalidate(self):
+        _, headers, _ = self.request("GET", "/js/app.js?v=0.4.2")
+        self.assertEqual(headers["Cache-Control"], "public, max-age=31536000, immutable")
+        _, headers, _ = self.request("GET", "/js/app.js")
+        self.assertEqual(headers["Cache-Control"], "no-cache")
+        _, headers, _ = self.request("GET", "/js/app.js?v=meiku-20260821")
+        self.assertEqual(headers["Cache-Control"], "no-cache")
+        _, headers, _ = self.request("GET", "/?v=0.4.2")
+        self.assertEqual(headers["Cache-Control"], "no-cache")
+
     def write(self, token, **extra):
         body = {"token": token, **extra}
         return self.request_json(

@@ -72,7 +72,8 @@
       "priority": "high",
       "acceptance": [
         "Pull requests and releases use clone-local verification scripts.",
-        "Released images are immutable, scanned, SBOM-equipped, provenance-attested, and rollback-documented."
+        "Released images are immutable, scanned, SBOM-equipped, provenance-attested, and rollback-documented.",
+        "Every release loads one consistent set of front-end files: all local module, script and stylesheet URLs carry the release version, enforced by a test."
       ],
       "security_critical": true
     },

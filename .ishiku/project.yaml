@@ -37,7 +37,7 @@
       },
       {
         "name": "application",
-        "command": "python -m compileall -q server.py tests && python -m unittest discover -s tests && for f in js/*.js sw.js; do node --check \"$f\" || exit 1; done && node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs && node tests/test-qr.mjs && node tests/test-profile.mjs && sh -n docker-entrypoint.sh",
+        "command": "python -m compileall -q server.py tests && python -m unittest discover -s tests && for f in js/*.js sw.js; do node --check \"$f\" || exit 1; done && node tests/test-crypto.mjs && node tests/test-store.mjs && node tests/test-auth.mjs && node tests/test-qr.mjs && node tests/test-profile.mjs && node tests/test-assets.mjs && sh -n docker-entrypoint.sh",
         "required_for_verified": true
       },
       {

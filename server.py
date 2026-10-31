@@ -510,8 +510,12 @@ class ContactCardHandler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(target.stat().st_size))
+        versioned = re.search(r"(?:^|&)v=\d+\.\d+\.\d+(?:&|$)", self.path.partition("?")[2]) is not None
         if target.name in {"sw.js", "build-info.json"}:
             self.send_header("Cache-Control", "no-store")
+        elif versioned and target.suffix in {".js", ".css"}:
+            # Release-stamped URL (scripts/stamp-version.mjs): its content never changes.
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
         elif target.name == "index.html" or target.suffix in {".html", ".json", ".js", ".css"}:
             self.send_header("Cache-Control", "no-cache")
         else:
