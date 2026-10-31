@@ -1,0 +1,14 @@
+{
+  "id": "DEC-003",
+  "date": "2026-10-31",
+  "decision": "Introduce vault token format v3 with key wrapping. A random 256-bit AES-GCM data key encrypts the profile; the data key is wrapped by a PBKDF2-SHA-256 key (600,000 iterations) derived from the master password. The PIN blob wraps the data key and the write secret instead of the master password.",
+  "rationale": "The product owner delegated the choice. Key wrapping means a broken PIN blob no longer reveals the reusable master password, headers become authenticated (no iteration downgrade or header swap), and the iteration count follows current OWASP guidance for new and re-saved vaults.",
+  "consequences": [
+    "v2 tokens remain readable with the existing password and are re-sealed as v3 on the first unlock (or the next save when no write secret is known). No data has to be re-entered.",
+    "Legacy PIN blobs (master password inside) keep working and are replaced by the new format after a successful six-digit PIN unlock.",
+    "A password change creates a new data key; PINs of all devices must be set up again.",
+    "Releases before v0.3.0 cannot open v3 tokens. Rollback requires restoring the pre-upgrade v2 token from /data/history (see README).",
+    "OVR-001 remains required because the PIN blob is still stored in localStorage."
+  ],
+  "supersedes_in_part": "DEC-002 (content of the PIN blob)"
+}

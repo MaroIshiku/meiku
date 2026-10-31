@@ -14,7 +14,8 @@
       "priority": "critical",
       "acceptance": [
         "Create and share encrypted private and business profile cards with contact, payment, and QR information.",
-        "Existing documented and reachable behavior remains available unless an approved migration decision says otherwise."
+        "Existing documented and reachable behavior remains available unless an approved migration decision says otherwise.",
+        "The profile picture is stored inside the encrypted vault; a legacy plaintext browser copy is migrated into the vault and then removed."
       ],
       "security_critical": false
     },
@@ -25,7 +26,11 @@
       "acceptance": [
         "Private profile data remains protected by the existing client-side encrypted vault.",
         "No server account or server-side sign-in method is offered.",
-        "A six-digit PIN may unlock the existing client vault under the recorded time-bounded security override.",
+        "New and re-saved vaults use format v3: a random 256-bit data key wrapped by a PBKDF2-SHA-256 key with at least 600,000 iterations; vault headers are authenticated.",
+        "Existing v2 vaults open with the existing password and are re-sealed as v3 without re-entering any data.",
+        "New or changed master passwords require at least 12 characters and a matching confirmation.",
+        "A six-digit PIN may unlock the existing client vault under the recorded time-bounded security override; the PIN blob wraps the vault data key and never the master password.",
+        "Existing legacy PIN blobs keep working and are replaced by the current format after a successful unlock.",
         "The server write secret is never persisted as plaintext in localStorage.",
         "Passkey quick unlock is not offered."
       ],
@@ -48,7 +53,9 @@
       "acceptance": [
         "A fresh clone can build, test, and run without the outer workspace.",
         "The default published host port is 65003 while the container keeps its compatible internal port 8080.",
-        "Health checks, persistent data, runtime secrets, backup, restore, and upgrade procedures are verifiable."
+        "Health checks, persistent data, runtime secrets, backup, restore, and upgrade procedures are verifiable.",
+        "Readiness returns HTTP 503 when the data directory or token file is not writable.",
+        "Only the PWA files are served statically; removed legacy endpoints and variables are not served or read, and a non-default legacy variable stops startup with a rename hint."
       ],
       "security_critical": true
     },
@@ -61,6 +68,30 @@
         "Released images are immutable, scanned, SBOM-equipped, provenance-attested, and rollback-documented."
       ],
       "security_critical": true
+    },
+    {
+      "id": "DATA-001",
+      "title": "Safe concurrent token storage",
+      "priority": "critical",
+      "acceptance": [
+        "Every stored token carries a monotonically increasing revision; files from older releases are read as revision 0.",
+        "A write with a stale expectedRevision is rejected with HTTP 409 and does not modify the stored token.",
+        "Writes without expectedRevision remain accepted for compatibility with older clients.",
+        "The last 10 previous tokens are kept in the data directory history for restore and rollback.",
+        "Importing a token requires explicit confirmation before the stored vault is replaced."
+      ],
+      "security_critical": true
+    },
+    {
+      "id": "QR-001",
+      "title": "Standard-conformant QR payloads",
+      "priority": "high",
+      "acceptance": [
+        "GiroCode payloads follow EPC069-12 version 002: remittance text in field 11, name at most 70 and remittance at most 140 characters, amount between 0.01 and 999999999.99 EUR.",
+        "No GiroCode is shown for a missing or checksum-invalid IBAN; no PayPal code is shown without a username.",
+        "vCard 3.0 payloads contain N and FN, seven-component ADR values, escaped text values and CRLF line endings."
+      ],
+      "security_critical": false
     }
   ]
 }

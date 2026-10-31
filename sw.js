@@ -1,23 +1,17 @@
-const CACHE_NAME = 'meiku-static-2026-08-21c';
+// Bump CACHE_NAME with every release that changes static assets.
+const CACHE_NAME = 'meiku-static-v0.3.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './design-system/tokens.css',
   './css/meiku.css',
-  './css/meiku.css?v=meiku-20260821c',
   './js/app.js',
   './js/auth.js',
   './js/crypto.js',
   './js/qr.js',
   './js/store.js',
-  './js/app.js?v=meiku-20260821c',
-  './js/auth.js?v=meiku-20260821c',
-  './js/crypto.js?v=meiku-20260821c',
-  './js/qr.js?v=meiku-20260821c',
-  './js/store.js?v=meiku-20260821c',
-  './manifest.json?v=meiku-20260821',
+  './manifest.json',
   './app.manifest.json',
-  './build-info.json',
   './assets/icons/icon-64.png',
   './assets/icons/icon-128.png',
   './assets/icons/icon-192.png',
@@ -26,7 +20,7 @@ const STATIC_ASSETS = [
   './assets/icons/favicon-32.png',
   './assets/icons/apple-touch-icon.png'
 ];
-const NETWORK_ONLY = /(?:api\/data|api\/token|data\.json|save\.php)(?:\?|$)/;
+const NETWORK_ONLY = /(?:api\/data|api\/token|build-info\.json)(?:\?|$)/;
 const STATIC_REQUEST = /\.(?:html|css|js|json|png|svg|webmanifest)(?:\?|$)/;
 
 self.addEventListener('install', event => {

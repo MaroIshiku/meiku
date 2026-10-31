@@ -1,0 +1,37 @@
+{
+  "id": "REMED-20261031",
+  "date": "2026-10-31",
+  "risk_class": "C",
+  "requirements": [
+    "CORE-001",
+    "AUTH-001",
+    "UI-001",
+    "OPS-001",
+    "REL-001",
+    "DATA-001",
+    "QR-001"
+  ],
+  "changes": [
+    "Vault v3 key wrapping with transparent v2 migration (DEC-003)",
+    "PIN blob wraps the data key; legacy blobs migrate after unlock; keyboard input on the PIN pad",
+    "Password confirmation and 12-character minimum for new passwords; no state change before the server accepted the new token",
+    "Optimistic revision check (HTTP 409), token history, confirmed import (DEC-004)",
+    "GiroCode EPC069-12 field order, limits and IBAN validation; vCard N/ADR/CRLF/escaping",
+    "Static file whitelist, /readyz 503 when not writable, bounded rate limiter with optional trusted proxy",
+    "Removed save.php, /data.json, DV2_* and DATELLO_DATA_PATH; app files owned by root; conditional chown; root runtime refused",
+    "CSP-violating inline style and page-wide aria-live removed; dead code removed",
+    "publish-ghcr.yml scans the pushed digest for linux/amd64 and linux/arm64 before promoting latest",
+    "ZimaOS direct-import Compose cleaned up and kept aligned by tests/test_compose.py"
+  ],
+  "compatibility": "Existing v2 vaults, legacy PIN blobs, theme/mode settings and data.json files without revision are read and migrated in place. Host/container ports 65003/8080 and the /data/data.json path are unchanged. Rollback below v0.3.0 needs the v2 token from /data/history.",
+  "license_review": "No new runtime or build dependency. The optional browser test uses a globally installed Playwright and is not part of the image or the required checks.",
+  "rollback": "Revert the branch and redeploy v0.2.8 after restoring the pre-upgrade v2 token from /data/history/data-r000000-*.json.",
+  "verification": [
+    "47 Python tests and crypto/store/PIN/QR Node tests passed locally",
+    "Container image meiku:verify built; compose runtime test: healthy, process runs as meiku (10001), read-only root, legacy data.json (root-owned, no revision) adopted as revision 0, write -> revision 1, stale write -> 409, persistence across restart, history/data-r000000 contains the legacy token, /server.py /save.php /data.json -> 404",
+    "Readiness with an unwritable bind mount returned {\"ok\":false,\"dataWritable\":false} and the container stayed unhealthy",
+    "Playwright browser test (tests/e2e/migration.e2e.mjs) against the container: v2 vault + legacy PIN blob + plaintext avatar unlocked with keyboard PIN, re-sealed as v3, avatar moved into the vault, PIN re-wrapped, GiroCode rendered, new-format PIN unlock, 409 conflict did not overwrite, password change with confirmation, confirmed import; no console errors or CSP violations",
+    "actionlint passed; ishiku compliance test passed"
+  ],
+  "open_items": "See CODEX-HANDOFF.md"
+}

@@ -859,6 +859,19 @@ h3 {
   color: var(--color-on-primary-container);
 }
 
+.qr-icon-action:disabled {
+  display: none;
+}
+
+/* Shown instead of a QR code when payment data is missing or invalid. */
+.qr-target > .empty {
+  max-width: calc(100% - 92px);
+  min-height: min(48vw, 148px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
 .qr-icon-action svg {
   width: 20px;
   height: 20px;
