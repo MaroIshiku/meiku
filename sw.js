@@ -6,8 +6,8 @@
 // - versioned URLs are immutable: cache-first, then network;
 // - everything else (the page itself, manifest, icons): network-first, cache as offline fallback;
 // - token API and build information: network only.
-const ASSET_VERSION = '0.4.2';
-const CACHE_NAME = 'meiku-static-v0.4.2';
+const ASSET_VERSION = '0.4.3';
+const CACHE_NAME = 'meiku-static-v0.4.3';
 const v = path => `${path}?v=${ASSET_VERSION}`;
 const STATIC_ASSETS = [
   './',

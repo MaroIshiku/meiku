@@ -1,16 +1,16 @@
 // Meiku controller: start-up, unlock, migration, saving and locking.
 // Rendering lives in cards.js (share cards), settings.js (sheets) and here
 // (unlock and setup screens). Crypto, storage and QR logic are unchanged.
-import { Auth } from './auth.js?v=0.4.2';
-import { createCards } from './cards.js?v=0.4.2';
-import { createVault, openVault, openVaultWithKey, sealVault, tokenKeyId, tokenVersion, VAULT_VERSION } from './crypto.js?v=0.4.2';
-import { $, $$, Sheet, toast, vibrate } from './dom.js?v=0.4.2';
-import { icon } from './icons.js?v=0.4.2';
-import { FIELDS, firstName, LEGACY_AVATAR_KEY, normalizeData, readLegacyAvatar } from './profile.js?v=0.4.2';
-import { isValidIban } from './qr.js?v=0.4.2';
-import { bindStrength, checkNewPassword, collectForm, createSettings, MIN_NEW_PASSWORD_LENGTH, renderFields, strengthMeter } from './settings.js?v=0.4.2';
-import { Store, timeoutSignal, VersionConflictError } from './store.js?v=0.4.2';
-import { initPixelSoftUtilityTheme } from '../design-system/theme-controller.js?v=0.4.2';
+import { Auth } from './auth.js?v=0.4.3';
+import { createCards } from './cards.js?v=0.4.3';
+import { createVault, openVault, openVaultWithKey, sealVault, tokenKeyId, tokenVersion, VAULT_VERSION } from './crypto.js?v=0.4.3';
+import { $, $$, Sheet, toast, vibrate } from './dom.js?v=0.4.3';
+import { icon } from './icons.js?v=0.4.3';
+import { FIELDS, firstName, LEGACY_AVATAR_KEY, normalizeData, readLegacyAvatar } from './profile.js?v=0.4.3';
+import { isValidIban } from './qr.js?v=0.4.3';
+import { bindStrength, checkNewPassword, collectForm, createSettings, MIN_NEW_PASSWORD_LENGTH, renderFields, strengthMeter } from './settings.js?v=0.4.3';
+import { Store, timeoutSignal, VersionConflictError } from './store.js?v=0.4.3';
+import { initPixelSoftUtilityTheme } from '../design-system/theme-controller.js?v=0.4.3';
 
 const APP_ID = 'meiku';
 const LOGIN_NAME_KEY = `${APP_ID}-login-name`;

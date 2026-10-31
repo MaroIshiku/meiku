@@ -92,3 +92,7 @@ Released as `v0.4.2` (run 41251628114): `ghcr.io/maroishiku/meiku:v0.4.2@sha256:
 - Trivy (from the registry): linux/amd64 and linux/arm64, 0 HIGH/CRITICAL.
 - The published image passed the Compose runtime test, `tests/e2e/migration.e2e.mjs`, `tests/e2e/qr-scan.e2e.mjs` (48/48) and the stale-`crypto.js` scenario; versioned files are served as immutable.
 - The release notes were corrected to roll back to v0.4.1.
+
+## v0.4.3 (2026-11-01, branch `claude/no-animations`)
+
+Owner request: switching cards must not animate, and every card starts at the top (no remembered scroll position). The other animations stay. Changed `js/cards.js` only (plus the version stamp); covered by `tests/e2e/cards.e2e.mjs`.
