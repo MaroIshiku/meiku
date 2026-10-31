@@ -87,3 +87,8 @@ Released as `v0.4.1` (run 41250022434): `ghcr.io/maroishiku/meiku:v0.4.1@sha256:
 Fixes the phone PWA error "The requested module './crypto.js' does not provide an export named 'VAULT_VERSION'": a stale cache mixed a v0.2.x `crypto.js` with new modules. All asset URLs now carry the release version; see `.ishiku/decisions/release-v0.4.2.json`.
 
 **Release step from now on:** `node scripts/stamp-version.mjs X.Y.Z`, commit, then tag `vX.Y.Z`. `tests/test-assets.mjs` fails the CI if a URL is missing the version.
+
+Released as `v0.4.2` (run 41251628114): `ghcr.io/maroishiku/meiku:v0.4.2@sha256:1497fc4282d56580c9c9ea65e1516361bf63b7d4927810ba62b9b2cc1a4e205b`.
+- Trivy (from the registry): linux/amd64 and linux/arm64, 0 HIGH/CRITICAL.
+- The published image passed the Compose runtime test, `tests/e2e/migration.e2e.mjs`, `tests/e2e/qr-scan.e2e.mjs` (48/48) and the stale-`crypto.js` scenario; versioned files are served as immutable.
+- The release notes were corrected to roll back to v0.4.1.

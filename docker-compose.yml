@@ -2,7 +2,7 @@ name: meiku
 
 services:
   meiku:
-    image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:v0.4.1@sha256:70e177ac05b286d567b1d05790890e6a19287aadf7bc5a1d14d86d75362e364a}
+    image: ${MEIKU_IMAGE:-ghcr.io/maroishiku/meiku:v0.4.2@sha256:1497fc4282d56580c9c9ea65e1516361bf63b7d4927810ba62b9b2cc1a4e205b}
     container_name: meiku
     hostname: meiku
     restart: unless-stopped
