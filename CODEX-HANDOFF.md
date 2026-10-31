@@ -46,7 +46,7 @@ Merged as #27 (`d0a3d12`). The follow-up work was done on 2026-10-31 by Claude C
 - `apk upgrade` in the Dockerfile keeps builds from being bit-reproducible. It stays as a deliberate security trade-off.
 - The Playwright e2e test is not in CI (it needs browsers and a running server). Adding it would mean a dev-dependency decision.
 - `OVR-001` review date stays `2027-02-21`.
-- Release images show `local` in the About sheet: the kit release workflow does not write `build-info.json` (`publish-ghcr.yml` does). This was already the case for v0.2.8; fixing it belongs in the central kit.
+- Fixed in v0.4.1: release images used to show `local` under Settings → About, because the kit release workflow passes `VERSION`, `BUILD_DATE` and `GIT_SHA` as build arguments and the Dockerfile ignored them. The Dockerfile now writes `build-info.json` from these arguments. `publish-ghcr.yml` passes them too, and `tests/test_compose.py` checks that every passed argument is declared.
 - The other 7 clean apps (dropiku, nestiku, pingiku, playiku, pulliku, ryoiku, vertiku) still have the relaxed verify gate. Roll out the central fix per app after reviewing each app's customised release workflow.
 
 ## Local verification evidence (2026-10-31)
