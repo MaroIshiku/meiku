@@ -42,7 +42,12 @@
       "priority": "high",
       "acceptance": [
         "All user-facing interface text is English.",
-        "The app uses ishiku semantic tokens, shared layout contracts, responsive behavior, and WCAG 2.2 AA interaction."
+        "The app uses ishiku semantic tokens, shared components and layout contracts, and WCAG 2.2 AA interaction.",
+        "Meiku targets phones (320–460 CSS px) without horizontal page scrolling; wider screens keep the centred mobile column.",
+        "Each share card shows a large QR code with fullscreen and share actions; the fullscreen view is labelled and keeps the screen awake.",
+        "Settings follow the meiku-client-vault profile: settings button in the header, sections Appearance, Vault and About plus the profile.",
+        "Sheets and the fullscreen view trap focus, close with Escape and return focus; every control has an accessible name and a touch target of at least 44 px.",
+        "The page never reloads itself on a service worker update."
       ],
       "security_critical": false
     },

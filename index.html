@@ -5,121 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFBFF">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#15121A">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#FFFBFF">
   <title>Meiku</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/meiku.css">
 </head>
-<body data-theme="lavender" data-mode="system">
-  <noscript>This app needs JavaScript because encryption and QR codes run locally.</noscript>
+<body>
+  <noscript>Meiku needs JavaScript because encryption and QR codes run on this device.</noscript>
 
-  <main id="app" class="app-shell">
-    <section id="authScreen" class="auth-screen">
-      <div class="auth-card glass-card">
-        <div class="login-lockup">
-          <img src="assets/icons/icon-128.png" alt="" class="login-logo" width="72" height="72">
-          <div class="brand-text"><h1 id="authTitle">Meiku</h1><small id="authHint">Loading encrypted token...</small></div>
-        </div>
-        <p class="eyebrow auth-badge">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V8a3 3 0 0 0-6 0v2Zm3 4a2 2 0 0 0-1 3.73V19h2v-1.27A2 2 0 0 0 12 14Z"/></svg>
-          <span>Encrypted Vault</span>
-        </p>
-
-        <form id="passwordLogin" class="stack hidden" autocomplete="current-password">
-          <label class="field auth-username-field">
-            <span>Username</span>
-            <input id="loginUsername" type="text" value="Meiku" autocomplete="username" disabled>
-          </label>
-          <label class="field auth-password-field">
-            <span>Password</span>
-            <input id="masterPassword" type="password" autocomplete="current-password" inputmode="text" required>
-          </label>
-          <button class="btn primary unlock-btn" type="submit">
-            <span>Sign in</span>
-          </button>
-        </form>
-
-        <form id="setupForm" class="stack hidden" autocomplete="off">
-          <div class="setup-grid" id="setupFields"></div>
-          <label class="field">
-            <span>New Master Password</span>
-            <input id="setupPassword" type="password" autocomplete="new-password" minlength="12" required>
-          </label>
-          <label class="field">
-            <span>Repeat Master Password</span>
-            <input id="setupPasswordConfirm" type="password" autocomplete="new-password" minlength="12" required>
-          </label>
-          <label class="field">
-            <span>Server Secret</span>
-            <input id="setupSecret" type="password" autocomplete="off" required>
-          </label>
-          <button class="btn primary" type="submit">Create Vault and Start Profile</button>
-        </form>
-
-        <div id="quickUnlock" class="quick-unlock hidden">
-          <button id="pinOpen" class="btn tonal pin-unlock-btn" type="button"><span aria-hidden="true">...</span>Unlock with PIN</button>
-        </div>
-
-        <div id="pinPad" class="pin-pad hidden" role="group" aria-label="PIN pad">
-          <div class="pin-dots" id="pinDots" aria-hidden="true"></div>
-          <div class="pin-grid"></div>
-          <button id="pinCancel" class="btn ghost" type="button">Cancel</button>
-        </div>
+  <!-- Unlock and first-run setup -->
+  <div id="authScreen" class="psu-setup-screen meiku-auth" hidden>
+    <main class="psu-auth-window" aria-labelledby="authTitle">
+      <div class="psu-setup-brand">
+        <span class="psu-setup-logo" data-logo-frame><img src="assets/icons/icon-128.png" alt="" width="72" height="72" data-logo></span>
+        <h1 class="psu-setup-title" id="authTitle">Meiku</h1>
+        <p class="psu-setup-subtitle" id="authSubtitle">Loading…</p>
       </div>
-      <p class="auth-footnote">Local and secure on this device.</p>
-    </section>
+      <div id="authBody"></div>
+    </main>
+    <p class="psu-setup-footnote">Encryption runs on this device. The server only stores the encrypted vault.</p>
+  </div>
 
-    <section id="vaultScreen" class="vault hidden">
-      <header class="hero top-app-bar" data-psu-app-header>
-        <div class="meiku-header-inner">
-        <div class="brand-lockup" aria-label="Meiku Profile Share">
-          <span class="app-symbol">
-            <img src="assets/icons/icon-64.png" alt="" width="42" height="42">
-            <svg data-logo-fallback viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4V4Zm3 3v9a1 1 0 0 0 1 1h7V8a1 1 0 0 0-1-1H8Zm2 2h4v2h-4V9Zm0 4h5v2h-5v-2Z"/></svg>
-          </span>
-          <span class="brand-text"><b>Meiku</b><small>Profile Share</small></span>
+  <!-- Unlocked vault -->
+  <div id="vaultScreen" class="psu-app-shell meiku-shell" hidden>
+    <header class="psu-app-header">
+      <div class="psu-app-header__inner">
+        <span class="psu-app-symbol" data-logo-frame><img src="assets/icons/icon-64.png" alt="" width="26" height="26" data-logo data-psu-app-logo></span>
+        <div class="psu-app-title-stack">
+          <p class="psu-app-title">Meiku</p>
+          <p class="psu-app-subtitle">Profile Share</p>
         </div>
-        <button class="avatar-wrap avatar-button" id="heroAvatarWrap" type="button" aria-label="Open profile and settings"><img id="heroAvatar" alt="" hidden><span id="heroInitials">MK</span></button>
-        </div>
+        <span class="psu-spacer"></span>
+        <button class="psu-icon-button" id="settingsButton" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3.3h-4L10.7 6a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.3 2.6h4l.3-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5-2.1-1.6ZM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="deck" class="meiku-deck" aria-label="Share cards"></main>
+
+    <nav id="cardNav" class="psu-bottom-nav meiku-nav" aria-label="Cards">
+      <button type="button" data-card="private">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0v1H5v-1Z"/></svg>
+        <span>Private</span>
+      </button>
+      <button type="button" data-card="business">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 4h6a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2V6a2 2 0 0 1 2-2Zm0 4h6V6H9v2Zm2 7H5v4h14v-4h-6v2h-2v-2Zm8-2v-3H5v3h6v-1h2v1h6Z"/></svg>
+        <span>Business</span>
+      </button>
+      <button type="button" data-card="paypal">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2h-2V6H6v2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2Zm2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14v-8H6Zm10 3h3v2h-3v-2Z"/></svg>
+        <span>PayPal</span>
+      </button>
+      <button type="button" data-card="bank">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2 2 7v2h20V7L12 2ZM4 11v7h3v-7H4Zm6.5 0v7h3v-7h-3ZM17 11v7h3v-7h-3ZM2 20v2h20v-2H2Z"/></svg>
+        <span>Bank</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Fullscreen QR -->
+  <div id="fullscreen" class="meiku-fullscreen" role="dialog" aria-modal="true" aria-labelledby="fsTitle" hidden>
+    <div class="meiku-fullscreen__head">
+      <p class="meiku-eyebrow" id="fsEyebrow"></p>
+      <h2 id="fsTitle"></h2>
+      <p class="meiku-caption" id="fsCaption" hidden></p>
+    </div>
+    <div class="meiku-fullscreen__qr" id="fsQr"></div>
+    <p class="meiku-fullscreen__hint">Turn up the screen brightness for faster scanning.</p>
+    <div class="meiku-fullscreen__actions">
+      <button class="psu-icon-button meiku-round" id="fsPrev" type="button" aria-label="Previous card"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.6 18 16 16.6 11.4 12 16 7.4 14.6 6l-6 6 6 6Z"/></svg></button>
+      <button class="psu-button psu-button--filled meiku-fullscreen__close" id="fsClose" type="button">Done</button>
+      <button class="psu-icon-button meiku-round" id="fsNext" type="button" aria-label="Next card"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.4 18 8 16.6l4.6-4.6L8 7.4 9.4 6l6 6-6 6Z"/></svg></button>
+    </div>
+    <p class="meiku-fullscreen__position" id="fsPosition"></p>
+  </div>
+
+  <!-- Bottom sheet host -->
+  <div id="sheet" class="psu-backdrop meiku-backdrop" hidden>
+    <section id="sheetPanel" class="psu-sheet psu-bottom-sheet meiku-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="psu-sheet-handle" aria-hidden="true"></div>
+      <header class="psu-sheet-header">
+        <button class="psu-icon-button" id="sheetBack" type="button" aria-label="Back" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11v2H7.8l5.6 5.6L12 20l-8-8 8-8 1.4 1.4L7.8 11H20Z"/></svg></button>
+        <h2 class="psu-sheet-title" id="sheetTitle"></h2>
+        <button class="psu-icon-button" id="sheetClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button>
       </header>
-
-      <section id="tabContent" class="content-card" tabindex="-1"></section>
-
-      <nav class="psu-bottom-nav meiku-bottom-nav" aria-label="Main navigation">
-        <button data-tab="privat" type="button" aria-current="page">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0v1H5v-1Z"/></svg>
-          <b>Private</b>
-        </button>
-        <button data-tab="firma" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2V6a2 2 0 0 1 2-2Zm0 4h6V6H9v2Zm2 7H5v4h14v-4h-6v2h-2v-2Zm8-2v-3H5v3h6v-1h2v1h6Z"/></svg>
-          <b>Company</b>
-        </button>
-        <button data-tab="payment" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2h-2V6H6v2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2Zm2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14v-8H6Zm10 3h3v2h-3v-2Z"/></svg>
-          <b>Payments</b>
-        </button>
-      </nav>
-    </section>
-  </main>
-
-  <div id="qrOverlay" class="qr-overlay hidden" role="dialog" aria-modal="true" aria-label="Fullscreen QR code">
-    <button id="qrClose" class="icon-btn close" type="button" aria-label="Close QR code">&times;</button>
-    <div id="qrBig" class="qr-big"></div>
-  </div>
-
-  <div id="sheet" class="psu-backdrop meiku-sheet-backdrop hidden">
-    <section class="psu-sheet meiku-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-      <div class="psu-sheet-handle grabber"></div>
-      <h2 id="sheetTitle"></h2>
-      <div id="sheetBody"></div>
+      <div id="sheetBody" class="meiku-sheet__body"></div>
     </section>
   </div>
 
-  <div id="psu-toast-host" class="psu-toast-host hidden" role="status" aria-live="polite"></div>
+  <div id="toastHost" class="meiku-toast" role="status" aria-live="polite" hidden></div>
 
   <script type="module" src="js/app.js"></script>
 </body>

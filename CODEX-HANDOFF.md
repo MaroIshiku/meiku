@@ -58,3 +58,12 @@ Merged as #27 (`d0a3d12`). The follow-up work was done on 2026-10-31 by Claude C
 - `docker build` passed. A Compose runtime test with a named volume passed (rootless Podman with SELinux blocks bind mounts from the scratch directory; that is an environment limit, not an app issue).
 - The Playwright migration test against the container passed.
 - `node .ishiku/kit/scripts/verify-app . --full`: see `.ishiku/reports/verification-full.json` (not committed, git-ignored).
+
+## Mobile UI redesign (DEC-005, 2026-10-31)
+
+Branch `claude/mobile-ui-redesign`. Phone-only, QR-first UI on the shared design-system components; see `.ishiku/decisions/mobile-ui-redesign.json`.
+
+- Done: the first-visit reload bug (service worker `controllerchange` reload) is gone; share cards with large scan-first QR codes, swiping, fullscreen view, `.vcf` sharing and copy buttons; PIN-first unlock with inline errors; settings reorganised by the meiku-client-vault profile; simpler step editor; inline server-secret field in forms that save; `app.js` split into modules; `css/meiku.css` now builds on `design-system/components.css`.
+- Unchanged: vault format, crypto, PIN blob format, API, storage keys for vault data and all migrations from v0.3.0.
+- Not done: no desktop layout (not planned). Real-device checks of QR scanning on iOS Safari and Android Chrome are still open; Playwright covers layout and flows only.
+- Release: this is a UI-only change; it can ship as `v0.4.0`. The service worker cache is already `meiku-static-v0.4.0`.

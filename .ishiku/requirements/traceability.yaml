@@ -11,11 +11,12 @@
       ],
       "tests": {
         "unit": [
-          "tests/test_server.py",
-          "tests/test-crypto.mjs",
-          "tests/test-store.mjs",
           "tests/test-auth.mjs",
-          "tests/test-qr.mjs"
+          "tests/test-crypto.mjs",
+          "tests/test-profile.mjs",
+          "tests/test-qr.mjs",
+          "tests/test-store.mjs",
+          "tests/test_server.py"
         ],
         "integration": [
           ".ishiku/kit/scripts/compliance-test",
@@ -70,22 +71,31 @@
       "implementation": [
         "index.html",
         "css/meiku.css",
+        "js/app.js",
+        "js/cards.js",
+        "js/settings.js",
+        "js/dom.js",
+        "js/icons.js",
+        "js/profile.js",
+        "sw.js",
         "app.manifest.json",
         "manifest.json",
-        "sw.js",
-        "assets/icon-source.png",
+        ".ishiku/decisions/mobile-ui-redesign.json",
         "assets/icons/"
       ],
       "tests": {
         "unit": [
-          "tests/test_server.py"
+          "tests/test_server.py",
+          "tests/test-profile.mjs",
+          "tests/test-qr.mjs"
         ],
         "integration": [
           ".ishiku/kit/scripts/compliance-test",
           ".ishiku/kit/scripts/check-design"
         ],
         "e2e": [
-          "tests/e2e/migration.e2e.mjs"
+          "tests/e2e/migration.e2e.mjs",
+          ".ishiku/decisions/mobile-ui-redesign.json"
         ],
         "security": [
           ".ishiku/kit/scripts/compliance-test"
@@ -173,7 +183,7 @@
       "id": "QR-001",
       "implementation": [
         "js/qr.js",
-        "js/app.js"
+        "js/cards.js"
       ],
       "tests": {
         "unit": [
