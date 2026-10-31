@@ -30,7 +30,7 @@ Merged as #27 (`d0a3d12`). The follow-up work was done on 2026-10-31 by Claude C
 
 1. **Done.** Committed, PR #27 opened, CI `ishiku verify` passed, squash-merged as `d0a3d12`.
 2. **Done.** The first `publish-ghcr.yml` run on `main` passed (run 41240273548). Local `trivy` against the pushed digest `sha256:18c7e93d…` confirmed that `TRIVY_PLATFORM` selects the platform: amd64 and arm64 each have 0 HIGH/CRITICAL. Tags are now `sha-<40>`.
-3. **Release `v0.3.0`.** Tagged after the kit PR below; the digest pin follows in a separate PR (see git history).
+3. **Done.** `v0.3.0` was released by `ishiku-release-release.yml` (run 41240868393) as `ghcr.io/maroishiku/meiku:v0.3.0@sha256:cda86bb824761565306d545a6093da5747544962e998b1b7d470c1673a5a9561` (amd64 + arm64, per-platform Trivy gate, SBOM attached). The rollback text in the release notes was corrected to point at v0.2.8 plus the v2-token restore. The published image passed the Compose runtime test and `tests/e2e/migration.e2e.mjs`. The digest is pinned in `docker-compose.yml`, `Meiku - Profile Share.yaml`, `app.manifest.json` and `.ishiku/reports/ops-001-verification.json`.
 4. **Kit (central `.ishiku/`, not a Git repository).**
    - Changed: `workflows/pull-request/verify.yml` (strict by default via `format('{0}', inputs.require_all_verified)`; the old `github.event_name == 'workflow_call'` check was always false inside reusable workflows; action pins updated to the #26 releases), `workflows/release/release.yml` (pins updated; Trivy scans the pushed digest per platform before promotion) and `scripts/ishiku.mjs` (honours `--allow-unverified-requirements`, as the app copies already did).
    - Originals are backed up in `.ishiku/reports/kit-backup-20261031/`.
@@ -46,6 +46,8 @@ Merged as #27 (`d0a3d12`). The follow-up work was done on 2026-10-31 by Claude C
 - `apk upgrade` in the Dockerfile keeps builds from being bit-reproducible. It stays as a deliberate security trade-off.
 - The Playwright e2e test is not in CI (it needs browsers and a running server). Adding it would mean a dev-dependency decision.
 - `OVR-001` review date stays `2027-02-21`.
+- Release images show `local` in the About sheet: the kit release workflow does not write `build-info.json` (`publish-ghcr.yml` does). This was already the case for v0.2.8; fixing it belongs in the central kit.
+- The other 7 clean apps (dropiku, nestiku, pingiku, playiku, pulliku, ryoiku, vertiku) still have the relaxed verify gate. Roll out the central fix per app after reviewing each app's customised release workflow.
 
 ## Local verification evidence (2026-10-31)
 

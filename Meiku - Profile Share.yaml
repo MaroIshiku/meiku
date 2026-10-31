@@ -5,7 +5,7 @@
 name: meiku
 services:
   meiku:
-    image: ghcr.io/maroishiku/meiku:v0.2.8@sha256:be75ca5f3153d32cc4ad70d95052d41768449758af488d173e9f53d96b3ad923
+    image: ghcr.io/maroishiku/meiku:v0.3.0@sha256:cda86bb824761565306d545a6093da5747544962e998b1b7d470c1673a5a9561
     container_name: meiku
     hostname: meiku
     restart: unless-stopped
