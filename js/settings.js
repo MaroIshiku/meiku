@@ -391,14 +391,21 @@ export function createSettings(ctx) {
   // ---- About ----------------------------------------------------------------------
   function openAbout() {
     const info = state.buildInfo || {};
-    const rows = [
-      ['Version', info.sourceRef && info.sourceRef !== 'local' ? info.sourceRef : 'Local build'],
-      ['Commit', info.buildSha && info.buildSha !== 'local' ? info.buildSha.slice(0, 12) : 'local'],
-      ['Built', info.builtAt ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(info.builtAt)) : 'Not recorded'],
+    const released = info.buildSha && info.buildSha !== 'local';
+    const date = value => new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    const version = info.version ? `v${info.version}` : (info.sourceRef && info.sourceRef !== 'local' ? info.sourceRef : '');
+    const rows = released ? [
+      ['Version', version || 'Unreleased build'],
+      ['Commit', info.buildSha.slice(0, 12)],
+      ['Commit date', info.builtAt ? date(info.builtAt) : 'Not recorded'],
       ['Source', info.sourceRepo || 'MaroIshiku/meiku'],
-      ['Vault format', `v${tokenVersion(state.token) || VAULT_VERSION}`],
-      ['Last saved', state.updated ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(state.updated)) : 'Not saved yet']
+      ...(info.workflowRun ? [['Workflow run', String(info.workflowRun)]] : [])
+    ] : [
+      ['Version', 'Local development build'],
+      ['Source', info.sourceRepo || 'MaroIshiku/meiku']
     ];
+    rows.push(['Vault format', `v${tokenVersion(state.token) || VAULT_VERSION}`]);
+    rows.push(['Last saved', state.updated ? date(state.updated) : 'Not saved yet']);
     Sheet.open({ title: 'About Meiku', back: openSettings, body: `
       <p class="meiku-sheet-text">Meiku encrypts your profile on this device. The server only stores the encrypted vault.</p>
       <dl class="psu-technical-card meiku-about">

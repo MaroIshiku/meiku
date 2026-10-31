@@ -53,5 +53,20 @@ class ComposeConsistencyTests(unittest.TestCase):
         self.assertEqual(COMPOSE.count("ISHIKU_SETUP_SECRET: ${ISHIKU_SETUP_SECRET:-}"), 1)
         self.assertIn("- ISHIKU_SETUP_SECRET=", ZIMAOS)
 
+class BuildInfoTests(unittest.TestCase):
+    """Release images must carry real build information (shown under Settings -> About)."""
+
+    def test_dockerfile_accepts_the_build_arguments_the_workflows_pass(self):
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        workflows = ROOT / ".github" / "workflows"
+        for name in ("ishiku-release-release.yml", "publish-ghcr.yml"):
+            body = (workflows / name).read_text(encoding="utf-8")
+            block = body[body.index("build-args: |"):body.index("provenance:", body.index("build-args: |"))]
+            for arg in re.findall(r"^\s+([A-Z_]+)=", block, flags=re.M):
+                with self.subTest(workflow=name, arg=arg):
+                    self.assertRegex(dockerfile, rf"(?m)^ARG {arg}=", msg=f"{name} passes {arg} but the Dockerfile ignores it")
+        self.assertIn("/app/build-info.json", dockerfile)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,6 +27,17 @@ COPY --chown=root:root icons ./icons
 COPY --chown=root:root js ./js
 COPY --chown=root:root assets ./assets
 
+# Build information for Settings -> About. The ishiku release workflow passes
+# VERSION, BUILD_DATE (commit date) and GIT_SHA; publish-ghcr.yml passes
+# GIT_SHA, BUILD_DATE, SOURCE_REF and WORKFLOW_RUN. Local builds without
+# arguments keep the repository's build-info.json ("local").
+ARG VERSION=""
+ARG BUILD_DATE=""
+ARG GIT_SHA=""
+ARG SOURCE_REF=""
+ARG WORKFLOW_RUN=""
+RUN if [ -n "$GIT_SHA" ]; then python -c 'import json, os; e = os.environ.get; v = e("VERSION") or None; json.dump({"app": "Meiku - Profile Share", "version": v, "buildSha": e("GIT_SHA"), "builtAt": e("BUILD_DATE") or None, "sourceRepo": "MaroIshiku/meiku", "sourceRef": ("v" + v) if v else (e("SOURCE_REF") or None), "workflowRun": e("WORKFLOW_RUN") or None, "forkRepos": []}, open("/app/build-info.json", "w"), indent=2)'; fi
+
 EXPOSE 8080
 VOLUME ["/data"]
 
